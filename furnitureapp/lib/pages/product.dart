@@ -1,10 +1,9 @@
-import '../widgets/ItemsWidget.dart';
 import 'package:flutter/material.dart';
+import 'package:furnitureapp/widgets/FavoriteItemSamples.dart';
 import 'package:furnitureapp/widgets/HomeItemsWidget.dart';
 
-
 class ProductPage extends StatefulWidget {
-  final Produc product; // Nhận một đối tượng Product
+  final product; // Nhận một đối tượng Product
 
   const ProductPage({super.key, required this.product}); // Constructor
 

@@ -1,11 +1,10 @@
-<<<<<<< HEAD
-2024/10/06-17:00:12.579 a200 Reusing MANIFEST C:\Users\Admin\AppData\Local\Temp\flutter_tools.d654e701\flutter_tools_chrome_device.6bd8926a\Default\Site Characteristics Database/MANIFEST-000001
-2024/10/06-17:00:12.587 a200 Recovering log #6
-2024/10/06-17:00:12.588 a200 Reusing old log C:\Users\Admin\AppData\Local\Temp\flutter_tools.d654e701\flutter_tools_chrome_device.6bd8926a\Default\Site Characteristics Database/000006.log 
-2024/10/06-17:00:12.588 a200 Delete type=0 #3
-=======
-2024/10/06-14:34:19.911 2358 Reusing MANIFEST C:\Users\ANNGU~1\AppData\Local\Temp\flutter_tools.e765df92\flutter_tools_chrome_device.3536e385\Default\Site Characteristics Database/MANIFEST-000001
-2024/10/06-14:34:19.912 2358 Recovering log #6
-2024/10/06-14:34:19.913 2358 Reusing old log C:\Users\ANNGU~1\AppData\Local\Temp\flutter_tools.e765df92\flutter_tools_chrome_device.3536e385\Default\Site Characteristics Database/000006.log 
-2024/10/06-14:34:19.914 2358 Delete type=0 #3
->>>>>>> 952c945cff3172393e3a4f3ac21f891142072b84
+2024/10/09-15:40:33.515 199c Log #3: 3 ops saved to Table #7 OK
+2024/10/09-15:40:33.520 199c Archiving C:\Users\ANNGU~1\AppData\Local\Temp\flutter_tools.65a03101\flutter_tools_chrome_device.e9f87499\Default\Site Characteristics Database/000003.log: OK
+2024/10/09-15:40:33.522 199c Log #6: 36 ops saved to Table #8 OK
+2024/10/09-15:40:33.523 199c Archiving C:\Users\ANNGU~1\AppData\Local\Temp\flutter_tools.65a03101\flutter_tools_chrome_device.e9f87499\Default\Site Characteristics Database/000006.log: OK
+2024/10/09-15:40:33.524 199c Table #4: 2 entries OK
+2024/10/09-15:40:33.524 199c Table #6: 2 entries OK
+2024/10/09-15:40:33.524 199c Table #7: 3 entries OK
+2024/10/09-15:40:33.525 199c Table #8: 36 entries OK
+2024/10/09-15:40:33.528 199c Archiving C:\Users\ANNGU~1\AppData\Local\Temp\flutter_tools.65a03101\flutter_tools_chrome_device.e9f87499\Default\Site Characteristics Database/MANIFEST-000001: OK
+2024/10/09-15:40:33.539 199c **** Repaired leveldb C:\Users\ANNGU~1\AppData\Local\Temp\flutter_tools.65a03101\flutter_tools_chrome_device.e9f87499\Default\Site Characteristics Database; recovered 4 files; 1511 bytes. Some data may have been lost. ****
