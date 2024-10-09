@@ -1,0 +1,3 @@
+arb-dir: lib/translate  # Adjust this path if your ARB files are in a different directory
+template-arb-file: intl_en.arb  # Name of your default language ARB file
+output-localization-file: app_localizations.dart  # Name of the generated Dart file

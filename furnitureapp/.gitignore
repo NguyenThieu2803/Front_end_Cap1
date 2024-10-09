@@ -1,0 +1,27 @@
+# # Flutter/Dart/Pub specific
+# .dart_tool/
+# .flutter-plugins
+# .flutter-plugins-dependencies
+# .packages
+# .pub-cache/
+# build/
+# .idea/
+# .gradle/
+# android/app/debug/
+# android/app/profile/
+# android/app/release/
+# ios/Pods/
+# flutter_*.png
+
+# # VS Code
+# .vscode/
+
+# # Intellij
+# *.iml
+# *.ipr
+# *.iws
+# .idea/
+
+# # Other files
+# *.log
+# pubspec.lock

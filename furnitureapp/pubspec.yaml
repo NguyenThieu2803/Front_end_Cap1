@@ -1,0 +1,38 @@
+name: furnitureapp
+description: "A new Flutter project."
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.5.3 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Các dependencies khác nằm ngoài phần flutter
+  curved_navigation_bar: ^1.0.6 # Latest version
+  http: ^1.2.2
+  cupertino_icons: ^1.0.8
+  api_cache_manager: ^1.0.2
+<<<<<<< HEAD
+  #sdk language
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+=======
+  sqflite_common_ffi: ^2.3.3+1
+>>>>>>> bde22ff1206801364e2fc1c528d07ce745bf730e
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/
+    - assets/images/

@@ -1,0 +1,1 @@
+ E:\\cap\\Capstone_1_project\\Front_end\\furnitureapp\\.dart_tool\\flutter_build\\6cbefa6771fade4a6461708736fc7466\\native_assets.yaml: 
