@@ -1,27 +1,53 @@
-# # Flutter/Dart/Pub specific
-# .dart_tool/
-# .flutter-plugins
-# .flutter-plugins-dependencies
-# .packages
-# .pub-cache/
-# build/
-# .idea/
-# .gradle/
-# android/app/debug/
-# android/app/profile/
-# android/app/release/
-# ios/Pods/
-# flutter_*.png
+# Flutter related files
+.dart_tool/
+.idea/
+.vscode/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.DS_Store
 
-# # VS Code
-# .vscode/
+# Flutter specific
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+build/
+linux/flutter/generated_plugin_registrant.*
+macos/Flutter/
+windows/flutter/generated_plugin_registrant.*
+ios/Flutter/
+ios/Runner/GeneratedPluginRegistrant.*
+pubspec.lock
+linux/flutter/generated_plugin_registrant.*
 
-# # Intellij
-# *.iml
-# *.ipr
-# *.iws
-# .idea/
 
-# # Other files
-# *.log
-# pubspec.lock
+# iOS build files
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Pods
+ios/Runner.xcworkspace
+ios/Runner.xcconfig
+
+# Android build files
+android/.gradle
+android/.settings
+android/app/build
+android/build
+
+# Web specific
+web/.dart_tool/
+
+# MacOS specific
+macos/Pods/
+macos/.dart_tool/
+
+# Windows specific
+windows/runner/
+
+# Linux specific
+linux/.dart_tool/
+
+# Package config file
+.packages
+pubspec.lock

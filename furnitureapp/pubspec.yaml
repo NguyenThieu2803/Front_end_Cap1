@@ -16,14 +16,11 @@ dependencies:
   http: ^1.2.2
   cupertino_icons: ^1.0.8
   api_cache_manager: ^1.0.2
-<<<<<<< HEAD
   #sdk language
   flutter_localizations:
     sdk: flutter
   intl: any
-=======
   sqflite_common_ffi: ^2.3.3+1
->>>>>>> bde22ff1206801364e2fc1c528d07ce745bf730e
 
 dev_dependencies:
   flutter_test:
