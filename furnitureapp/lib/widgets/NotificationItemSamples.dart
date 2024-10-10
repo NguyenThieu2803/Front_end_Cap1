@@ -160,7 +160,7 @@ class _NotificationItemSamplesState extends State<NotificationItemSamples> {
 
   Widget _buildMessageItem(MessageNotification message) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: 25, vertical: 13),
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(color: Colors.grey.shade300),

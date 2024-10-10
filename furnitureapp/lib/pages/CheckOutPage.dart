@@ -36,7 +36,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
                     topRight: Radius.circular(30),
                   ),
                   child: ListView(
-                    padding: EdgeInsets.only(top: 15),
+                    padding: EdgeInsets.only(top: 10),
                     children: [
                       CheckOutItemSamples(),
                       CheckOutAddress(

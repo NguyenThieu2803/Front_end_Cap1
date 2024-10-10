@@ -29,7 +29,7 @@ class _FavoritePageState extends State<FavoritePage> {
                     topRight: Radius.circular(30),
                   ),
                   child: ListView(
-                    padding: EdgeInsets.only(top: 15),
+                    padding: EdgeInsets.only(top: 10),
                     children: [
                       FavoriteItemSamples(),
                       // Thêm SizedBox để tạo khoảng trống ở cuối danh sách

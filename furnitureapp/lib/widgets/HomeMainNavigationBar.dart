@@ -24,17 +24,17 @@ class _HomeMainNavigationBarState extends State<HomeMainNavigationBar> {
 
   void _onItemTapped(int index) {
     setState(() {
-      _selectedIndex = index;
+      _selectedIndex = index; // Cập nhật chỉ số được chọn
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_selectedIndex],
+      body: _pages[_selectedIndex], // Hiển thị trang tương ứng
       bottomNavigationBar: HomeNavigationBar(
         selectedIndex: _selectedIndex,
-        onTap: _onItemTapped,
+        onTap: _onItemTapped, // Gọi hàm khi nhấn vào biểu tượng
       ),
     );
   }
