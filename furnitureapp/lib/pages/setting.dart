@@ -1,96 +1,82 @@
 import 'package:flutter/material.dart';
-import 'package:furnitureapp/pages/account_security.dart';
 import 'package:furnitureapp/pages/bank_account_card.dart';
 import 'package:furnitureapp/pages/language.dart';
-import 'address.dart';
-import 'notification_settings.dart';
-import 'package:furnitureapp/translate/localization.dart'; 
+import 'package:furnitureapp/pages/notification_settings.dart';
+import 'package:furnitureapp/translate/localization.dart';
 
+import 'account_security.dart';
+import 'address.dart';
 
 class Setting extends StatelessWidget {
-  const Setting({super.key});
+  final Function(String) onLanguageChanged;
+
+  const Setting({super.key, required this.onLanguageChanged});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context); // Handle back button press
-          },
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Account Setup',
-          style: TextStyle(color: Colors.black),
+          l10n.appTitle,
+          style: const TextStyle(color: Colors.black),
         ),
       ),
       backgroundColor: Colors.grey[200],
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          // My account section
-          buildSectionTitle('My account'),
-          buildListTile(context, 'Account & Security', () {
-            // Handle navigation to Account & Security
+          buildSectionTitle(l10n.myAccount),
+          buildListTile(context, l10n.accountSecurity, () {
             Navigator.push(context,
                 MaterialPageRoute(builder: (context) => AccountSecurityPage()));
           }),
-          buildListTile(context, 'Address', () {
-            // Handle navigation to Address
+          buildListTile(context, l10n.address, () {
             Navigator.push(context,
                 MaterialPageRoute(builder: (context) => AddressPage()));
           }),
-          buildListTile(context, 'Bank Account/Card', () {
-            // Handle navigation to Bank Account/Card
+          buildListTile(context, l10n.bankAccount, () {
             Navigator.push(context,
                 MaterialPageRoute(builder: (context) => BankAccountPage()));
           }),
-
-          // Setting section
           buildSectionTitle('Setting'),
-          buildListTile(context, 'Notification settings', () {
-            // Handle navigation to Notification settings
+          buildListTile(context, l10n.notificationSettings, () {
             Navigator.push(
                 context,
                 MaterialPageRoute(
                     builder: (context) => NotificationSettingsPage()));
           }),
-          buildListTile(context, 'Language', () {
-            // Handle navigation to Language page
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => LanguagePage(onLanguageChanged: (String ) {  },)));
+          buildListTile(context, l10n.language, () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => LanguagePage(
+                          onLanguageChanged: onLanguageChanged,
+                        )));
           }),
-
-          // Support section
-          buildSectionTitle('Support'),
-          buildListTile(context, 'Support center', () {
-            // Handle navigation to Support center
-          }),
-          buildListTile(context, 'Community standards', () {
-            // Handle navigation to Community standards
-          }),
-          buildListTile(context,
-              'Satisfied with FurniFit AR? Let\'s evaluate together', () {}),
-
-          // Log Out button
-          Spacer(),
+          buildSectionTitle(l10n.supportCenter),
+          buildListTile(context, l10n.supportCenter, () {}),
+          buildListTile(context, l10n.communityStandards, () {}),
+          buildListTile(context, l10n.satisfactionSurvey, () {}),
+          const Spacer(),
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: ElevatedButton(
-              onPressed: () {
-                // Handle log out
-              },
+              onPressed: () {},
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black, // Black background
-                padding: EdgeInsets.symmetric(vertical: 15),
+                backgroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(vertical: 15),
               ),
               child: Text(
-                'Log Out',
-                style:
-                    TextStyle(fontSize: 18, color: Colors.white), // White text
+                l10n.logOut,
+                style: const TextStyle(fontSize: 18, color: Colors.white),
               ),
             ),
           ),
@@ -104,7 +90,7 @@ class Setting extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16.0, 20.0, 0.0, 5.0),
       child: Text(
         title,
-        style: TextStyle(
+        style: const TextStyle(
           color: Colors.black54,
           fontSize: 16.0,
           fontWeight: FontWeight.bold,
@@ -119,8 +105,8 @@ class Setting extends StatelessWidget {
       color: Colors.white,
       child: ListTile(
         title: Text(title),
-        trailing: Icon(Icons.arrow_forward_ios, size: 16),
-        onTap: onPressed, // Use the onPressed function passed from the parent
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+        onTap: onPressed,
       ),
     );
   }

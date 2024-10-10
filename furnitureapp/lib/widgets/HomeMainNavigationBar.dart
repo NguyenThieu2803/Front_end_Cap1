@@ -6,7 +6,7 @@ import 'package:furnitureapp/pages/UserProfilePage.dart';
 import 'package:furnitureapp/widgets/HomeNavigationBar.dart';
 
 class HomeMainNavigationBar extends StatefulWidget {
-  const HomeMainNavigationBar({Key? key}) : super(key: key);
+  const HomeMainNavigationBar({Key? key, required void Function(String language) onLanguageChanged}) : super(key: key);
 
   @override
   _HomeMainNavigationBarState createState() => _HomeMainNavigationBarState();

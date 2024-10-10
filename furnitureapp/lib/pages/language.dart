@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:furnitureapp/translate/localization.dart';
 
 class LanguagePage extends StatefulWidget {
-  final Function(String) onLanguageChanged; // Callback for language change
+  final Function(String) onLanguageChanged; 
 
   const LanguagePage({super.key, required this.onLanguageChanged});
 
@@ -37,7 +36,7 @@ class _LanguagePageState extends State<LanguagePage> {
           TextButton(
             onPressed: _hasChanges
                 ? () {
-                    widget.onLanguageChanged(_selectedLanguage); 
+                    widget.onLanguageChanged(_selectedLanguage == 'English' ? 'en' : 'vi');
                     setState(() => _hasChanges = false);
                     Navigator.pop(context);
                   }

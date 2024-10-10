@@ -65,7 +65,7 @@ class UserProfileScreen extends StatelessWidget {
                     ],
                   ),
                   TextButton(
-                    onPressed: () {}, // Add your action here
+                    onPressed: () {}, 
                     child: Row(
                       children: [
                         Text("View purchase history"),

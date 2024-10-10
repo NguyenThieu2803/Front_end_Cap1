@@ -1,40 +1,68 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:intl/intl.dart';
-import 'dart:async';
 
 class AppLocalizations {
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  final Locale locale;
 
-  static Future<AppLocalizations> load(Locale locale) {
-    // Load localization based on locale
-    return SynchronousFuture<AppLocalizations>(AppLocalizations());
-  }
+  AppLocalizations(this.locale);
 
   static AppLocalizations of(BuildContext context) {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  String get appTitle => Intl.message('Account Setup', name: 'appTitle');
-  String get myAccount => Intl.message('My account', name: 'myAccount');
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
+
+  static final Map<String, Map<String, String>> _localizedValues = {
+    'en': {
+      'appTitle': 'Account Setup',
+      'myAccount': 'My account',
+      'accountSecurity': 'Account & Security',
+      'address': 'Address',
+      'bankAccount': 'Bank Account/Card',
+      'notificationSettings': 'Notification settings',
+      'language': 'Language',
+      'supportCenter': 'Support center',
+      'communityStandards': 'Community standards',
+      'satisfactionSurvey':
+          'Satisfied with FurniFit AR? Let\'s evaluate together.',
+      'logOut': 'Log Out',
+      'save': 'Save',
+    },
+    'vi': {
+      'appTitle': 'Thiết lập tài khoản',
+      'myAccount': 'Tài khoản của tôi',
+      'accountSecurity': 'Tài khoản & Bảo mật',
+      'address': 'Địa chỉ',
+      'bankAccount': 'Tài khoản/Thẻ ngân hàng',
+      'notificationSettings': 'Cài đặt thông báo',
+      'language': 'Ngôn ngữ',
+      'supportCenter': 'Trung tâm hỗ trợ',
+      'communityStandards': 'Tiêu chuẩn cộng đồng',
+      'satisfactionSurvey': 'Hài lòng với FurniFit AR? Hãy đánh giá cùng nhau.',
+      'logOut': 'Đăng xuất',
+      'save': 'Lưu',
+    },
+  };
+
+  String get appTitle => _localizedValues[locale.languageCode]!['appTitle']!;
+  String get myAccount => _localizedValues[locale.languageCode]!['myAccount']!;
   String get accountSecurity =>
-      Intl.message('Account & Security', name: 'accountSecurity');
-  String get address => Intl.message('Address', name: 'address');
+      _localizedValues[locale.languageCode]!['accountSecurity']!;
+  String get address => _localizedValues[locale.languageCode]!['address']!;
   String get bankAccount =>
-      Intl.message('Bank Account/Card', name: 'bankAccount');
+      _localizedValues[locale.languageCode]!['bankAccount']!;
   String get notificationSettings =>
-      Intl.message('Notification settings', name: 'notificationSettings');
-  String get language => Intl.message('Language', name: 'language');
+      _localizedValues[locale.languageCode]!['notificationSettings']!;
+  String get language => _localizedValues[locale.languageCode]!['language']!;
   String get supportCenter =>
-      Intl.message('Support center', name: 'supportCenter');
+      _localizedValues[locale.languageCode]!['supportCenter']!;
   String get communityStandards =>
-      Intl.message('Community standards', name: 'communityStandards');
+      _localizedValues[locale.languageCode]!['communityStandards']!;
   String get satisfactionSurvey =>
-      Intl.message('Satisfied with FurniFit AR? Let\'s evaluate together.',
-          name: 'satisfactionSurvey');
-  String get logOut => Intl.message('Log Out', name: 'logOut');
+      _localizedValues[locale.languageCode]!['satisfactionSurvey']!;
+  String get logOut => _localizedValues[locale.languageCode]!['logOut']!;
+  String get save => _localizedValues[locale.languageCode]!['save']!;
 }
 
 class _AppLocalizationsDelegate
@@ -42,10 +70,14 @@ class _AppLocalizationsDelegate
   const _AppLocalizationsDelegate();
 
   @override
-  bool isSupported(Locale locale) => ['en', 'vi'].contains(locale.languageCode);
+  bool isSupported(Locale locale) {
+    return ['en', 'vi'].contains(locale.languageCode);
+  }
 
   @override
-  Future<AppLocalizations> load(Locale locale) => AppLocalizations.load(locale);
+  Future<AppLocalizations> load(Locale locale) {
+    return SynchronousFuture<AppLocalizations>(AppLocalizations(locale));
+  }
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;

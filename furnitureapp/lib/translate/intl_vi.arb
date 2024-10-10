@@ -1,13 +1,14 @@
 {
-  "appTitle": "Cài đặt tài khoản",
+  "appTitle": "Thiết lập tài khoản",
   "myAccount": "Tài khoản của tôi",
-  "accountSecurity": "Bảo mật tài khoản",
+  "accountSecurity": "Tài khoản & Bảo mật",
   "address": "Địa chỉ",
-  "bankAccount": "Tài khoản Ngân hàng/Thẻ",
+  "bankAccount": "Tài khoản/Thẻ ngân hàng",
   "notificationSettings": "Cài đặt thông báo",
   "language": "Ngôn ngữ",
   "supportCenter": "Trung tâm hỗ trợ",
   "communityStandards": "Tiêu chuẩn cộng đồng",
-  "satisfactionSurvey": "Bạn có hài lòng với FurniFit AR? Hãy đánh giá cùng nhau.",
-  "logOut": "Đăng xuất"
+  "satisfactionSurvey": "Hài lòng với FurniFit AR? Hãy đánh giá cùng nhau.",
+  "logOut": "Đăng xuất",
+  "save": "Lưu"
 }
