@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:furnitureapp/pages/CartPage.dart';
 import 'package:furnitureapp/pages/FavoritePage.dart';
-
+import 'package:furnitureapp/pages/UserProfilePage.dart';
 import 'package:furnitureapp/widgets/CategoriesWidget.dart';
 import 'package:furnitureapp/widgets/HomeAppBar.dart';
 import 'package:furnitureapp/widgets/HomeItemsWidget.dart';
@@ -20,6 +20,7 @@ class _HomePageState extends State<HomePage> {
     HomeContent(),
     CartPage(),
     FavoritePage(),
+    UserProfilePage(),
   ];
 
   void _onItemTapped(int index) {

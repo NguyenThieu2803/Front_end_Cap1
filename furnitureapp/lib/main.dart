@@ -44,7 +44,6 @@ class MyApp extends StatelessWidget {
         "/login": (context) => LoginPage(), // Trang login
         "/main": (context) => HomeMainNavigationBar(), // Trang chính với bottom navigation
         "/product": (context) => ProductPage(product: Product), // Trang sản phẩm
-        "/user-profile": (context) => UserProfilePage(), // Trang hồ sơ người dùng
         "/notifications": (context) => NotificationPage(),
       },
       initialRoute: "/", // Định nghĩa trang bắt đầu khi ứng dụng chạy

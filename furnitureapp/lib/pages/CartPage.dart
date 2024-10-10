@@ -30,7 +30,7 @@ class _CartPageState extends State<CartPage> {
                     topRight: Radius.circular(30),
                   ),
                   child: ListView(
-                    padding: EdgeInsets.only(top: 15),
+                    padding: EdgeInsets.only(top: 10),
                     children: [
                       CartItemSamples(),
                       // Thêm SizedBox để tạo khoảng trống ở cuối danh sách
