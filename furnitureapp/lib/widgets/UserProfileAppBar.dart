@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:furnitureapp/pages/HomePage.dart'; // Đảm bảo bạn import đúng file HomePage
+import 'package:furnitureapp/pages/HomePage.dart';
+import 'package:furnitureapp/pages/setting.dart';
 
-class UserProfileAppBar extends StatefulWidget {
+class UserProfileAppBar extends StatelessWidget {
   const UserProfileAppBar({super.key});
 
-  @override
-  _UserProfileAppBarState createState() => _UserProfileAppBarState();
-}
-
-class _UserProfileAppBarState extends State<UserProfileAppBar> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -18,7 +14,6 @@ class _UserProfileAppBarState extends State<UserProfileAppBar> {
         children: [
           InkWell(
             onTap: () {
-              // Chuyển về trang chủ
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => HomePage()),
@@ -30,7 +25,7 @@ class _UserProfileAppBarState extends State<UserProfileAppBar> {
               color: Color(0xFF2B2321),
             ),
           ),
-          Spacer(), // Để đẩy chữ "Favorite Products" vào giữa
+          Spacer(),
           Text(
             "Favorite Products",
             style: TextStyle(
@@ -39,11 +34,21 @@ class _UserProfileAppBarState extends State<UserProfileAppBar> {
               color: Color(0xFF2B2321),
             ),
           ),
-          Spacer(), // Tạo khoảng cách giữa tiêu đề và icon trái tim
-          Icon(
-            Icons.settings,
-            size: 30,
-            color: Colors.black, // Đặt màu cho biểu tượng trái tim
+          Spacer(),
+          InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Setting(),
+                ),
+              );
+            },
+            child: Icon(
+              Icons.settings,
+              size: 30,
+              color: Colors.black,
+            ),
           ),
         ],
       ),

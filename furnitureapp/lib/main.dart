@@ -57,13 +57,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:furnitureapp/pages/Homepage.dart';
 import 'package:furnitureapp/pages/setting.dart';
-import 'package:furnitureapp/pages/language.dart';
 import 'package:furnitureapp/translate/localization.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:furnitureapp/services/language_manager.dart';
 
 void main() async {
-  WidgetsFlutterBinding
-      .ensureInitialized(); // Đảm bảo Flutter được khởi tạo trước
+  WidgetsFlutterBinding.ensureInitialized();
+  final languageManager = LanguageManager();
+  await languageManager.initializeLanguage();
   runApp(MyApp());
 }
 
@@ -71,46 +71,33 @@ class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
-  _MyAppState createState() => _MyAppState();
+  State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  Locale? _locale;
+  final LanguageManager _languageManager = LanguageManager();
 
   @override
   void initState() {
     super.initState();
-    _loadLocale(); // Load ngôn ngữ lưu trữ trước khi build ứng dụng
+    _languageManager.addListener(_onLocaleChange);
   }
 
-  Future<void> _loadLocale() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? languageCode = prefs.getString('language_code');
-    if (languageCode != null) {
-      setState(() {
-        _locale = Locale(languageCode); // Áp dụng ngôn ngữ đã lưu
-      });
-    }
+  void _onLocaleChange() {
+    setState(() {});
   }
 
-  void _changeLanguage(String languageCode) {
-    setState(() {
-      _locale = Locale(languageCode); // Thay đổi ngôn ngữ
-    });
-    _saveLanguage(languageCode);
-  }
-
-  Future<void> _saveLanguage(String languageCode) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-        'language_code', languageCode); // Lưu ngôn ngữ vào SharedPreferences
+  @override
+  void dispose() {
+    _languageManager.removeListener(_onLocaleChange);
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      locale: _locale, // Thiết lập ngôn ngữ
+      locale: _languageManager.currentLocale,
       supportedLocales: const [
         Locale('en', 'US'),
         Locale('vi', 'VN'),
@@ -123,11 +110,8 @@ class _MyAppState extends State<MyApp> {
       ],
       initialRoute: "/",
       routes: {
-        "/": (context) => Setting(
-            onLanguageChanged: _changeLanguage), // Mở trang mặc định
-        "/language": (context) => LanguagePage(
-            onLanguageChanged: _changeLanguage), // Truyền hàm thay đổi ngôn ngữ
-        //"/language": (context) => LanguagePage(onLanguageChanged: (_) {}),
+        "/": (context) => HomePage(),
+        "/setting": (context) => Setting(),
       },
     );
   }

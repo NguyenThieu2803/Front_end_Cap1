@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:furnitureapp/pages/bank_account_card.dart';
-import 'package:furnitureapp/pages/language.dart';
-import 'package:furnitureapp/pages/notification_settings.dart';
 import 'package:furnitureapp/translate/localization.dart';
-
+import 'package:furnitureapp/pages/language.dart';
+import 'package:furnitureapp/pages/bank_account_card.dart';
+import 'package:furnitureapp/pages/notification_settings.dart';
 import 'account_security.dart';
 import 'address.dart';
 
 class Setting extends StatelessWidget {
-  final Function(String) onLanguageChanged;
-
-  const Setting({super.key, required this.onLanguageChanged});
+  const Setting({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -57,9 +54,7 @@ class Setting extends StatelessWidget {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => LanguagePage(
-                          onLanguageChanged: onLanguageChanged,
-                        )));
+                    builder: (context) => LanguagePage()));
           }),
           buildSectionTitle(l10n.supportCenter),
           buildListTile(context, l10n.supportCenter, () {}),

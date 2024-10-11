@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:furnitureapp/pages/add_gmail.dart';
+import 'package:furnitureapp/pages/add_phone_number.dart';
+import 'package:furnitureapp/pages/change_password.dart';
+import 'package:furnitureapp/pages/edit_profile.dart';
 
 class AccountSecurityPage extends StatelessWidget {
   const AccountSecurityPage({super.key});
@@ -38,6 +42,11 @@ class AccountSecurityPage extends StatelessWidget {
                     title: 'My profile',
                     onTap: () {
                       // Handle my profile tap
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const EditProfilePage()),
+                      );
                     },
                   ),
                   _buildDivider(),
@@ -45,6 +54,11 @@ class AccountSecurityPage extends StatelessWidget {
                     title: 'Phone number',
                     onTap: () {
                       // Handle phone number tap
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const AddPhoneNumberPage()),
+                      );
                     },
                   ),
                   _buildDivider(),
@@ -52,6 +66,11 @@ class AccountSecurityPage extends StatelessWidget {
                     title: 'Gmail',
                     onTap: () {
                       // Handle gmail tap
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const AddGmailPage()),
+                      );
                     },
                   ),
                   _buildDivider(),
@@ -59,6 +78,11 @@ class AccountSecurityPage extends StatelessWidget {
                     title: 'Change password',
                     onTap: () {
                       // Handle change password tap
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const ChangePasswordPage()),
+                      );
                     },
                     isLast: true,
                   ),
