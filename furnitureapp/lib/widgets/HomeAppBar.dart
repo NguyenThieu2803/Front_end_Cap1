@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:furnitureapp/pages/NotificationPage.dart';
+import 'package:furnitureapp/pages/TaskBar.dart';
 
 class HomeAppBar extends StatefulWidget {
   const HomeAppBar({super.key});
@@ -8,21 +9,89 @@ class HomeAppBar extends StatefulWidget {
   _HomeAppBarState createState() => _HomeAppBarState();
 }
 
-class _HomeAppBarState extends State<HomeAppBar> {
+class _HomeAppBarState extends State<HomeAppBar> with SingleTickerProviderStateMixin {
+  OverlayEntry? _overlayEntry;
+  late AnimationController _animationController;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 300),
+    );
+    _animation = Tween<double>(begin: -1.0, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeOut,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    _hideTaskbarOverlay();
+    super.dispose();
+  }
+
+  void _showTaskbarOverlay(BuildContext context) {
+    _overlayEntry?.remove();
+    _overlayEntry = OverlayEntry(
+      builder: (context) => AnimatedBuilder(
+        animation: _animation,
+        builder: (context, child) {
+          return Positioned(
+            top: MediaQuery.of(context).padding.top + kToolbarHeight +
+                 (_animation.value * 300), // Điều chỉnh vị trí hiển thị
+            left: 0,
+            right: 0,
+            child: Material(
+              color: Colors.transparent,
+              child: Stack(
+                children: [
+                  // Phần nền mờ để tap to dismiss
+                  GestureDetector(
+                    onTap: _hideTaskbarOverlay,
+                    child: Container(
+                      height: MediaQuery.of(context).size.height,
+                      color: Colors.black.withOpacity(0.5),
+                    ),
+                  ),
+                  // TaskBar widget
+                  TaskBar(onClose: _hideTaskbarOverlay), // Truyền onClose
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+
+    Overlay.of(context).insert(_overlayEntry!);
+    _animationController.forward();
+  }
+
+  void _hideTaskbarOverlay() {
+    _animationController.reverse().then((_) {
+      _overlayEntry?.remove();
+      _overlayEntry = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return AppBar(
       backgroundColor: Colors.white,
-      elevation: 0, // Bỏ viền bóng
+      elevation: 0,
       leading: IconButton(
         icon: Icon(
           Icons.sort,
           size: 30,
           color: Color(0xFF2B2321),
         ),
-        onPressed: () {
-          // Thêm chức năng khi bấm vào menu nếu cần
-        },
+        onPressed: () => _showTaskbarOverlay(context),
       ),
       title: Text(
         "FurniFit AR",
@@ -40,7 +109,12 @@ class _HomeAppBarState extends State<HomeAppBar> {
             color: Color(0xFF2B2321),
           ),
           onPressed: () {
-            // Thêm hành động khi bấm vào nút thông báo nếu cần
+            // Kiểm tra và ẩn TaskBar nếu nó đang hiển thị
+            if (_overlayEntry != null) {
+              _hideTaskbarOverlay();
+            }
+            
+            // Chuyển đến trang NotificationPage
             Navigator.push(
               context,
               MaterialPageRoute(
