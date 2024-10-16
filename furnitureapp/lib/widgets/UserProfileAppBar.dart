@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:furnitureapp/pages/HomePage.dart';
-import 'package:furnitureapp/pages/setting.dart';
 
 class UserProfileAppBar extends StatelessWidget {
   const UserProfileAppBar({super.key});

@@ -29,13 +29,8 @@ static Future<LoginResponseModel?> getLoginDetails() async {
   
   if (isCacheDataExist) {
     var cacheData = await APICacheManager().getCacheData(KEY_NAME);
-    if (cacheData.syncData != null) {
-      return loginResponseJson(cacheData.syncData); // Chuyển đổi JSON từ cache về đối tượng LoginResponseModel
+    return loginResponseJson(cacheData.syncData); // Chuyển đổi JSON từ cache về đối tượng LoginResponseModel
     } else {
-      // Nếu cacheData hoặc syncData bị null
-      return null;
-    }
-  } else {
     // Nếu cache key không tồn tại
     return null;
   }

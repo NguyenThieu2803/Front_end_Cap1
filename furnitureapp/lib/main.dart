@@ -51,8 +51,6 @@ class MyApp extends StatelessWidget {
 */
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:furnitureapp/admin/user_management.dart';
-import 'package:furnitureapp/pages/Homepage.dart';
 import 'package:furnitureapp/pages/LoginPage.dart';
 import 'package:furnitureapp/pages/setting.dart';
 import 'package:furnitureapp/translate/localization.dart';
@@ -108,7 +106,7 @@ class _MyAppState extends State<MyApp> {
       ],
       initialRoute: "/",
       routes: {
-        "/": (context) => UserManagementPage(),
+        "/": (context) => LoginPage(),
         "/setting": (context) => Setting(),
       },
     );
