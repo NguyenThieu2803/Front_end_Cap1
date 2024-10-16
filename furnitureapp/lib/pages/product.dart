@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:furnitureapp/widgets/FavoriteItemSamples.dart';
-import 'package:furnitureapp/widgets/HomeItemsWidget.dart';
 
 class ProductPage extends StatefulWidget {
   final product; // Nhận một đối tượng Product

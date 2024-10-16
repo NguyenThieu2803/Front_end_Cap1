@@ -27,7 +27,7 @@ class MessageNotification {
 }
 
 class NotificationItemSamples extends StatefulWidget {
-  const NotificationItemSamples({Key? key}) : super(key: key);
+  const NotificationItemSamples({super.key});
 
   @override
   _NotificationItemSamplesState createState() => _NotificationItemSamplesState();

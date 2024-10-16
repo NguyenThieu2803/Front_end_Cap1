@@ -1,15 +1,11 @@
 import 'package:furnitureapp/widgets/CartItemSamples.dart';
 
-import 'pages/StartNow.dart';
 import 'pages/Homepage.dart';
 import 'pages/LoginPage.dart';
 import 'package:flutter/material.dart';
 import 'package:furnitureapp/pages/product.dart';
-import 'package:furnitureapp/pages/FavoritePage.dart';
-import 'package:furnitureapp/pages/UserProfilePage.dart';
 import 'package:furnitureapp/translate/localization.dart';
 import 'package:furnitureapp/pages/NotificationPage.dart';
-import 'package:furnitureapp/widgets/HomeNavigationBar.dart';
 import 'package:furnitureapp/widgets/HomeMainNavigationBar.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 

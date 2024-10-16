@@ -4,7 +4,6 @@ import 'package:furnitureapp/pages/bank_account_card.dart';
 import 'package:furnitureapp/pages/language.dart';
 import 'address.dart';
 import 'notification_settings.dart';
-import 'package:furnitureapp/translate/localization.dart'; 
 
 
 class Setting extends StatelessWidget {

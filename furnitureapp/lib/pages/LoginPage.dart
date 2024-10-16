@@ -1,6 +1,5 @@
 import 'sign_up.dart';
 import 'package:flutter/material.dart';
-import 'package:furnitureapp/pages/sign_up.dart';
 import 'package:furnitureapp/pages/Homepage.dart';
 import 'package:furnitureapp/api/api.service.dart';
 

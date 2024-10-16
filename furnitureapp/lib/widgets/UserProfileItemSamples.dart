@@ -13,22 +13,22 @@ class UserProfileItemSamples extends StatelessWidget {
           children: [
             // Profile Section
             Container(
-              padding: EdgeInsets.all(16),
+              padding: EdgeInsets.all(5),
               decoration: BoxDecoration(
-                color: Colors.white, // Changed to white for better contrast
+                color: Colors.grey[200], // Changed to white for better contrast
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Row(
                 children: [
                   CircleAvatar(
-                    radius: 40,
-                    backgroundColor: Colors.grey[300], // Slightly grey background
+                    radius: 30,
+                    backgroundColor: Colors.white, // Slightly grey background
                     child: Icon(Icons.person, size: 40, color: Colors.black),
                   ),
                   SizedBox(width: 16),
                   Text(
                     'User',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -42,60 +42,37 @@ class UserProfileItemSamples extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.shopping_cart, color: Colors.black),
+                    
                     SizedBox(width: 8),
                     Text(
                       "Purchase Order",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF2B2321),
+                      ),
                     ),
                   ],
-                ),
-                TextButton(
-                  onPressed: () {}, // Add your action here
-                  child: Row(
-                    children: [
-                      Text("View purchase history"),
-                      Icon(Icons.arrow_forward_ios, size: 16),
-                    ],
-                  ),
                 ),
               ],
             ),
             // Divider after the purchase order section
-            Divider(thickness: 1),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildOrderStatusButton(Icons.check_box, "Wait for confirmation", Colors.blue),
-                _buildOrderStatusButton(Icons.inbox, "Awaiting delivery", Colors.orange),
-                _buildOrderStatusButton(Icons.local_shipping, "Waiting for delivery", Colors.red),
-                _buildOrderStatusButton(Icons.star, "Evaluate", Colors.yellow),
+                _buildOrderStatusButton(
+                    Icons.check_box, "Wait for confirmation", Colors.black),
+                _buildOrderStatusButton(
+                    Icons.local_shipping, "Waiting for delivery", Colors.black),
+                _buildOrderStatusButton(Icons.star, "Evaluate", Colors.black),
               ],
             ),
             SizedBox(height: 20),
 
             // Divider above My Utilities section
             Divider(thickness: 1),
-            Row(
-              children: [
-                Icon(Icons.settings, color: Colors.black),
-                SizedBox(width: 8),
-                Text(
-                  "My Utilities",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
+           
             // Divider below My Utilities section
-            Divider(thickness: 1),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildUtilityButton(Icons.attach_money, "Accumulate points", Colors.orange),
-                _buildUtilityButton(Icons.card_giftcard, "Voucher", Colors.red),
-              ],
-            ),
-            Divider(thickness: 1), // Added divider below My Utilities section
           ],
         ),
       ),
@@ -108,7 +85,8 @@ class UserProfileItemSamples extends StatelessWidget {
       children: [
         Icon(icon, size: 40, color: color),
         SizedBox(height: 8),
-        Text(label, textAlign: TextAlign.center, style: TextStyle(fontSize: 12)),
+        Text(label,
+            textAlign: TextAlign.center, style: TextStyle(fontSize: 12)),
       ],
     );
   }
@@ -119,7 +97,8 @@ class UserProfileItemSamples extends StatelessWidget {
       children: [
         Icon(icon, size: 40, color: color),
         SizedBox(height: 8),
-        Text(label, textAlign: TextAlign.center, style: TextStyle(fontSize: 12)),
+        Text(label,
+            textAlign: TextAlign.center, style: TextStyle(fontSize: 12)),
       ],
     );
   }

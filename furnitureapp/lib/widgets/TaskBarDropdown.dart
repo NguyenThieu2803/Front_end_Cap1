@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class TaskBarDropdown extends StatefulWidget {
+  const TaskBarDropdown({super.key});
+
   @override
   _TaskBarDropdownState createState() => _TaskBarDropdownState();
 }

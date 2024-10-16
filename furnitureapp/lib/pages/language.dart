@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:furnitureapp/translate/localization.dart';
 
 class LanguagePage extends StatefulWidget {
   final Function(String) onLanguageChanged; // Callback for language change

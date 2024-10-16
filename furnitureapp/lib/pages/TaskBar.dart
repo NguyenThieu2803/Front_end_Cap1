@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class TaskBar extends StatefulWidget {
   final VoidCallback onClose;
 
-  const TaskBar({Key? key, required this.onClose}) : super(key: key);
+  const TaskBar({super.key, required this.onClose});
 
   @override
   _TaskBarState createState() => _TaskBarState();
@@ -15,6 +15,7 @@ class _TaskBarState extends State<TaskBar> {
   final addressController = TextEditingController();
   final minPriceController = TextEditingController();
   final maxPriceController = TextEditingController();
+  bool _isDropdownOpen = false; // Biến boolean để kiểm soát trạng thái menu
 
   @override
   void dispose() {
@@ -27,45 +28,53 @@ class _TaskBarState extends State<TaskBar> {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.transparent, // Nền của Material trong suốt
-      child: Align(
-        alignment: Alignment.bottomCenter, // Đặt TaskBar ở đáy màn hình
+      color: Colors.transparent,
+      child: GestureDetector(
+        onTap: widget.onClose,
         child: Container(
-          width: double.infinity, // Chiếm toàn bộ chiều ngang
-          constraints: BoxConstraints(maxHeight: 500), // Mở rộng chiều cao tối đa của TaskBar (có thể điều chỉnh)
-          padding: EdgeInsets.fromLTRB(20, 40, 20, 20), // Tăng padding dưới để có thêm không gian
-          decoration: BoxDecoration(
-            color: Color(0xFF1C1C1C), // Màu nền đen của TaskBar
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(30), // Góc tròn ở trên
-              bottomRight: Radius.circular(30), // Góc tròn ở trên
-            ),
-          ),
-          child: SingleChildScrollView(
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header của TaskBar chứa tiêu đề và nút đóng
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildSectionTitle('Product'),
-                      IconButton(
-                        icon: Icon(Icons.close, color: Colors.white),
-                        onPressed: widget.onClose,
-                      ),
-                    ],
+          color: Colors.transparent,
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: GestureDetector(
+              onTap: () {}, // Ngăn chặn sự kiện tap truyền xuống
+              child: Container(
+                width: double.infinity,
+                constraints: BoxConstraints(maxHeight: 500),
+                padding: EdgeInsets.fromLTRB(20, 20, 20, 20),
+                decoration: BoxDecoration(
+                  color: Color(0xFF1C1C1C),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(30),
+                    bottomRight: Radius.circular(30),
                   ),
-                  SizedBox(height: 10),
-                  _buildProductRow(),
-                  SizedBox(height: 20), // Tăng khoảng cách giữa các thành phần
-                  _buildSectionTitle('Price range'),
-                  SizedBox(height: 20),
-                  _buildPriceRangeRow(),
-                ],
+                ),
+                child: SingleChildScrollView(
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _buildSectionTitle('Product'),
+                            IconButton(
+                              icon: Icon(Icons.close, color: Colors.white),
+                              onPressed: widget.onClose,
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 10),
+                        _buildProductRow(),
+                        SizedBox(height: 20),
+                        _buildSectionTitle('Price range'),
+                        SizedBox(height: 20),
+                        _buildPriceRangeRow(),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
@@ -85,74 +94,122 @@ class _TaskBarState extends State<TaskBar> {
     );
   }
 
-  Widget _buildProductRow() {
-    return Row(
+ Widget _buildProductRow() {
+  return Column(
+    children: [
+      GestureDetector(
+        onTap: () {
+          setState(() {
+            _isDropdownOpen = !_isDropdownOpen; // Thay đổi trạng thái của menu
+          });
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: _isDropdownOpen
+                ? BorderRadius.only(
+                    topLeft: Radius.circular(25),
+                    topRight: Radius.circular(25),
+                  ) // Khi mở: chỉ bo góc phía trên
+                : BorderRadius.circular(25), // Khi đóng: bo góc toàn bộ
+          ),
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                selectedProduct,
+                style: TextStyle(color: Colors.black, fontSize: 16),
+              ),
+              Icon(
+                _isDropdownOpen
+                    ? Icons.arrow_drop_up // Nếu mở thì hiển thị mũi tên lên
+                    : Icons.arrow_drop_down, // Nếu đóng thì hiển thị mũi tên xuống
+                color: Colors.black,
+              ),
+            ],
+          ),
+        ),
+      ),
+      if (_isDropdownOpen)
+        _buildDropdownMenu(), // Hiển thị menu nếu _isDropdownOpen = true
+    ],
+  );
+}
+
+
+  Widget _buildDropdownMenu() {
+    return Column(
       children: [
-        Expanded(child: _buildProductDropdown()), // Dropdown field
-        SizedBox(width: 15),
-        Expanded(child: _buildAddressField()),    // Address field
+        _buildDropdownItem('Table'),
+        _buildDropdownItem('Chair'),
+        _buildDropdownItem('Sofa'),
+        _buildDropdownItem('Lamp'),
       ],
     );
   }
 
-  Widget _buildProductDropdown() {
-    return Material(
-      elevation: 5, // Đảm bảo dropdown được hiển thị ở trên cùng
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(25),
-        ),
-        child: DropdownButtonFormField<String>(
-          value: selectedProduct,
-          dropdownColor: Colors.white, // Màu dropdown
-          icon: Icon(Icons.arrow_drop_down, color: Colors.black), // Mũi tên
-          isExpanded: true, // Đảm bảo dropdown chiếm hết chiều ngang
-          onChanged: (String? newValue) {
-            if (newValue != null) { 
-              setState(() => selectedProduct = newValue);
-            }
-          },
-          items: ['Table', 'Chair', 'Sofa', 'Lamp'].map((String item) {
-            return DropdownMenuItem<String>(
-              value: item,
-              child: Text(item),
-            );
-          }).toList(),
-          decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(25),
-              borderSide: BorderSide.none,
-            ),
-            filled: true,
-            fillColor: Colors.white,
+  Widget _buildDropdownItem(String product) {
+  return GestureDetector(
+    onTap: () {
+      setState(() {
+        selectedProduct = product; // Cập nhật sản phẩm được chọn
+        _isDropdownOpen = false;   // Đóng menu sau khi chọn
+      });
+    },
+    child: Container(
+      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+      decoration: BoxDecoration(
+        color: selectedProduct == product ? Colors.grey[300] : Colors.white,
+        border: Border(
+          bottom: BorderSide(
+            color: Colors.grey, // Màu sắc của đường viền dưới
+            width: 1.0,        // Độ dày của đường viền dưới
           ),
         ),
+        borderRadius: product == 'Lamp'
+            ? BorderRadius.only(
+                bottomLeft: Radius.circular(25),
+                bottomRight: Radius.circular(25),
+              )
+            : BorderRadius.zero, // Không có bo góc cho các mục khác
       ),
-    );
-  }
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Text(
+            product,
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 16,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
-  Widget _buildAddressField() {
-    return _buildTextField(
-      controller: addressController,
-      hintText: 'Address',
-    );
-  }
+
 
   Widget _buildPriceRangeRow() {
     return Row(
       children: [
-        Expanded(child: _buildTextField(
-          controller: minPriceController,
-          hintText: 'vnd',
-          keyboardType: TextInputType.number,
-        )),
+        Expanded(
+          child: _buildTextField(
+            controller: minPriceController,
+            hintText: 'vnd',
+            keyboardType: TextInputType.number,
+          ),
+        ),
         SizedBox(width: 15),
-        Expanded(child: _buildTextField(
-          controller: maxPriceController,
-          hintText: 'vnd',
-          keyboardType: TextInputType.number,
-        )),
+        Expanded(
+          child: _buildTextField(
+            controller: maxPriceController,
+            hintText: 'vnd',
+            keyboardType: TextInputType.number,
+          ),
+        ),
         SizedBox(width: 15),
         _buildCheckButton(),
       ],
@@ -187,18 +244,18 @@ class _TaskBarState extends State<TaskBar> {
           // Xử lý khi form hợp lệ
         }
       },
-      child: Text(
-        'Check',
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 16,
-        ),
-      ),
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.grey,
         padding: EdgeInsets.symmetric(horizontal: 25, vertical: 12),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(25),
+        ),
+      ),
+      child: Text(
+        'Check',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 16,
         ),
       ),
     );

@@ -30,7 +30,7 @@ class _UserProfileAppBarState extends State<UserProfileAppBar> {
               color: Color(0xFF2B2321),
             ),
           ),
-          Spacer(), // Để đẩy chữ "Favorite Products" vào giữa
+          Spacer(),
           Text(
             "Favorite Products",
             style: TextStyle(
@@ -39,11 +39,17 @@ class _UserProfileAppBarState extends State<UserProfileAppBar> {
               color: Color(0xFF2B2321),
             ),
           ),
-          Spacer(), // Tạo khoảng cách giữa tiêu đề và icon trái tim
-          Icon(
-            Icons.settings,
-            size: 30,
-            color: Colors.black, // Đặt màu cho biểu tượng trái tim
+          Spacer(),
+          InkWell(
+            onTap: () {
+              // Gọi hàm mở cài đặt từ setting.dart
+              // openSettings(context);
+            },
+            child: Icon(
+              Icons.settings,
+              size: 30,
+              color: Colors.black,
+            ),
           ),
         ],
       ),

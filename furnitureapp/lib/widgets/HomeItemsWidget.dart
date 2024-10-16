@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../pages/product.dart';
 
 class Product {
@@ -10,6 +9,7 @@ class Product {
   String size;
   String material;
   String features;
+  String category;
 
   Product({
     required this.name,
@@ -19,75 +19,79 @@ class Product {
     required this.size,
     required this.material,
     required this.features,
+    required this.category,
   });
 }
 
-class HomeItemsWidget extends StatefulWidget {
-  const HomeItemsWidget({super.key});
+class HomeItemsWidget extends StatelessWidget {
+  final String selectedCategory;
 
-  @override
-  _HomeItemsWidgetState createState() => _HomeItemsWidgetState();
-}
+  HomeItemsWidget({super.key, required this.selectedCategory});
 
-class _HomeItemsWidgetState extends State<HomeItemsWidget> {
-  List<Product> products = [
+  final List<Product> products = [
     Product(
       name: "Study desk BGC62",
       image: "assets/images/1.png",
       price: 100.0,
       discount: "-50%",
-      size: "120cm x 60cm x 75cm", // Thông tin kích thước
-      material: "Wood & Metal", // Chất liệu
-      features: "Adjustable height, Built-in storage", // Tính năng
+      size: "120cm x 60cm x 75cm",
+      material: "Wood & Metal",
+      features: "Adjustable height, Built-in storage",
+      category: "Desk",
     ),
     Product(
       name: "Office Chair A12",
       image: "assets/images/2.png",
       price: 150.0,
       discount: "-20%",
-      size: "45cm - 55cm (height adjustable)", // Thông tin kích thước
-      material: "Leather & Foam", // Chất liệu
-      features: "Reclining, Swivel base, Lumbar support", // Tính năng
+      size: "45cm - 55cm (height adjustable)",
+      material: "Leather & Foam",
+      features: "Reclining, Swivel base, Lumbar support",
+      category: "Chair",
     ),
     Product(
       name: "Bookshelf X34",
       image: "assets/images/3.png",
       price: 80.0,
       discount: "-30%",
-      size: "180cm x 60cm x 30cm", // Thông tin kích thước
-      material: "Pine Wood", // Chất liệu
-      features: "6 Shelves, Easy assembly", // Tính năng
+      size: "180cm x 60cm x 30cm",
+      material: "Pine Wood",
+      features: "6 Shelves, Easy assembly",
+      category: "Cabinet",
     ),
     Product(
-      name: 'Ghế Công',
+      name: 'Ghế Công Thái Học',
       image: 'assets/images/ghe_cong_thai_hoc.png',
       price: 100.0,
       discount: '10%',
-      size:
-          'Chiều cao: 45 - 55 cm, Chiều rộng: 45 - 55 cm, Chiều sâu: 40 - 50 cm',
-      material:
-          'Khung ghế: Thép không gỉ, Đệm: Mút xốp đàn hồi, Bề mặt: Vải lưới thoáng khí',
+      size: 'Chiều cao: 45 - 55 cm, Chiều rộng: 45 - 55 cm, Chiều sâu: 40 - 50 cm',
+      material: 'Khung ghế: Thép không gỉ, Đệm: Mút xốp đàn hồi, Bề mặt: Vải lưới thoáng khí',
       features: '+ Điều chỉnh chiều cao ghế: Có piston thủy lực\n'
           '+ Điều chỉnh độ nghiêng lưng ghế: Có cơ chế ngả lưng lên đến 180°\n'
           '+ Tay vịn 3D hoặc 4D\n'
           '+ Tựa đầu điều chỉnh\n'
           '+ Xoay 360°',
+      category: "Chair",
     ),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final filteredProducts = selectedCategory == 'All Product'
+        ? products
+        : products.where((product) => product.category == selectedCategory).toList();
+
     return GridView.count(
-      childAspectRatio: 0.85, // Điều chỉnh tỷ lệ khung hình để phù hợp hơn
+      childAspectRatio: 0.85,
       physics: NeverScrollableScrollPhysics(),
       crossAxisCount: 2,
       shrinkWrap: true,
-      padding: EdgeInsets.only(top: 10), // Thêm padding phía trên
+      padding: EdgeInsets.only(top: 10),
       children: [
-        for (var product in products)
+        for (var product in filteredProducts)
           Container(
             padding: EdgeInsets.only(left: 15, right: 15, top: 10),
-            margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10), // Giảm margin dọc
+            margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
@@ -129,30 +133,30 @@ class _HomeItemsWidgetState extends State<HomeItemsWidget> {
                     );
                   },
                   child: Container(
-                    margin: EdgeInsets.all(5), // Giảm margin xung quanh hình ảnh
+                    margin: EdgeInsets.all(5),
                     child: Image.asset(
                       product.image,
-                      height: 110, // Giảm chiều cao hình ảnh
+                      height: 110,
                       width: 110,
                     ),
                   ),
                 ),
                 Container(
-                  padding: EdgeInsets.only(bottom: 5), // Giảm khoảng cách dưới tên sản phẩm
+                  padding: EdgeInsets.only(bottom: 5),
                   alignment: Alignment.centerLeft,
                   child: Text(
                     product.name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 16, // Giảm kích thước font chữ
+                      fontSize: 16,
                       color: Color(0xFF2B2321),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.only(top: 5), // Giảm khoảng cách trên giá tiền
+                  padding: EdgeInsets.only(top: 5),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [

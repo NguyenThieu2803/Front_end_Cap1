@@ -13,7 +13,7 @@ class Product {
 }
 
 class FavoriteItemSamples extends StatefulWidget {
-  const FavoriteItemSamples({Key? key}) : super(key: key);
+  const FavoriteItemSamples({super.key});
 
   @override
   _FavoriteItemSamplesState createState() => _FavoriteItemSamplesState();

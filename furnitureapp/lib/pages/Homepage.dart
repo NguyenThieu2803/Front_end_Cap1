@@ -8,7 +8,7 @@ import 'package:furnitureapp/widgets/HomeItemsWidget.dart';
 import 'package:furnitureapp/widgets/HomeNavigationBar.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -16,8 +16,10 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
+  String _selectedCategory = 'All Product';
+
   final List<Widget> _pages = [
-    HomeContent(),
+    HomePage(),
     CartPage(),
     FavoritePage(),
     UserProfilePage(),
@@ -29,10 +31,21 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void _onCategorySelected(String category) {
+    setState(() {
+      _selectedCategory = category;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_selectedIndex],
+      body: _selectedIndex == 0
+          ? HomeContent(
+              selectedCategory: _selectedCategory,
+              onCategorySelected: _onCategorySelected,
+            )
+          : _pages[_selectedIndex],
       bottomNavigationBar: HomeNavigationBar(
         selectedIndex: _selectedIndex,
         onTap: _onItemTapped,
@@ -42,6 +55,11 @@ class _HomePageState extends State<HomePage> {
 }
 
 class HomeContent extends StatelessWidget {
+  final String selectedCategory;
+  final Function(String) onCategorySelected;
+
+  const HomeContent({super.key, required this.selectedCategory, required this.onCategorySelected});
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -102,8 +120,11 @@ class HomeContent extends StatelessWidget {
                           ),
                         ),
                       ),
-                      CategoriesWidget(),
-                      SizedBox(height: 20), // Giảm khoảng cách giữa Categories và Best Selling
+                      CategoriesWidget(
+                        selectedCategory: selectedCategory,
+                        onCategorySelected: onCategorySelected,
+                      ),
+                      SizedBox(height: 20),
                       Container(
                         alignment: Alignment.centerLeft,
                         margin: EdgeInsets.symmetric(horizontal: 10),
@@ -116,7 +137,7 @@ class HomeContent extends StatelessWidget {
                           ),
                         ),
                       ),
-                      HomeItemsWidget(), // Đã xóa padding để đưa các mục sản phẩm gần hơn với chữ "Best Selling"
+                      HomeItemsWidget(selectedCategory: selectedCategory),
                     ],
                   ),
                 ),
