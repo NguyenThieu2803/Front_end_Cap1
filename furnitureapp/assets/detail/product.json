@@ -1,0 +1,47 @@
+[
+    {
+        "name": "Study desk BGC62",
+        "image": "assets/images/1.png",
+        "price": 100.0,
+        "discount": "-50%",
+        "size": "120cm x 60cm x 75cm",
+        "material": "Wood & Metal",
+        "features": "Adjustable height, Built-in storage"
+    },
+    {
+        "name": "Office Chair A12",
+        "image": "assets/images/2.png",
+        "price": 150.0,
+        "discount": "-20%",
+        "size": "45cm - 55cm (height adjustable)",
+        "material": "Leather & Foam",
+        "features": "Reclining, Swivel base, Lumbar support"
+    },
+    {
+        "name": "Bookshelf X34",
+        "image": "assets/images/3.png",
+        "price": 80.0,
+        "discount": "-30%",
+        "size": "180cm x 60cm x 30cm",
+        "material": "Pine Wood",
+        "features": "6 Shelves, Easy assembly"
+    },
+    {
+        "name": "Ghế Công",
+        "image": "assets/images/ghe_cong_thai_hoc.png",
+        "price": 440.0,
+        "discount": "40%",
+        "size": "Chiều cao: 45 - 55 cm, Chiều rộng: 45 - 55 cm, Chiều sâu: 40 - 50 cm",
+        "material": "Khung ghế: Thép không gỉ, Đệm: Mút xốp đàn hồi, Bề mặt: Vải lưới thoáng khí",
+        "features": "+ Điều chỉnh chiều cao ghế: Có piston thủy lực\n+ Điều chỉnh độ nghiêng lưng ghế: Có cơ chế ngả lưng lên đến 180°\n+ Tay vịn 3D hoặc 4D\n+ Tựa đầu điều chỉnh\n+ Xoay 360°"
+    },
+    {
+        "name": "Bookshelf X36",
+        "image": "assets/images/3.png",
+        "price": 1110.0,
+        "discount": "-30%",
+        "size": "180cm x 60cm x 30cm",
+        "material": "Pine Wood",
+        "features": "6 Shelves, Easy assembly"
+    }
+]

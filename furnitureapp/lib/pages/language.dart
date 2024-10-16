@@ -1,25 +1,39 @@
 import 'package:flutter/material.dart';
+<<<<<<< HEAD
+=======
+import 'package:furnitureapp/services/language_manager.dart';
+import 'package:furnitureapp/translate/localization.dart';
+>>>>>>> f80177e8eafd385bc2bb4ccf84036ae5565e2dc4
 
 class LanguagePage extends StatefulWidget {
-  final Function(String) onLanguageChanged; // Callback for language change
-
-  const LanguagePage({super.key, required this.onLanguageChanged});
+  const LanguagePage({super.key});
 
   @override
   State<LanguagePage> createState() => _LanguagePageState();
 }
 
 class _LanguagePageState extends State<LanguagePage> {
+  final LanguageManager _languageManager = LanguageManager();
   String _selectedLanguage = 'English';
   bool _hasChanges = false;
 
-  final List<String> _languages = [
-    'Tiếng Việt',
-    'English',
+  final List<Map<String, String>> _languages = [
+    {'name': 'Tiếng Việt', 'code': 'vi'},
+    {'name': 'English', 'code': 'en'},
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _selectedLanguage = _languageManager.currentLocale.languageCode == 'en'
+        ? 'English'
+        : 'Tiếng Việt';
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -28,21 +42,23 @@ class _LanguagePageState extends State<LanguagePage> {
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Language',
-          style: TextStyle(color: Colors.black),
+        title: Text(
+          l10n.language,
+          style: const TextStyle(color: Colors.black),
         ),
         actions: [
           TextButton(
             onPressed: _hasChanges
-                ? () {
-                    widget.onLanguageChanged(_selectedLanguage); 
-                    setState(() => _hasChanges = false);
-                    Navigator.pop(context);
+                ? () async {
+                    String code = _selectedLanguage == 'English' ? 'en' : 'vi';
+                    await _languageManager.changeLanguage(code);
+                    if (mounted) {
+                      Navigator.pop(context);
+                    }
                   }
                 : null,
             child: Text(
-              'Save',
+              l10n.save,
               style: TextStyle(
                 color: _hasChanges ? Colors.pink : Colors.grey,
                 fontSize: 16,
@@ -58,20 +74,22 @@ class _LanguagePageState extends State<LanguagePage> {
           itemCount: _languages.length,
           itemBuilder: (context, index) {
             final language = _languages[index];
+            final isSelected = _selectedLanguage == language['name'];
+            
             return Container(
               color: Colors.white,
               child: ListTile(
                 title: Text(
-                  language,
+                  language['name']!,
                   style: const TextStyle(fontSize: 16),
                 ),
-                trailing: _selectedLanguage == language
+                trailing: isSelected
                     ? const Icon(Icons.check, color: Colors.black)
                     : null,
                 onTap: () {
-                  if (_selectedLanguage != language) {
+                  if (!isSelected) {
                     setState(() {
-                      _selectedLanguage = language;
+                      _selectedLanguage = language['name']!;
                       _hasChanges = true;
                     });
                   }

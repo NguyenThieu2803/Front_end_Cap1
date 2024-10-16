@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:furnitureapp/pages/HomePage.dart'; // Đảm bảo bạn import đúng file HomePage
+import 'package:furnitureapp/pages/HomePage.dart';
+import 'package:furnitureapp/pages/setting.dart';
 
-class UserProfileAppBar extends StatefulWidget {
+class UserProfileAppBar extends StatelessWidget {
   const UserProfileAppBar({super.key});
 
-  @override
-  _UserProfileAppBarState createState() => _UserProfileAppBarState();
-}
-
-class _UserProfileAppBarState extends State<UserProfileAppBar> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -18,7 +14,6 @@ class _UserProfileAppBarState extends State<UserProfileAppBar> {
         children: [
           InkWell(
             onTap: () {
-              // Chuyển về trang chủ
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => HomePage()),
