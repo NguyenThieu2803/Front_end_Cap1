@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http; //+
 import 'package:furnitureapp/config/config.dart';
+import 'package:furnitureapp/utils/share_service.dart';
+import 'package:furnitureapp/model/login_response_model.dart';
 
 class APIService {
   static var client = http.Client();
@@ -44,7 +46,7 @@ class APIService {
     );
     print("Raw API Response: ${repository.body}"); // Print the raw response
     if (repository.statusCode == 200) {
-      // await ShareService.setLoginDetails(loginResponseJson(repository.body));
+      await ShareService.setLoginDetails(loginResponseJson(repository.body));
       return true;
     }else {
       return false;

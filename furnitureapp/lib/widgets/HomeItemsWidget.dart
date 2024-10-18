@@ -1,12 +1,16 @@
-import 'package:flutter/material.dart';
-import 'package:furnitureapp/pages/product_page.dart';
 import '../model/product.dart';
+import 'package:flutter/material.dart';
 import '../services/data_service.dart';
+import 'package:furnitureapp/pages/product_page.dart';
 
-class HomeItemsWidget extends StatelessWidget {
+class HomeItemsWidget extends StatefulWidget {
   final String selectedCategory;
 
   HomeItemsWidget({super.key, required this.selectedCategory});
+
+  @override
+  _HomeItemsWidgetState createState() => _HomeItemsWidgetState();
+}
 
 class _HomeItemsWidgetState extends State<HomeItemsWidget> {
   late Future<List<Product>> futureProducts;
@@ -144,5 +148,4 @@ class ProductTile extends StatelessWidget {
       ),
     );
   }
-}
 }
