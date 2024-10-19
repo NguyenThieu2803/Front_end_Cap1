@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:furnitureapp/pages/product_page.dart';
 import '../model/product.dart';
+import 'package:flutter/material.dart';
 import '../services/data_service.dart';
+import 'package:furnitureapp/pages/product_page.dart';
 
 class HomeItemsWidget extends StatefulWidget {
   // Change from StatelessWidget to StatefulWidget
@@ -10,8 +10,7 @@ class HomeItemsWidget extends StatefulWidget {
   HomeItemsWidget({super.key, required this.selectedCategory});
 
   @override
-  _HomeItemsWidgetState createState() =>
-      _HomeItemsWidgetState(); // Add createState method
+  _HomeItemsWidgetState createState() => _HomeItemsWidgetState();
 }
 
 class _HomeItemsWidgetState extends State<HomeItemsWidget> {
