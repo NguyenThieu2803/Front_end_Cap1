@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:furnitureapp/translate/localization.dart';
 import 'package:furnitureapp/services/language_manager.dart';
+import 'package:furnitureapp/translate/localization.dart';
 
 class LanguagePage extends StatefulWidget {
   const LanguagePage({super.key});

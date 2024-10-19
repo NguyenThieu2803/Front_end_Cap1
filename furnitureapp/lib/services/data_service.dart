@@ -1,13 +1,22 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'package:furnitureapp/api/api.service.dart';
 import '../model/product.dart';
-
 
 class DataService {
   Future<List<Product>> loadProducts() async {
-    String jsonString = await rootBundle.loadString('assets/detail/product.json');
-    final List<dynamic> jsonResponse = json.decode(jsonString);
+    try {
+      // Gọi API để lấy dữ liệu sản phẩm
+      List<Map<String, dynamic>> productList = await APIService.fetchAllProducts();
+      print(productList);
 
-    return jsonResponse.map((productJson) => Product.fromJson(productJson)).toList();
+      // Chuyển đổi danh sách sản phẩm (List<Map>) thành List<Product>
+      return productList
+          .map((productJson) => Product.fromJson(productJson))
+          .toList();
+    } catch (error) {
+      print('Failed to load products: $error');
+      return [];
+    }
   }
 }
