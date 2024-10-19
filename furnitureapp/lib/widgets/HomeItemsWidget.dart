@@ -3,10 +3,16 @@ import 'package:furnitureapp/pages/product_page.dart';
 import '../model/product.dart';
 import '../services/data_service.dart';
 
-class HomeItemsWidget extends StatelessWidget {
+class HomeItemsWidget extends StatefulWidget {
+  // Change from StatelessWidget to StatefulWidget
   final String selectedCategory;
 
   HomeItemsWidget({super.key, required this.selectedCategory});
+
+  @override
+  _HomeItemsWidgetState createState() =>
+      _HomeItemsWidgetState(); // Add createState method
+}
 
 class _HomeItemsWidgetState extends State<HomeItemsWidget> {
   late Future<List<Product>> futureProducts;
@@ -74,10 +80,10 @@ class ProductTile extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  product.discount,
+                  "${product.discount}%",
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.white,
+                    color: const Color.fromARGB(255, 168, 149, 149),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -99,8 +105,10 @@ class ProductTile extends StatelessWidget {
             },
             child: Container(
               margin: EdgeInsets.all(5),
-              child: Image.asset(
-                product.image,
+              child: Image.network(
+                product.images?.isNotEmpty == true
+                    ? product.images!.first
+                    : 'https://example.com/default_image.png', // URL mặc định nếu không có hình ảnh
                 height: 110,
                 width: 110,
               ),
@@ -110,7 +118,7 @@ class ProductTile extends StatelessWidget {
             padding: EdgeInsets.only(bottom: 5),
             alignment: Alignment.centerLeft,
             child: Text(
-              product.name,
+              product.name ?? 'Unknown Product',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
@@ -126,7 +134,7 @@ class ProductTile extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "\$${product.price.toStringAsFixed(0)}",
+                  "${(product.price ?? 0).toStringAsFixed(0)}",
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -144,5 +152,4 @@ class ProductTile extends StatelessWidget {
       ),
     );
   }
-}
 }
