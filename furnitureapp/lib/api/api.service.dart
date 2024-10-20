@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http; //+
 import 'package:furnitureapp/config/config.dart';
+import 'package:furnitureapp/utils/share_service.dart';
+import 'package:furnitureapp/model/login_response_model.dart';
 
 class APIService {
   static var client = http.Client();
@@ -44,10 +46,79 @@ class APIService {
     );
     print("Raw API Response: ${repository.body}"); // Print the raw response
     if (repository.statusCode == 200) {
-      // await ShareService.setLoginDetails(loginResponseJson(repository.body));
+      await ShareService.setLoginDetails(loginResponseJson(repository.body));
       return true;
     }else {
       return false;
     }
   }
+
+  static Future<Map<String, dynamic>> getCart() async {
+    String? token = await ShareService.getToken();
+    if (token == null) {
+      throw Exception('User not logged in');
+    }else {
+      Map<String, String> requestHeaders = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      };
+      var url = Uri.http(Config.apiURL, Config.getCartAPI);
+      var repository = await client.get(
+        url,
+        headers: requestHeaders,
+      );
+      if(repository.statusCode == 200){
+        return jsonDecode(repository.body);
+      }else {
+        throw Exception('Failed to fetch cart');
+      }
+    }
+  }
+
+
+  
+  static Future<List<Map<String, dynamic>>> fetchAllProducts() async {
+    // Headers cho yêu cầu HTTP
+    Map<String, String> requestHeaders = {'Content-Type': 'application/json'};
+
+    // Tạo URL với các tham số cần thiết (nếu có)
+        var url = Uri.http(Config.apiURL, Config.listProductAPI);
+
+    // Gửi yêu cầu GET
+    var response = await http.get(url, headers: requestHeaders);
+
+    // Kiểm tra xem yêu cầu có thành công hay không (status code 200)
+    if (response.statusCode == 200) {
+      // Parse JSON từ body của response
+      var jsonResponse = jsonDecode(response.body);
+      List<dynamic> products = jsonResponse['products'];
+
+      // Chuyển đổi danh sách thành List<Map<String, dynamic>>
+      List<Map<String, dynamic>> productList = products.map((product) {
+        return {
+          'id': product['_id'],
+          'name': product['name'],
+          'description': product['description'],
+          'price': product['price'],
+          'stockQuantity': product['stockQuantity'],
+          'material': product['material'],
+          'color': product['color'],
+          'images': product['images'],
+          'discount': product['discount'] != 0 ? product['discount'].toString() : '',
+          'category': product['category'],
+          'brand': product['brand'],
+          'style': product['style'],
+          'assemblyRequired': product['assemblyRequired'],
+          'dimensions': product['dimensions'],
+          'weight': product['weight']
+        };
+      }).toList();
+
+      return productList;
+    } else {
+      // Nếu yêu cầu không thành công, ném ngoại lệ
+      throw Exception('Failed to fetch products');
+    }
+  }
 }
+
