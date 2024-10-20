@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:furnitureapp/pages/product_page.dart';
+import 'package:furnitureapp/pages/ProductPage.dart';
 import '../model/product.dart';
 import '../services/data_service.dart';
 
@@ -126,21 +126,47 @@ class ProductTile extends StatelessWidget {
           ),
           Padding(
             padding: EdgeInsets.only(top: 5),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "\$${product.price.toStringAsFixed(0)}",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2B2321),
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.star,
+                          color: Colors.amber,
+                          size: 16,
+                        ),
+                        SizedBox(width: 2),
+                        Text(
+                          product.rating.toStringAsFixed(1),
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                SizedBox(height: 2),
                 Text(
-                  "\$${product.price.toStringAsFixed(0)}",
+                  "${product.soldCount} sold",
                   style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF2B2321),
+                    fontSize: 13,
+                    color: Colors.grey[600],
                   ),
                 ),
-                Icon(
-                  Icons.shopping_cart_checkout,
-                  color: Color(0xFF2B2321),
-                )
               ],
             ),
           ),

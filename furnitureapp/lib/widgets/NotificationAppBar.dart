@@ -1,33 +1,38 @@
 import 'package:flutter/material.dart';
-import 'package:furnitureapp/pages/HomePage.dart';
+import 'package:furnitureapp/admin/HomePageAdmin.dart';
+import 'package:furnitureapp/pages/Homepage.dart';
 
-class NotificationAppBar extends StatefulWidget {
-  const NotificationAppBar({super.key});
+class NotificationAppBar extends StatelessWidget {
+  final bool isAdminPage; // Tham số cần thiết
 
-  @override
-  _NotificationAppBarState createState() => _NotificationAppBarState();
-}
+  const NotificationAppBar({super.key, required this.isAdminPage}); // Nhận biến này từ widget cha
 
-class _NotificationAppBarState extends State<NotificationAppBar> {
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.only(
-        top: 80, 
+        top: 80,
         bottom: 20,
       ),
       color: Colors.white,
       child: Row(
         children: [
-          // Back button with padding
           Padding(
             padding: const EdgeInsets.only(left: 15),
             child: GestureDetector(
               onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const HomePage()),
-                );
+                // Điều hướng về trang tương ứng
+                if (isAdminPage) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const HomePageAdmin()),
+                  );
+                } else {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const HomePage()),
+                  );
+                }
               },
               child: const Icon(
                 Icons.arrow_back,
@@ -36,7 +41,6 @@ class _NotificationAppBarState extends State<NotificationAppBar> {
               ),
             ),
           ),
-          // Expanded to push the title to the center
           Expanded(
             child: Center(
               child: Text(
@@ -49,8 +53,7 @@ class _NotificationAppBarState extends State<NotificationAppBar> {
               ),
             ),
           ),
-          // Empty padding to balance the back button
-          const SizedBox(width: 46), // 30 (icon size) + 16 (left padding)
+          const SizedBox(width: 46),
         ],
       ),
     );

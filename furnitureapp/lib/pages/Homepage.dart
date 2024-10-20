@@ -18,8 +18,8 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   String _selectedCategory = 'All Product';
 
+  // Không nên bao gồm HomePage trong danh sách các trang
   final List<Widget> _pages = [
-    HomePage(),
     CartPage(),
     FavoritePage(),
     UserProfilePage(),
@@ -45,7 +45,7 @@ class _HomePageState extends State<HomePage> {
               selectedCategory: _selectedCategory,
               onCategorySelected: _onCategorySelected,
             )
-          : _pages[_selectedIndex],
+          : _pages[_selectedIndex - 1], // Giảm chỉ số để truy cập đúng trang
       bottomNavigationBar: HomeNavigationBar(
         selectedIndex: _selectedIndex,
         onTap: _onItemTapped,

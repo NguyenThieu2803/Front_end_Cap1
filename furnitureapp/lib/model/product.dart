@@ -6,6 +6,8 @@ class Product {
   String size;
   String material;
   String features;
+  double rating;     // Thêm trường rating
+  int soldCount;     // Thêm trường soldCount
 
   Product({
     required this.name,
@@ -15,6 +17,8 @@ class Product {
     required this.size,
     required this.material,
     required this.features,
+    this.rating = 0.0,    // Giá trị mặc định
+    this.soldCount = 0,   // Giá trị mặc định
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -26,6 +30,8 @@ class Product {
       size: json['size'],
       material: json['material'],
       features: json['features'],
+      rating: (json['rating'] ?? 0.0).toDouble(),  // Xử lý dữ liệu từ JSON
+      soldCount: json['soldCount'] ?? 0,           // Xử lý dữ liệu từ JSON
     );
   }
 }
