@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http; //+
 import 'package:furnitureapp/config/config.dart';
 import 'package:furnitureapp/utils/share_service.dart';
@@ -7,7 +8,7 @@ import 'package:furnitureapp/model/login_response_model.dart';
 class APIService {
   static var client = http.Client();
 
-  // register post request 
+  // register post request
   static Future<bool> register(String username, String password, String email,
       String phoneNumber, String address) async {
     Map<String, String> requestHeaders = {'Content-type': 'application/json'};
@@ -26,11 +27,11 @@ class APIService {
     );
     if (repository.statusCode == 201) {
       return true;
-    }else {
+    } else {
       return false;
     }
   }
- 
+
   // login post request
   static Future<bool> login(String username, String passwords) async {
     Map<String, String> requestHeaders = {'Content-type': 'application/json'};
@@ -48,41 +49,96 @@ class APIService {
     if (repository.statusCode == 200) {
       await ShareService.setLoginDetails(loginResponseJson(repository.body));
       return true;
-    }else {
+    } else {
       return false;
     }
   }
 
+// get cart
   static Future<Map<String, dynamic>> getCart() async {
-    String? token = await ShareService.getToken();
-    if (token == null) {
-      throw Exception('User not logged in');
-    }else {
-      Map<String, String> requestHeaders = {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      };
-      var url = Uri.http(Config.apiURL, Config.getCartAPI);
-      var repository = await client.get(
-        url,
-        headers: requestHeaders,
-      );
-      if(repository.statusCode == 200){
-        return jsonDecode(repository.body);
-      }else {
-        throw Exception('Failed to fetch cart');
+    try {
+      String? token = await ShareService.getToken();
+      print("Token: $token");
+      if (token == null) {
+        throw Exception('User not logged in');
+      } else {
+        Map<String, String> requestHeaders = {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        };
+        var url = Uri.http(Config.apiURL, Config.CartAPI);
+        var repository = await client.get(
+          url,
+          headers: requestHeaders,
+        );
+        print("Cart API Response Status Code: ${repository.statusCode}");
+        print("Cart API Response Body: ${repository.body}");
+
+        if (repository.statusCode == 200) {
+          var body = repository.body;
+          if (body.isNotEmpty) {
+            // Kiểm tra nếu body là chuỗi JSON hợp lệ
+            try {
+              // Nếu phản hồi là chuỗi JSON hợp lệ, parse nó thành Map
+              return jsonDecode(body) as Map<String, dynamic>;
+            } catch (e) {
+              // Nếu không thể parse, xử lý ngoại lệ
+              throw FormatException("Invalid JSON format in response: $e");
+            }
+          } else {
+            throw Exception('Empty response body');
+          }
+        } else {
+          throw Exception(
+              'Failed to fetch cart: ${repository.statusCode} - ${repository.body}');
+        }
       }
+    } catch (e) {
+      print("Error in getCart: $e");
+      rethrow;
     }
   }
 
+// add cart
+  static Future<bool> addToCart(String productId, int quantity) async {
+    String? token = await ShareService.getToken();
+    if (token == null) {
+      throw Exception('User not logged in');
+    }
+    Map<String, String> requestHeaders = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
 
-  
+    var url = Uri.http(Config.apiURL, Config.CartAPI); // Ensure the correct API endpoint
+    var repository = await client.post(
+      url,
+      headers: requestHeaders,
+      body: jsonEncode({
+        'productId': productId,
+        'quantity': quantity,
+      }),
+    );
+    print("Cart API Response Status Code: ${repository.statusCode}");
+    print("Cart API Response Body: ${repository.body}");
+    
+    if (repository.statusCode == 200) {
+      return true;
+    } else if (repository.statusCode == 400) {
+      // Navigate to the login page if the status code is 400
+      // _navigatorKey.currentState?.pushNamedAndRemoveUntil('/login', (route) => false);
+      return false;
+    } else {
+      throw Exception('Failed to add to cart: ${repository.statusCode} - ${repository.body}');
+    }
+  }
+
   static Future<List<Map<String, dynamic>>> fetchAllProducts() async {
     // Headers cho yêu cầu HTTP
     Map<String, String> requestHeaders = {'Content-Type': 'application/json'};
 
     // Tạo URL với các tham số cần thiết (nếu có)
-        var url = Uri.http(Config.apiURL, Config.listProductAPI);
+    var url = Uri.http(Config.apiURL, Config.listProductAPI);
 
     // Gửi yêu cầu GET
     var response = await http.get(url, headers: requestHeaders);
@@ -104,7 +160,8 @@ class APIService {
           'material': product['material'],
           'color': product['color'],
           'images': product['images'],
-          'discount': product['discount'] != 0 ? product['discount'].toString() : '',
+          'discount':
+              product['discount'] != 0 ? product['discount'].toString() : '',
           'category': product['category'],
           'brand': product['brand'],
           'style': product['style'],
@@ -121,4 +178,3 @@ class APIService {
     }
   }
 }
-

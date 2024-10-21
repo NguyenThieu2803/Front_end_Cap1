@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:furnitureapp/pages/CheckOutPage.dart';
 
-class CartBottomNavBar extends StatefulWidget {
-  const CartBottomNavBar({super.key});
+class CartBottomNavBar extends StatelessWidget {
+  final double totalAmount;  // Nhận tổng giá từ CartPage
 
-  @override
-  _CartBottomNavBarState createState() => _CartBottomNavBarState();
-}
+  const CartBottomNavBar({super.key, required this.totalAmount});
 
-class _CartBottomNavBarState extends State<CartBottomNavBar> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -42,7 +39,7 @@ class _CartBottomNavBarState extends State<CartBottomNavBar> {
                 ),
               ),
               Text(
-                '500\$',
+                ' \$${totalAmount.toStringAsFixed(2)}',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -57,7 +54,6 @@ class _CartBottomNavBarState extends State<CartBottomNavBar> {
             height: 50,
             child: ElevatedButton(
               onPressed: () {
-                // Chuyển đến trang Check Out
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => CheckOutPage()),
