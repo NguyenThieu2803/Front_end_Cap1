@@ -133,27 +133,63 @@ class Product {
   set rating(double? rating) => _rating = rating;
 
   Product.fromJson(Map<String, dynamic> json) {
-    _name = json['name'];
-    _description = json['description'];
-    _shortDescription = json['shortDescription'];
-    _price = json['price'];
-    _dimensions = json['dimensions'] != null
-        ? new Dimensions.fromJson(json['dimensions'])
-        : null;
-    _stockQuantity = json['stockQuantity'];
-    _material = json['material'];
-    _color = json['color'] != null ? new ProductColor.fromJson(json['color']) : null;
-    _images = json['images'].cast<String>();
-    _category = json['category'];
-    _discount = json['discount'];
-    _promotionId = json['promotionId'];
-    _brand = json['brand'];
-    _style = json['style'];
-    _assemblyRequired = json['assemblyRequired'];
-    _weight = json['weight'];
-    _sold = json['sold'];
-    _rating = json['rating'];
-  }
+  _name = json['name'];
+  _description = json['description'];
+  _shortDescription = json['shortDescription'];
+  
+  // Xử lý price: chuyển đổi từ String hoặc int sang double
+  _price = (json['price'] is String) 
+      ? double.tryParse(json['price']) 
+      : (json['price'] is int) 
+          ? (json['price'] as int).toDouble() 
+          : json['price']?.toDouble();  // Đảm bảo chuyển đổi đúng kiểu.
+
+  _dimensions = json['dimensions'] != null
+      ? Dimensions.fromJson(json['dimensions'])
+      : null;
+
+  // Xử lý stockQuantity: chuyển đổi từ String sang int nếu cần
+  _stockQuantity = (json['stockQuantity'] is String) 
+      ? int.tryParse(json['stockQuantity']) 
+      : json['stockQuantity'];
+
+  _material = json['material'];
+
+  // Xử lý color
+  _color = json['color'] != null ? ProductColor.fromJson(json['color']) : null;
+  
+  // Xử lý images
+  _images = json['images'] != null ? List<String>.from(json['images']) : [];
+  
+  _category = json['category'];
+
+  // Xử lý discount
+  _discount = (json['discount'] is String) 
+      ? int.tryParse(json['discount']) 
+      : json['discount'];
+
+  _promotionId = json['promotionId'];
+  _brand = json['brand'];
+  _style = json['style'];
+  _assemblyRequired = json['assemblyRequired'];
+
+  // Xử lý weight
+  _weight = (json['weight'] is String) 
+      ? int.tryParse(json['weight']) 
+      : json['weight'];
+
+  // Xử lý sold
+  _sold = (json['sold'] is String) 
+      ? int.tryParse(json['sold']) 
+      : json['sold'];
+
+  // Xử lý rating
+  _rating = (json['rating'] is String) 
+      ? double.tryParse(json['rating']) 
+      : (json['rating'] is int) 
+          ? (json['rating'] as int).toDouble() 
+          : json['rating']?.toDouble();  // Đảm bảo chuyển đổi đúng kiểu.
+}
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();

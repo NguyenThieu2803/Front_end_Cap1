@@ -151,7 +151,7 @@ class ProductTile extends StatelessWidget {
                         ),
                         SizedBox(width: 2),
                         Text(
-                          product.rating?.toStringAsFixed(1) ?? '0.0', // Hiển thị rating
+                          "${product.rating?.toStringAsFixed(1) ?? '0.0'}", // Hiển thị rating
                           style: TextStyle(
                             fontSize: 15,
                             color: Colors.grey[600],
