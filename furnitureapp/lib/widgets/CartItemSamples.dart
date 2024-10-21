@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:furnitureapp/api/api.service.dart';
 import 'package:furnitureapp/model/Cart_User_Model.dart';
 import 'package:furnitureapp/services/data_service.dart';
 
@@ -16,6 +17,7 @@ class _CartItemSamplesState extends State<CartItemSamples> {
   Cart? cart;
   bool isLoading = true;
   Set<String> selectedProductIds = {}; // To track selected checkboxes
+  bool isAllSelected = false; // Track the state of the "Select All" checkbox
 
   @override
   void initState() {
@@ -49,7 +51,39 @@ class _CartItemSamplesState extends State<CartItemSamples> {
     }
 
     return Column(
-      children: cart!.items!.map((item) => buildCartItem(item)).toList(),
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Checkbox(
+              value: isAllSelected,
+              activeColor: Color(0xFF2B2321),
+              onChanged: (bool? value) {
+                setState(() {
+                  isAllSelected = value ?? false;
+                  if (isAllSelected) {
+                    selectedProductIds = cart!.items!.map((item) => item.id!).toSet();
+                  } else {
+                    selectedProductIds.clear();
+                  }
+                  _updateTotalPrice();
+                });
+              },
+            ),
+            Text(
+              "Select All",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF2B2321),
+              ),
+            ),
+          ],
+        ),
+        Column(
+          children: cart!.items!.map((item) => buildCartItem(item)).toList(),
+        ),
+      ],
     );
   }
 
@@ -127,11 +161,14 @@ class _CartItemSamplesState extends State<CartItemSamples> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     InkWell(
-                      onTap: () {
-                        setState(() {
-                          cart!.items!.remove(item);
-                        });
-                        _updateTotalPrice();
+                      onTap: () async {
+                        bool success = await APIService.deleteCartItem(item.product?.id ?? '');
+                        if (success) {
+                          setState(() {
+                            cart!.items!.remove(item);
+                          });
+                          _updateTotalPrice();
+                        }
                       },
                       child: Icon(
                         Icons.delete,
@@ -141,11 +178,15 @@ class _CartItemSamplesState extends State<CartItemSamples> {
                     Row(
                       children: [
                         InkWell(
-                          onTap: () {
-                            setState(() {
-                              item.quantity = (item.quantity ?? 0) + 1;
-                            });
-                            _updateTotalPrice();
+                          onTap: () async {
+                            int newQuantity = (item.quantity ?? 0) + 1;
+                            bool success = await APIService.updateCartItem(item.product?.id ?? '', newQuantity);
+                            if (success) {
+                              setState(() {
+                                item.quantity = newQuantity;
+                              });
+                              _updateTotalPrice();
+                            }
                           },
                           child: Container(
                             padding: EdgeInsets.all(4),
@@ -178,13 +219,17 @@ class _CartItemSamplesState extends State<CartItemSamples> {
                           ),
                         ),
                         InkWell(
-                          onTap: () {
-                            setState(() {
-                              if ((item.quantity ?? 0) > 1) {
-                                item.quantity = (item.quantity ?? 0) - 1;
+                          onTap: () async {
+                            if ((item.quantity ?? 0) > 1) {
+                              int newQuantity = (item.quantity ?? 0) - 1;
+                              bool success = await APIService.updateCartItem(item.product?.id ?? '', newQuantity);
+                              if (success) {
+                                setState(() {
+                                  item.quantity = newQuantity;
+                                });
+                                _updateTotalPrice();
                               }
-                            });
-                            _updateTotalPrice();
+                            }
                           },
                           child: Container(
                             padding: EdgeInsets.all(4),

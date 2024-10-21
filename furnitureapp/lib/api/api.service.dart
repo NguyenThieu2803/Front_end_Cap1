@@ -177,5 +177,64 @@ class APIService {
     throw Exception('Failed to fetch products');
   }
 }
+
+// Update cart item
+static Future<bool> updateCartItem(String productId, int quantity) async {
+  String? token = await ShareService.getToken();
+  if (token == null) {
+    throw Exception('User not logged in');
+  }
+  Map<String, String> requestHeaders = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer $token',
+  };
+
+  var url = Uri.http(Config.apiURL, Config.updateCartAPI); // Ensure the correct API endpoint
+  var repository = await client.put(
+    url,
+    headers: requestHeaders,
+    body: jsonEncode({
+      'productId': productId,
+      'quantity': quantity,
+    }),
+  );
+  print("Update Cart API Response Status Code: ${repository.statusCode}");
+  print("Update Cart API Response Body: ${repository.body}");
+
+  if (repository.statusCode == 200) {
+    return true;
+  } else {
+    throw Exception('Failed to update cart item: ${repository.statusCode} - ${repository.body}');
+  }
 }
 
+// Delete cart item
+static Future<bool> deleteCartItem(String productId) async {
+  String? token = await ShareService.getToken();
+  if (token == null) {
+    throw Exception('User not logged in');
+  }
+  Map<String, String> requestHeaders = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer $token',
+  };
+
+  var url = Uri.http(Config.apiURL, Config.deleteCartAPI); // Ensure the correct API endpoint
+  var repository = await client.delete(
+    url,
+    headers: requestHeaders,
+    body: jsonEncode({
+      'productId': productId,
+    }),
+  );
+  print("Delete Cart API Response Status Code: ${repository.statusCode}");
+  print("Delete Cart API Response Body: ${repository.body}");
+
+  if (repository.statusCode == 200) {
+    return true;
+  } else {
+    throw Exception('Failed to delete cart item: ${repository.statusCode} - ${repository.body}');
+  }
+}
+
+}
