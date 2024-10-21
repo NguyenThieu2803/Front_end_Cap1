@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:furnitureapp/widgets/AdminAppBar.dart';
-import 'package:furnitureapp/widgets/AdminItemSamples.dart';
+import 'package:furnitureapp/widgets/FavoriteItemSamples.dart';
+import 'package:furnitureapp/widgets/InventoryManagementAppBar.dart';
 
-class AdminPage extends StatefulWidget {
-  const AdminPage({super.key});
+
+class InventoryManagement extends StatefulWidget {
+  const InventoryManagement({super.key});
 
   @override
-  _AdminPageState createState() => _AdminPageState();
-
-  static of(BuildContext context) {}
+  _InventoryManagementState createState() => _InventoryManagementState();
 }
 
-class _AdminPageState extends State<AdminPage> {
+class _InventoryManagementState extends State<InventoryManagement> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,7 +18,7 @@ class _AdminPageState extends State<AdminPage> {
       body: SafeArea(
         child: Column(
           children: [
-            const AdminAppBar(), // AppBar sẽ luôn ở trên cùng
+            InventoryManagementAppBar(), // Đảm bảo FavoriteAppBar không null
             Expanded(
               child: Container(
                 decoration: const BoxDecoration(
@@ -31,9 +30,9 @@ class _AdminPageState extends State<AdminPage> {
                     topRight: Radius.circular(30),
                   ),
                   child: ListView(
-                    padding: const EdgeInsets.only(top: 10),
-                    children: const [
-                      AdminItemSamples(),
+                    padding: EdgeInsets.only(top: 10),
+                    children: [
+                      FavoriteItemSamples(),
                       // Thêm SizedBox để tạo khoảng trống ở cuối danh sách
                       SizedBox(height: 20),
                     ],

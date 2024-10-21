@@ -27,10 +27,7 @@ dependencies:
   shared_preferences: ^2.0.15
 
 #sdk unity
-<<<<<<< HEAD
   # flutter_unity_widget: ^2022.2.1
-=======
->>>>>>> cc5590e2254b05421a37b5568f0b350cec073369
 
   sqflite_common_ffi: ^2.3.3+1
 

@@ -120,6 +120,10 @@ class Product {
     _weight = json['weight'];
   }
 
+  get sold => null;
+
+  get rating => null;
+
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     if (_iId != null) {

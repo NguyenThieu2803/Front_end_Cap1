@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:furnitureapp/admin/AdminSetting.dart';
 import 'package:furnitureapp/admin/HomePageAdmin.dart';
 import 'package:furnitureapp/pages/HomePage.dart';
 
@@ -42,8 +43,10 @@ class AdminAppBar extends StatelessWidget {
           const Spacer(),
           InkWell(
             onTap: () {
-              // Gọi hàm mở cài đặt từ setting.dart
-              // openSettings(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AdminSetting()), // Đảm bảo bạn có class SettingsPage trong settings.dart
+              );
             },
             child: const Icon(
               Icons.settings,

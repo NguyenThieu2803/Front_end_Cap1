@@ -1,18 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:furnitureapp/pages/ProductPage.dart';
 import '../model/product.dart';
-import 'package:flutter/material.dart';
 import '../services/data_service.dart';
-
 
 class HomeItemsWidget extends StatefulWidget {
   final String selectedCategory;
 
   const HomeItemsWidget({super.key, required this.selectedCategory});
-
-  @override
-  _HomeItemsWidgetState createState() => _HomeItemsWidgetState();
-}
 
   @override
   _HomeItemsWidgetState createState() => _HomeItemsWidgetState();
@@ -24,7 +18,7 @@ class _HomeItemsWidgetState extends State<HomeItemsWidget> {
   @override
   void initState() {
     super.initState();
-    futureProducts = DataService().loadProducts();
+    futureProducts = DataService().loadProducts(category: widget.selectedCategory);
   }
 
   @override
@@ -84,7 +78,7 @@ class ProductTile extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  "${product.discount}%",
+                  "${product.discount ?? 0}%", // Thêm giá trị mặc định cho discount nếu null
                   style: TextStyle(
                     fontSize: 14,
                     color: const Color.fromARGB(255, 168, 149, 149),
@@ -122,7 +116,7 @@ class ProductTile extends StatelessWidget {
             padding: EdgeInsets.only(bottom: 5),
             alignment: Alignment.centerLeft,
             child: Text(
-              product.name ?? 'Unknown Product',
+              product.name ?? 'Unknown Product', // Thêm giá trị mặc định cho name nếu null
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
@@ -141,7 +135,7 @@ class ProductTile extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "\$${product.price.toStringAsFixed(0)}",
+                      "\$${product.price?.toStringAsFixed(0) ?? 'N/A'}", // Thêm giá trị mặc định cho price nếu null
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -157,7 +151,7 @@ class ProductTile extends StatelessWidget {
                         ),
                         SizedBox(width: 2),
                         Text(
-                          product.rating.toStringAsFixed(1),
+                          product.rating?.toStringAsFixed(1) ?? '0.0', // Hiển thị rating
                           style: TextStyle(
                             fontSize: 15,
                             color: Colors.grey[600],
@@ -169,7 +163,7 @@ class ProductTile extends StatelessWidget {
                 ),
                 SizedBox(height: 2),
                 Text(
-                  "${product.soldCount} sold",
+                  "${product.sold ?? 0} sold", // Thêm giá trị mặc định cho sold nếu null
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.grey[600],
