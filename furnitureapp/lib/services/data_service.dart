@@ -1,6 +1,5 @@
 import 'dart:convert';
 import '../model/product.dart';
-import 'package:flutter/services.dart';
 import 'package:furnitureapp/api/api.service.dart';
 import 'package:furnitureapp/model/Cart_User_Model.dart';
 

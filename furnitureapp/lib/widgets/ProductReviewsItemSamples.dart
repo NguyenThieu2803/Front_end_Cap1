@@ -1,10 +1,10 @@
-import 'dart:convert'; // Thêm import này
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:convert'; // Thêm import này
 import 'package:furnitureapp/model/Review.dart';
 
 class ProductReviewsItemSamples extends StatelessWidget {
-  const ProductReviewsItemSamples({Key? key}) : super(key: key);
+  const ProductReviewsItemSamples({super.key});
 
   // Hàm tải dữ liệu từ file JSON
   static Future<List<Review>> loadReviews() async {

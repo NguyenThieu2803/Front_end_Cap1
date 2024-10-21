@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:furnitureapp/admin/AdminPage.dart';
 import 'package:furnitureapp/admin/AdminSetting.dart';
 
 class UserManagementAppBar extends StatefulWidget {

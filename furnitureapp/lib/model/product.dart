@@ -7,7 +7,7 @@ class Product {
   Dimensions? dimensions;
   int? stockQuantity;
   String? material;
-  String? color;
+  Map<String, String>? color;
   List<String>? images;
   String? category;
   int? discount;
@@ -16,6 +16,8 @@ class Product {
   String? style;
   bool? assemblyRequired;
   int? weight;
+  int? sold;
+  double? rating;
 
   Product({
     this.id,
@@ -29,17 +31,18 @@ class Product {
     this.color,
     this.images,
     this.category,
-    this.discount = 0,  // Mặc định discount là 0 nếu không có giá trị
+    this.discount = 0,
     this.promotionId,
     this.brand,
     this.style,
     this.assemblyRequired,
     this.weight,
+    this.sold,
+    this.rating,
   });
 
-  // Phân tích JSON để tạo Product
   Product.fromJson(Map<String, dynamic> json) {
-    id = json['_id'] ?? json['id'];  // Linh hoạt với cả _id và id
+    id = json['_id']?['\$oid'] ?? json['id'];
     name = json['name'];
     description = json['description'];
     shortDescription = json['shortDescription'];
@@ -47,27 +50,27 @@ class Product {
     dimensions = json['dimensions'] != null
         ? Dimensions.fromJson(json['dimensions'])
         : null;
-    stockQuantity = json['stockQuantity'];
+    stockQuantity = json['stockQuantity'] is String
+        ? int.tryParse(json['stockQuantity'])
+        : json['stockQuantity'];
     material = json['material'];
-    color = json['color'];
+    color = json['color'] != null ? Map<String, String>.from(json['color']) : null;
     images = json['images'] != null ? List<String>.from(json['images']) : [];
     category = json['category'];
-    
-    // Xử lý discount, đảm bảo kiểu int
-    if (json['discount'] is String) {
-      discount = int.tryParse(json['discount']) ?? 0;
-    } else {
-      discount = json['discount'] ?? 0;
-    }
-    
+    discount = json['discount'] ?? 0;
     promotionId = json['promotionId'];
     brand = json['brand'];
     style = json['style'];
     assemblyRequired = json['assemblyRequired'];
-    weight = json['weight'];
+    weight = json['weight'] is String
+        ? int.tryParse(json['weight'])
+        : json['weight'];
+    sold = json['sold'] is String
+        ? int.tryParse(json['sold'])
+        : json['sold'];
+    rating = json['rating']?.toDouble();
   }
 
-  // Chuyển Product thành JSON
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['id'] = id;
@@ -89,6 +92,8 @@ class Product {
     data['style'] = style;
     data['assemblyRequired'] = assemblyRequired;
     data['weight'] = weight;
+    data['sold'] = sold;
+    data['rating'] = rating;
     return data;
   }
 }
@@ -101,7 +106,6 @@ class Dimensions {
 
   Dimensions({this.height, this.width, this.depth, this.unit});
 
-  // Phân tích JSON để tạo Dimensions
   Dimensions.fromJson(Map<String, dynamic> json) {
     height = json['height'];
     width = json['width'];
@@ -109,44 +113,12 @@ class Dimensions {
     unit = json['unit'];
   }
 
-  // Chuyển Dimensions thành JSON
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['height'] = height;
     data['width'] = width;
     data['depth'] = depth;
     data['unit'] = unit;
-    return data;
-  }
-}
-
-class ProductColor {
-  String? _primary;
-  String? _secondary;
-
-  ProductColor({String? primary, String? secondary}) {
-    if (primary != null) {
-      this._primary = primary;
-    }
-    if (secondary != null) {
-      this._secondary = secondary;
-    }
-  }
-
-  String? get primary => _primary;
-  set primary(String? primary) => _primary = primary;
-  String? get secondary => _secondary;
-  set secondary(String? secondary) => _secondary = secondary;
-
-  ProductColor.fromJson(Map<String, dynamic> json) {
-    _primary = json['primary'];
-    _secondary = json['secondary'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['primary'] = this._primary;
-    data['secondary'] = this._secondary;
     return data;
   }
 }
