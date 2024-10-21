@@ -133,47 +133,49 @@ class APIService {
   }
 
   static Future<List<Map<String, dynamic>>> fetchAllProducts() async {
-    // Headers cho yêu cầu HTTP
-    Map<String, String> requestHeaders = {'Content-Type': 'application/json'};
+  // Headers cho yêu cầu HTTP
+  Map<String, String> requestHeaders = {'Content-Type': 'application/json'};
 
-    // Tạo URL với các tham số cần thiết (nếu có)
-    var url = Uri.http(Config.apiURL, Config.listProductAPI);
+  // Tạo URL với các tham số cần thiết (nếu có)
+  var url = Uri.http(Config.apiURL, Config.listProductAPI);
 
-    // Gửi yêu cầu GET
-    var response = await http.get(url, headers: requestHeaders);
+  // Gửi yêu cầu GET
+  var response = await http.get(url, headers: requestHeaders);
 
-    // Kiểm tra xem yêu cầu có thành công hay không (status code 200)
-    if (response.statusCode == 200) {
-      // Parse JSON từ body của response
-      var jsonResponse = jsonDecode(response.body);
-      List<dynamic> products = jsonResponse['products'];
+  // Kiểm tra xem yêu cầu có thành công hay không (status code 200)
+  if (response.statusCode == 200) {
+    // Parse JSON từ body của response
+    var jsonResponse = jsonDecode(response.body);
+    List<dynamic> products = jsonResponse['products'];
 
-      // Chuyển đổi danh sách thành List<Map<String, dynamic>>
-      List<Map<String, dynamic>> productList = products.map((product) {
-        return {
-          'id': product['_id'],
-          'name': product['name'],
-          'description': product['description'],
-          'price': product['price'],
-          'stockQuantity': product['stockQuantity'],
-          'material': product['material'],
-          'color': product['color'],
-          'images': product['images'],
-          'discount':
-              product['discount'] != 0 ? product['discount'].toString() : '',
-          'category': product['category'],
-          'brand': product['brand'],
-          'style': product['style'],
-          'assemblyRequired': product['assemblyRequired'],
-          'dimensions': product['dimensions'],
-          'weight': product['weight']
-        };
-      }).toList();
+    // Chuyển đổi danh sách thành List<Map<String, dynamic>>
+    List<Map<String, dynamic>> productList = products.map((product) {
+      return {
+        'id': product['_id'],
+        'name': product['name'],
+        'description': product['description'],
+        'price': product['price'],
+        'stockQuantity': product['stockQuantity'],
+        'material': product['material'],
+        'color': product['color'],
+        'images': product['images'],
+        'discount': product['discount'] != 0 ? product['discount'].toString() : '',
+        'category': product['category'],
+        'brand': product['brand'],
+        'style': product['style'],
+        'assemblyRequired': product['assemblyRequired'],
+        'dimensions': product['dimensions'],
+        'weight': product['weight'],
+        'sold': product['sold'], // Thêm trường sold
+        'rating': product['rating'], // Thêm trường rating
+      };
+    }).toList();
 
-      return productList;
-    } else {
-      // Nếu yêu cầu không thành công, ném ngoại lệ
-      throw Exception('Failed to fetch products');
-    }
+    return productList;
+  } else {
+    // Nếu yêu cầu không thành công, ném ngoại lệ
+    throw Exception('Failed to fetch products');
   }
 }
+}
+
