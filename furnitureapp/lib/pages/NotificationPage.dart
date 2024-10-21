@@ -12,12 +12,15 @@ class NotificationPage extends StatefulWidget {
 class _NotificationPageState extends State<NotificationPage> {
   @override
   Widget build(BuildContext context) {
+    // Xác định xem đây có phải là trang Admin hay không
+    bool isAdminPage = true; // Thay đổi giá trị này nếu trang này là của Admin
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
         children: [
           // AppBar sẽ luôn ở trên cùng và cố định.
-          NotificationAppBar(),
+          NotificationAppBar(isAdminPage: isAdminPage), // Truyền tham số isAdminPage
 
           // Expanded để nội dung thông báo chiếm hết phần còn lại của màn hình.
           Expanded(

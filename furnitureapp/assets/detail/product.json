@@ -6,7 +6,9 @@
         "discount": "-50%",
         "size": "120cm x 60cm x 75cm",
         "material": "Wood & Metal",
-        "features": "Adjustable height, Built-in storage"
+        "features": "Adjustable height, Built-in storage",
+        "rating": 4.5,
+        "soldCount": 1650
     },
     {
         "name": "Office Chair A12",
@@ -15,7 +17,9 @@
         "discount": "-20%",
         "size": "45cm - 55cm (height adjustable)",
         "material": "Leather & Foam",
-        "features": "Reclining, Swivel base, Lumbar support"
+        "features": "Reclining, Swivel base, Lumbar support",
+        "rating": 5.0,
+        "soldCount": 650
     },
     {
         "name": "Bookshelf X34",
@@ -24,7 +28,9 @@
         "discount": "-30%",
         "size": "180cm x 60cm x 30cm",
         "material": "Pine Wood",
-        "features": "6 Shelves, Easy assembly"
+        "features": "6 Shelves, Easy assembly",
+        "rating": 4.5,
+        "soldCount": 150
     },
     {
         "name": "Ghế Công",

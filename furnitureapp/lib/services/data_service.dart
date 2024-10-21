@@ -5,7 +5,7 @@ import 'package:furnitureapp/api/api.service.dart';
 import 'package:furnitureapp/model/Cart_User_Model.dart';
 
 class DataService {
-  Future<List<Product>> loadProducts() async {
+  Future<List<Product>> loadProducts({required String category}) async {
     try {
       // Gọi API để lấy dữ liệu sản phẩm
       List<Map<String, dynamic>> productList = await APIService.fetchAllProducts();

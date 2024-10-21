@@ -119,3 +119,34 @@ class Dimensions {
     return data;
   }
 }
+
+class ProductColor {
+  String? _primary;
+  String? _secondary;
+
+  ProductColor({String? primary, String? secondary}) {
+    if (primary != null) {
+      this._primary = primary;
+    }
+    if (secondary != null) {
+      this._secondary = secondary;
+    }
+  }
+
+  String? get primary => _primary;
+  set primary(String? primary) => _primary = primary;
+  String? get secondary => _secondary;
+  set secondary(String? secondary) => _secondary = secondary;
+
+  ProductColor.fromJson(Map<String, dynamic> json) {
+    _primary = json['primary'];
+    _secondary = json['secondary'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['primary'] = this._primary;
+    data['secondary'] = this._secondary;
+    return data;
+  }
+}
