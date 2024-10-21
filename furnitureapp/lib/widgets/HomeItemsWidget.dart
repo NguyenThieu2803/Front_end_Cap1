@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:furnitureapp/pages/ProductPage.dart';
 import '../model/product.dart';
+import 'package:flutter/material.dart';
 import '../services/data_service.dart';
+import 'package:furnitureapp/pages/ProductPage.dart';
 
 class HomeItemsWidget extends StatefulWidget {
   final String selectedCategory;
@@ -163,7 +163,8 @@ class ProductTile extends StatelessWidget {
                 ),
                 SizedBox(height: 2),
                 Text(
-                  "${product.sold ?? 0} sold", // Thêm giá trị mặc định cho sold nếu null
+                  // "${product.sold ?? 0} sold", // Thêm giá trị mặc định cho sold nếu null
+                  "10 sold",
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.grey[600],
