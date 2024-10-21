@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class UserDetailsView extends StatelessWidget {
   final Map<String, String> user;
 
-  const UserDetailsView({Key? key, required this.user}) : super(key: key);
+  const UserDetailsView({super.key, required this.user});
 
   @override
   Widget build(BuildContext context) {

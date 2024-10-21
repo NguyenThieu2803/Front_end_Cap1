@@ -1,10 +1,15 @@
+import 'package:furnitureapp/admin/HomePageAdmin.dart';
+import 'package:furnitureapp/pages/ProductPage.dart';
+import 'package:furnitureapp/widgets/CartItemSamples.dart';
+import 'pages/Homepage.dart';
+import 'pages/LoginPage.dart';
+import 'package:flutter/material.dart';
 import 'dart:io';
 import 'pages/Homepage.dart';
 import 'pages/LoginPage.dart';
 import 'package:flutter/material.dart';
 import 'package:furnitureapp/pages/sign_up.dart';
 import 'package:furnitureapp/pages/setting.dart';
-import 'package:furnitureapp/pages/product_page.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart'; 
 import 'package:furnitureapp/translate/localization.dart';
 import 'package:furnitureapp/pages/NotificationPage.dart';
@@ -52,80 +57,15 @@ class MyApp extends StatelessWidget {
       
       // Định nghĩa các routes cho ứng dụng
       routes: {
-        "/": (context) => HomePage(), // Trang khởi đầu
+        "/": (context) => HomePageAdmin(), // Trang khởi đầu
         "/login": (context) => LoginPage(), // Trang login
         "/main": (context) => HomeMainNavigationBar(), // Trang chính với bottom navigation
         "/product": (context) => ProductPage(product: Product), // Trang sản phẩm
         "/notifications": (context) => NotificationPage(),
         "/register": (context) => SignUp()
       },
-      initialRoute: "/register", // Định nghĩa trang bắt đầu khi ứng dụng chạy
+      initialRoute: "/", // Định nghĩa trang bắt đầu khi ứng dụng chạy
     );
   }
 }
 
-// import 'package:flutter/material.dart';
-// import 'package:flutter_localizations/flutter_localizations.dart';
-// import 'package:furnitureapp/admin/user_management.dart';
-// import 'package:furnitureapp/pages/Homepage.dart';
-// import 'package:furnitureapp/pages/LoginPage.dart';
-// import 'package:furnitureapp/pages/setting.dart';
-// import 'package:furnitureapp/translate/localization.dart';
-// import 'package:furnitureapp/services/language_manager.dart';
-
-// void main() async {
-//   WidgetsFlutterBinding.ensureInitialized();
-//   final languageManager = LanguageManager();
-//   await languageManager.initializeLanguage();
-//   runApp(MyApp());
-// }
-
-// class MyApp extends StatefulWidget {
-//   const MyApp({super.key});
-
-//   @override
-//   State<MyApp> createState() => _MyAppState();
-// }
-
-// class _MyAppState extends State<MyApp> {
-//   final LanguageManager _languageManager = LanguageManager();
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     _languageManager.addListener(_onLocaleChange);
-//   }
-
-//   void _onLocaleChange() {
-//     setState(() {});
-//   }
-
-//   @override
-//   void dispose() {
-//     _languageManager.removeListener(_onLocaleChange);
-//     super.dispose();
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       debugShowCheckedModeBanner: false,
-//       locale: _languageManager.currentLocale,
-//       supportedLocales: const [
-//         Locale('en', 'US'),
-//         Locale('vi', 'VN'),
-//       ],
-//       localizationsDelegates: const [
-//         GlobalMaterialLocalizations.delegate,
-//         GlobalWidgetsLocalizations.delegate,
-//         GlobalCupertinoLocalizations.delegate,
-//         AppLocalizations.delegate,
-//       ],
-//       initialRoute: "/",
-//       routes: {
-//         "/": (context) => UserManagementPage(),
-//         "/setting": (context) => Setting(),
-//       },
-//     );
-//   }
-// }

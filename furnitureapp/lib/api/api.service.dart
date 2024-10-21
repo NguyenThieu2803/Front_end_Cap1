@@ -52,6 +52,30 @@ class APIService {
       return false;
     }
   }
+
+  static Future<Map<String, dynamic>> getCart() async {
+    String? token = await ShareService.getToken();
+    if (token == null) {
+      throw Exception('User not logged in');
+    }else {
+      Map<String, String> requestHeaders = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      };
+      var url = Uri.http(Config.apiURL, Config.getCartAPI);
+      var repository = await client.get(
+        url,
+        headers: requestHeaders,
+      );
+      if(repository.statusCode == 200){
+        return jsonDecode(repository.body);
+      }else {
+        throw Exception('Failed to fetch cart');
+      }
+    }
+  }
+
+
   
   static Future<List<Map<String, dynamic>>> fetchAllProducts() async {
     // Headers cho yêu cầu HTTP

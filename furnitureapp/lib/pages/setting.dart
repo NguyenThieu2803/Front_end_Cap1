@@ -98,10 +98,14 @@ class Setting extends StatelessWidget {
       BuildContext context, String title, VoidCallback onPressed) {
     return Container(
       color: Colors.white,
-      child: ListTile(
-        title: Text(title),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-        onTap: onPressed,
+      child: Column(
+        children: [
+          ListTile(
+            title: Text(title),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: onPressed,
+          ),
+        ],
       ),
     );
   }

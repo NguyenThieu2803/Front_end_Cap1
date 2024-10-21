@@ -27,7 +27,7 @@ class UserProfileAppBar extends StatelessWidget {
           ),
           Spacer(),
           Text(
-            "Favorite Products",
+            "UserProfile",
             style: TextStyle(
               fontSize: 23,
               fontWeight: FontWeight.bold,
@@ -37,8 +37,11 @@ class UserProfileAppBar extends StatelessWidget {
           Spacer(),
           InkWell(
             onTap: () {
-              // Gọi hàm mở cài đặt từ setting.dart
-              // openSettings(context);
+              // Chuyển đến trang cài đặt
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Setting()), // Đảm bảo bạn có class SettingsPage trong settings.dart
+              );
             },
             child: Icon(
               Icons.settings,

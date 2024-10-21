@@ -1,0 +1,40 @@
+[
+    {
+        "avatarUrl": "assets/images/avt.png",
+        "name": "C**g C**g",
+        "rating": 5,
+        "color": "TRẮNG",
+        "comment": "Quá đẹp quá xuất xắc😂😂😂 ship nhanh 10 sao🤪",
+        "images": [
+            "assets/images/1.png",
+            "assets/images/2.png",
+            "assets/images/3.png"
+        ]
+    },
+    {
+        "avatarUrl": "assets/images/avt.png",
+        "name": "H** H**",
+        "rating": 5,
+        "color": "ĐEN",
+        "comment": "Xuất sắc ạ,chất mặc mát k bí mồ hôi\nForm đẹp mặc lên chuẩn như mẫu",
+        "images": []
+    },
+    {
+        "avatarUrl": "assets/images/avt.png",
+        "name": "T** T**",
+        "rating": 4,
+        "color": "XANH",
+        "comment": "Sản phẩm tốt nhưng giao hàng hơi lâu.",
+        "images": []
+    },
+    {
+        "avatarUrl": "assets/images/avt.png",
+        "name": "N** N**",
+        "rating": 5,
+        "color": "ĐỎ",
+        "comment": "Đẹp hơn mong đợi! Tặng cho mẹ, mẹ rất thích.",
+        "images": [
+            "assets/images/4.png"
+        ]
+    }
+]

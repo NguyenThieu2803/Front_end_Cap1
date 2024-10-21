@@ -8,11 +8,13 @@ environment:
   sdk: ">=3.5.3 <4.0.0"
 
 dependencies:
+  curved_navigation_bar: ^1.0.6 # Latest version
+  
   flutter:
     sdk: flutter
 
   # Các dependencies khác nằm ngoài phần flutter
-  curved_navigation_bar: ^1.0.6 # Latest version
+
   http: ^1.2.2
   cupertino_icons: ^1.0.8
   api_cache_manager: ^1.0.2
@@ -25,6 +27,7 @@ dependencies:
   shared_preferences: ^2.0.15
 
 #sdk unity
+  # flutter_unity_widget: ^2022.2.1
 
   sqflite_common_ffi: ^2.3.3+1
 
@@ -41,3 +44,4 @@ flutter:
     - assets/
     - assets/images/
     - assets/detail/product.json
+    - assets/detail/Review.json

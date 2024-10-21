@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:furnitureapp/admin/AdminPage.dart';
 import 'package:furnitureapp/pages/CartPage.dart';
 import 'package:furnitureapp/pages/FavoritePage.dart';
 import 'package:furnitureapp/pages/UserProfilePage.dart';
 import 'package:furnitureapp/widgets/CategoriesWidget.dart';
+import 'package:furnitureapp/widgets/HomeAdminNavigationBar.dart';
 import 'package:furnitureapp/widgets/HomeAppBar.dart';
 import 'package:furnitureapp/widgets/HomeItemsWidget.dart';
-import 'package:furnitureapp/widgets/HomeNavigationBar.dart';
 
 class HomePageAdmin extends StatefulWidget {
   const HomePageAdmin({super.key});
@@ -18,9 +19,11 @@ class _HomePageAdminState extends State<HomePageAdmin> {
   int _selectedIndex = 0;
   String _selectedCategory = 'All Product';
 
+  // Không nên bao gồm HomePageAdmin trong danh sách các trang
   final List<Widget> _pages = [
-    HomePageAdmin(),
+    // Nếu cần có trang khác thì thêm vào đây
     CartPage(),
+    AdminPage(),
     FavoritePage(),
     UserProfilePage(),
   ];
@@ -45,8 +48,8 @@ class _HomePageAdminState extends State<HomePageAdmin> {
               selectedCategory: _selectedCategory,
               onCategorySelected: _onCategorySelected,
             )
-          : _pages[_selectedIndex],
-      bottomNavigationBar: HomeNavigationBar(
+          : _pages[_selectedIndex - 1], // Giảm chỉ số đi 1 để phù hợp với danh sách trang
+      bottomNavigationBar: HomeAdminNavigationBar(
         selectedIndex: _selectedIndex,
         onTap: _onItemTapped,
       ),
