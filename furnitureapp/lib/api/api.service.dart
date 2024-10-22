@@ -237,4 +237,109 @@ static Future<bool> deleteCartItem(String productId) async {
   }
 }
 
+// Address operations
+
+// Add address
+static Future<bool> addAddress(String name, String phone, String street, String city, String province, bool isDefault) async {
+  String? token = await ShareService.getToken();
+  if (token == null) {
+    throw Exception('User not logged in');
+  }
+  Map<String, String> requestHeaders = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer $token',
+  };
+  var url = Uri.http(Config.apiURL, Config.addressAPI);
+  var repository = await client.post(
+    url,
+    headers: requestHeaders,
+    body: jsonEncode({
+      'name': name,
+      'phone': phone,
+      'street': street,
+      'city': city,
+      'province': province,
+      'isDefault': isDefault,
+    }),
+  );
+  if (repository.statusCode == 201) {
+    return true;
+  } else {
+    throw Exception('Failed to add address: ${repository.statusCode} - ${repository.body}');
+  }
+}
+
+// Update address
+static Future<bool> updateAddress(String addressId, String name, String phone, String street, String city, String province, bool isDefault) async {
+  String? token = await ShareService.getToken();
+  if (token == null) {
+    throw Exception('User not logged in');
+  }
+  Map<String, String> requestHeaders = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer $token',
+  };
+  var url = Uri.http(Config.apiURL, Config.addressAPI);
+  var repository = await client.put(
+    url,
+    headers: requestHeaders,
+    body: jsonEncode({
+      'name': name,
+      'phone': phone,
+      'street': street,
+      'city': city,
+      'province': province,
+      'isDefault': isDefault,
+    }),
+  );
+  if (repository.statusCode == 200) {
+    return true;
+  } else {
+    throw Exception('Failed to update address: ${repository.statusCode} - ${repository.body}');
+  }
+}
+
+// Delete address
+static Future<bool> deleteAddress(String addressId) async {
+  String? token = await ShareService.getToken();
+  if (token == null) {
+    throw Exception('User not logged in');
+  }
+  Map<String, String> requestHeaders = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer $token',
+  };
+  var url = Uri.http(Config.apiURL, Config.addressAPI);
+  var repository = await client.delete(
+    url,
+    headers: requestHeaders,
+  );
+  if (repository.statusCode == 200) {
+    return true;
+  } else {
+    throw Exception('Failed to delete address: ${repository.statusCode} - ${repository.body}');
+  }
+}
+
+// Get all addresses
+static Future<List<Map<String, dynamic>>> getAllAddresses() async {
+  String? token = await ShareService.getToken();
+  if (token == null) {
+    throw Exception('User not logged in');
+  }
+  Map<String, String> requestHeaders = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer $token',
+  };
+  var url = Uri.http(Config.apiURL, Config.addressAPI);
+  var repository = await client.get(
+    url,
+    headers: requestHeaders,
+  );
+  if (repository.statusCode == 200) {
+    return List<Map<String, dynamic>>.from(jsonDecode(repository.body));
+  } else {
+    throw Exception('Failed to fetch addresses: ${repository.statusCode} - ${repository.body}');
+  }
+}
 }

@@ -5,7 +5,7 @@ class Address {
   final String province;
   final String district;
   final String commune;
-  bool isDefault;
+  bool isDefault; // Change from final to mutable
 
   Address({
     required this.fullName,
@@ -14,6 +14,18 @@ class Address {
     required this.province,
     required this.district,
     required this.commune,
-    this.isDefault = false,
+    this.isDefault = false, // Provide a default value
   });
+
+  factory Address.fromJson(Map<String, dynamic> json) {
+    return Address(
+      fullName: json['name'],
+      phoneNumber: json['phone'],
+      streetAddress: json['street'],
+      province: json['province'],
+      district: json['district'],
+      commune: json['commune'],
+      isDefault: json['isDefault'] ?? false,
+    );
+  }
 }

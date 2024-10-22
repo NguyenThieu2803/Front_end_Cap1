@@ -1,5 +1,5 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:furnitureapp/widgets/ProductReviews.dart';
 
 class ProductPage extends StatefulWidget {
@@ -38,7 +38,7 @@ class _ProductPageState extends State<ProductPage> {
       if (isFavorite) {
         favoriteProducts.add({
           'name': widget.product.name,
-          'image': widget.product.image,
+          'image': widget.product.images![0],
           'price': widget.product.price,
           'quantity': quantity,
         });
@@ -131,7 +131,7 @@ class _ProductPageState extends State<ProductPage> {
             ),
             padding: const EdgeInsets.only(bottom: 10),
             child: Image.asset(
-              widget.product.image,
+              widget.product.images![0],
               width: screenWidth * 0.8,
               height: screenHeight * 0.4,
               fit: BoxFit.contain,
@@ -159,7 +159,7 @@ class _ProductPageState extends State<ProductPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.product.name,
+              widget.product.name!,
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -182,7 +182,7 @@ class _ProductPageState extends State<ProductPage> {
         Row(
           children: List.generate(5, (index) {
             return Icon(
-              index < rating.round() ? Icons.star : Icons.star_border,
+              index < (widget.product.rating ?? 0).round() ? Icons.star : Icons.star_border,
               color: Colors.black,
               size: 20,
             );
@@ -245,7 +245,7 @@ class _ProductPageState extends State<ProductPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '- Kích thước:\n${widget.product.size}',
+            '- Kích thước:\n${widget.product.dimensions!.width} x ${widget.product.dimensions!.height} x ${widget.product.dimensions!.depth}',
             style: const TextStyle(
                 fontSize: 15, color: Color(0xFF2B2321)), // Màu cho Kích thước
           ),
@@ -257,7 +257,7 @@ class _ProductPageState extends State<ProductPage> {
           ),
           const SizedBox(height: 10),
           Text(
-            '- Các tính năng:\n${widget.product.features}',
+            '- Các tính năng:\n${widget.product.description}',
             style: const TextStyle(
                 fontSize: 15,
                 color: Color(0xFF2B2321)), // Màu cho Các tính năng
@@ -276,7 +276,7 @@ class _ProductPageState extends State<ProductPage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            '${(widget.product.price * quantity).toStringAsFixed(0)}\$',
+            '${(widget.product.price! * quantity).toStringAsFixed(0)}\$',
             style: const TextStyle(
               fontSize: 30,
               fontWeight: FontWeight.bold,

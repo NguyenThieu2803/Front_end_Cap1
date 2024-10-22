@@ -1,5 +1,6 @@
 import 'dart:convert';
 import '../model/product.dart';
+import '../model/address_model.dart';
 import 'package:furnitureapp/api/api.service.dart';
 import 'package:furnitureapp/model/Cart_User_Model.dart';
 
@@ -47,6 +48,16 @@ class DataService {
         print('FormatException details: ${error.message}');
       }
       return null;
+    }
+  }
+
+  Future<List<Address>> loadAddresses() async {
+    try {
+      List<Map<String, dynamic>> addressData = await APIService.getAllAddresses();
+      return addressData.map((data) => Address.fromJson(data)).toList();
+    } catch (error) {
+      print('Failed to load addresses: $error');
+      return [];
     }
   }
 }

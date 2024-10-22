@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
-import '../model/address_model.dart';
 import 'add_new_address.dart';
+import '../model/address_model.dart';
+import 'package:flutter/material.dart';
+import '../services/data_service.dart'; // Import the DataService
 
 class AddressPage extends StatefulWidget {
   const AddressPage({super.key});
@@ -10,17 +11,25 @@ class AddressPage extends StatefulWidget {
 }
 
 class _AddressPageState extends State<AddressPage> {
-  List<Address> addresses = [
-    Address(
-      fullName: 'Võ Lê Hữu Thắng',
-      phoneNumber: '(+84) 825 362 835',
-      streetAddress: 'Tổ 2, Bình Trúc',
-      province: 'Quảng Nam',
-      district: 'Thăng Bình',
-      commune: 'Bình Sa',
-      isDefault: true,
-    ),
-  ];
+  List<Address> addresses = [];
+  final DataService dataService = DataService();
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAddresses(); // Fetch addresses on initialization
+  }
+
+  Future<void> _fetchAddresses() async {
+    try {
+      List<Address> addressList = await dataService.loadAddresses();
+      setState(() {
+        addresses = addressList;
+      });
+    } catch (e) {
+      print("Error fetching addresses: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -126,14 +135,11 @@ class _AddressPageState extends State<AddressPage> {
                       );
 
                       if (newAddress.isDefault) {
-                        // Remove default status from other addresses
                         for (var address in addresses) {
                           address.isDefault = false;
                         }
-                        // Add new address at the beginning
                         addresses.insert(0, newAddress);
                       } else {
-                        // Add new address at the end
                         addresses.add(newAddress);
                       }
                     });
