@@ -12,6 +12,7 @@ import 'package:furnitureapp/pages/StartNow.dart';
 import 'package:furnitureapp/pages/ProductPage.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart'; 
 import 'package:furnitureapp/admin/HomePageAdmin.dart';
+import 'package:furnitureapp/utils/share_service.dart';
 import 'package:furnitureapp/translate/localization.dart';
 import 'package:furnitureapp/pages/NotificationPage.dart';
 import 'package:furnitureapp/widgets/CartItemSamples.dart';
@@ -19,12 +20,7 @@ import 'package:furnitureapp/widgets/CartItemSamples.dart';
 import 'package:furnitureapp/widgets/HomeMainNavigationBar.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-
-
-
-
-
-  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized(); // Đảm bảo tất cả plugin được khởi tạo trước khi chạy ứng dụng
@@ -60,7 +56,7 @@ class MyApp extends StatelessWidget {
         Locale('en', 'US'), // English
         Locale('vi', 'VN'), // Vietnamese
       ],
-      navigatorKey: _navigatorKey,
+      navigatorKey: navigatorKey,
       
       // Định nghĩa các routes cho ứng dụng
       routes: {
@@ -69,12 +65,11 @@ class MyApp extends StatelessWidget {
         "/": (context) => HomePageAdmin(), // Trang khởi đầu
         "/login": (context) => LoginPage(), // Trang login
         "/main": (context) => HomeMainNavigationBar(), // Trang chính với bottom navigation
-        "/product": (context) => ProductPage(product: Product), // Trang sản phẩm
+        "/product": (context) => ProductPage(product: Product()), // Pass a default Product instance
         "/notifications": (context) => NotificationPage(),
         "/register": (context) => SignUp()
       },
-      initialRoute: "/home", // Định nghĩa trang bắt đầu khi ứng dụng chạy
+      initialRoute: "/login", // Định nghĩa trang bắt đầu khi ứng dụng chạy
     );
   }
 }
-

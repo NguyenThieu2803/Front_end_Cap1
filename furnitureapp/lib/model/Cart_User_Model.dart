@@ -70,9 +70,9 @@ class CartItem {
     this.id,
   });
 
-  // Phân tích JSON để tạo đối tượng CartItem
+  // Parse JSON to create a CartItem object
   CartItem.fromJson(Map<String, dynamic> json) {
-    // Kiểm tra và parse đối tượng Product nếu không null
+    // Parse the Product object if it exists
     product = json['product'] != null && json['product'] is Map<String, dynamic> 
         ? Product.fromJson(json['product']) 
         : null;
@@ -80,24 +80,25 @@ class CartItem {
     name = json['name'];
     quantity = json['quantity'];
     
-    // Chuyển đổi price và total thành double
+    // Convert price and total to double
     price = json['price']?.toDouble();
     total = json['total']?.toDouble();
     discount = json['discount'];
     
-    // Parse ngày addedAt nếu không null
+    // Parse the addedAt date if it exists
     addedAt = json['addedAt'] != null ? DateTime.parse(json['addedAt']) : null;
     
     id = json['_id'];
   }
 
-  // Chuyển đối tượng CartItem thành JSON
+  // Convert CartItem object to JSON
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     
-    // Chuyển Product thành JSON nếu không null
+    // Convert Product to JSON if it exists
     if (product != null) {
       data['product'] = product!.toJson();
+      data['product_id'] = product!.id; // Ensure product ID is included
     }
     
     data['name'] = name;
@@ -106,9 +107,9 @@ class CartItem {
     data['total'] = total;
     data['discount'] = discount;
     
-    // Chuyển đổi ngày addedAt thành ISO 8601 format
+    // Convert addedAt date to ISO 8601 format
     data['addedAt'] = addedAt?.toIso8601String();
-    data['_id'] = id;
+    data['id'] = id;
     
     return data;
   }

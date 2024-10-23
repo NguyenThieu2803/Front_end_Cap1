@@ -162,6 +162,7 @@ class _CartItemSamplesState extends State<CartItemSamples> {
                   children: [
                     InkWell(
                       onTap: () async {
+                        print("Product ID: ${item.product}");
                         bool success = await APIService.deleteCartItem(item.product?.id ?? '');
                         if (success) {
                           setState(() {

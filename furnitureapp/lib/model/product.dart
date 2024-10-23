@@ -140,7 +140,7 @@ class Product {
   set rating(double? rating) => _rating = rating;
 
   Product.fromJson(Map<String, dynamic> json) {
-    _id = json['_id']; // Parse id from JSON
+    _id = json['_id']; // Ensure this matches the key in your JSON response
     _name = json['name'];
     _description = json['description'];
     _shortDescription = json['shortDescription'];
@@ -205,6 +205,11 @@ class Product {
     data['sold'] = this._sold;
     data['rating'] = this._rating;
     return data;
+  }
+
+  @override
+  String toString() {
+    return 'Product{id: $_id, name: $_name, price: $_price, images: $_images, rating: $_rating, sold: $_sold}';
   }
 }
 

@@ -144,14 +144,12 @@ class APIService {
 
   // Kiểm tra xem yêu cầu có thành công hay không (status code 200)
   if (response.statusCode == 200) {
-    // Parse JSON từ body của response
     var jsonResponse = jsonDecode(response.body);
     List<dynamic> products = jsonResponse['products'];
 
-    // Chuyển đổi danh sách thành List<Map<String, dynamic>>
     List<Map<String, dynamic>> productList = products.map((product) {
       return {
-        'id': product['_id'],
+        '_id': product['_id'], // Ensure this matches the key in your JSON response
         'name': product['name'],
         'description': product['description'],
         'price': product['price'],

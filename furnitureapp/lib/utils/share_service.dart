@@ -1,10 +1,14 @@
 import 'dart:convert';
 import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
+import 'package:furnitureapp/main.dart';
 import 'package:api_cache_manager/api_cache_manager.dart';
 import 'package:api_cache_manager/models/cache_db_model.dart';
 import 'package:furnitureapp/model/login_response_model.dart';
 
 const String KEY_NAME = "login_key";
+
+// Assuming you have a global navigator key defined somewhere in your app
 
 class ShareService {
   static Future<bool> isLoggedIn() async {
@@ -39,6 +43,9 @@ class ShareService {
   // Lấy token từ đối tượng loginDetails
   static Future<String?> getToken() async {
     LoginResponseModel? loginDetails = await getLoginDetails();
+    if (loginDetails?.accesstoken == null) {
+      navigatorKey.currentState?.pushNamedAndRemoveUntil("/login", (route) => false);
+    }
     return loginDetails?.accesstoken;
   }
 
