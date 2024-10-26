@@ -345,5 +345,127 @@ static Future<List<Map<String, dynamic>>> getAllAddresses() async {
     throw Exception('Failed to fetch addresses: ${repository.statusCode} - ${repository.body}');
   }
 }
+
+// Add card
+static Future<bool> addCard(Map<String, dynamic> cardData) async {
+  String? token = await ShareService.getToken();
+  if (token == null) {
+    throw Exception('User not logged in');
+  }
+  Map<String, String> requestHeaders = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer $token',
+  };
+  var url = Uri.http(Config.apiURL, Config.cardAPI);
+  var response = await client.post(
+    url,
+    headers: requestHeaders,
+    body: jsonEncode(cardData),
+  );
+  if (response.statusCode == 201) {
+    return true;
+  } else {
+    throw Exception('Failed to add card: ${response.statusCode} - ${response.body}');
+  }
+}
+
+// Update card
+static Future<bool> updateCard(String cardId, Map<String, dynamic> cardData) async {
+  String? token = await ShareService.getToken();
+  if (token == null) {
+    throw Exception('User not logged in');
+  }
+  Map<String, String> requestHeaders = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer $token',
+  };
+  var url = Uri.http(Config.apiURL, '${Config.cardAPI}/$cardId');
+  var response = await client.put(
+    url,
+    headers: requestHeaders,
+    body: jsonEncode(cardData),
+  );
+  if (response.statusCode == 200) {
+    return true;
+  } else {
+    throw Exception('Failed to update card: ${response.statusCode} - ${response.body}');
+  }
+}
+
+// Delete card
+static Future<bool> deleteCard(String cardId) async {
+  String? token = await ShareService.getToken();
+  if (token == null) {
+    throw Exception('User not logged in');
+  }
+  Map<String, String> requestHeaders = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer $token',
+  };
+  var url = Uri.http(Config.apiURL, '${Config.cardAPI}/$cardId');
+  var response = await client.delete(
+    url,
+    headers: requestHeaders,
+  );
+  if (response.statusCode == 200) {
+    return true;
+  } else {
+    throw Exception('Failed to delete card: ${response.statusCode} - ${response.body}');
+  }
+}
+
+// Get all cards
+static Future<List<Map<String, dynamic>>> getAllCards() async {
+  String? token = await ShareService.getToken();
+  if (token == null) {
+    throw Exception('User not logged in');
+  }
+  Map<String, String> requestHeaders = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer $token',
+  };
+  var url = Uri.http(Config.apiURL, Config.cardAPI);
+  var response = await client.get(
+    url,
+    headers: requestHeaders,
+  );
+  if (response.statusCode == 200) {
+    var jsonResponse = jsonDecode(response.body);
+    if (jsonResponse is List) {
+      return List<Map<String, dynamic>>.from(jsonResponse);
+    } else if (jsonResponse is Map && jsonResponse.containsKey('cards')) {
+      // Giả sử API trả về một đối tượng với key 'cards' chứa danh sách thẻ
+      return List<Map<String, dynamic>>.from(jsonResponse['cards']);
+    } else {
+      throw Exception('Unexpected JSON format');
+    }
+  } else {
+    throw Exception('Failed to fetch cards: ${response.statusCode} - ${response.body}');
+  }
+}
+
+static Future<Map<String, dynamic>> checkout(String cardId) async {
+  String? token = await ShareService.getToken();
+  if (token == null) {
+    throw Exception('User not logged in');
+  }
+  Map<String, String> requestHeaders = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer $token',
+  };
+  var url = Uri.http(Config.apiURL, Config.checkoutAPI);
+  var response = await client.post(
+    url,
+    headers: requestHeaders,
+    body: jsonEncode({
+      'cardId': cardId,
+    }),
+  );
+  if (response.statusCode == 200) {
+    return jsonDecode(response.body);
+  } else {
+    throw Exception('Checkout failed: ${response.statusCode} - ${response.body}');
+  }
+}
 }
 

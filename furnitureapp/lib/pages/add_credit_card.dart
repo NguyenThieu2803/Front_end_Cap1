@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:furnitureapp/api/api.service.dart';
 
 class AddCreditCardPage extends StatefulWidget {
   const AddCreditCardPage({super.key});
@@ -11,21 +12,68 @@ class AddCreditCardPage extends StatefulWidget {
 class _AddCreditCardPageState extends State<AddCreditCardPage> {
   final _formKey = GlobalKey<FormState>();
   final _cardNumberController = TextEditingController();
-  final _expiryDateController = TextEditingController();
+  final _expiryMonthController = TextEditingController();
+  final _expiryYearController = TextEditingController();
   final _cvvController = TextEditingController();
   final _cardHolderController = TextEditingController();
   final _postalCodeController = TextEditingController();
   final _addressController = TextEditingController();
 
+  bool _isLoading = false;
+
   @override
   void dispose() {
     _cardNumberController.dispose();
-    _expiryDateController.dispose();
+    _expiryMonthController.dispose();
+    _expiryYearController.dispose();
     _cvvController.dispose();
     _cardHolderController.dispose();
     _postalCodeController.dispose();
     _addressController.dispose();
     super.dispose();
+  }
+
+  Future<void> _submitCardDetails() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        // Prepare card data
+        final cardData = {
+          'Card_name': _cardHolderController.text,
+          'Cardnumber': _cardNumberController.text,
+          'cardExpmonth': _expiryMonthController.text,
+          'cardExpyears': _expiryYearController.text,
+          'cardCVC': _cvvController.text,
+          // Add other necessary fields if required by your backend
+        };
+
+        // Call API to add card
+        bool result = await APIService.addCard(cardData);
+
+        if (result) {
+          // Show success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Card added successfully')),
+          );
+          Navigator.pop(context, true); // Return true to indicate success
+        } else {
+          // Show error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to add card')),
+          );
+        }
+      } catch (e) {
+        // Show error message
+        print(e);
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -116,23 +164,58 @@ class _AddCreditCardPageState extends State<AddCreditCardPage> {
             },
           ),
           const SizedBox(height: 16),
-          TextFormField(
-            controller: _expiryDateController,
-            decoration: const InputDecoration(
-              labelText: 'Expiry date (MM/YY)',
-              border: UnderlineInputBorder(),
-            ),
-            keyboardType: TextInputType.number,
-            inputFormatters: [
-              FilteringTextInputFormatter.digitsOnly,
-              LengthLimitingTextInputFormatter(4),
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: _expiryMonthController,
+                  decoration: const InputDecoration(
+                    labelText: 'Month (MM)',
+                    border: UnderlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(2),
+                  ],
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Enter month';
+                    }
+                    int? month = int.tryParse(value);
+                    if (month == null || month < 1 || month > 12) {
+                      return 'Invalid month';
+                    }
+                    return null;
+                  },
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: TextFormField(
+                  controller: _expiryYearController,
+                  decoration: const InputDecoration(
+                    labelText: 'Year (YY)',
+                    border: UnderlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(2),
+                  ],
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Enter year';
+                    }
+                    int? year = int.tryParse(value);
+                    if (year == null || year < 23) {  // Assuming current year is 2023
+                      return 'Invalid year';
+                    }
+                    return null;
+                  },
+                ),
+              ),
             ],
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter expiry date';
-              }
-              return null;
-            },
           ),
           const SizedBox(height: 16),
           TextFormField(
@@ -222,13 +305,7 @@ class _AddCreditCardPageState extends State<AddCreditCardPage> {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: () {
-          if (_formKey.currentState!.validate()) {
-            // Handle form submission
-            // You might want to create a Card model and pass it back to the previous screen
-            Navigator.pop(context);
-          }
-        },
+        onPressed: _isLoading ? null : _submitCardDetails,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.black,
           padding: const EdgeInsets.symmetric(vertical: 16),
@@ -236,13 +313,15 @@ class _AddCreditCardPageState extends State<AddCreditCardPage> {
             borderRadius: BorderRadius.circular(8),
           ),
         ),
-        child: const Text(
-          'Complete',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
+        child: _isLoading
+            ? const CircularProgressIndicator(color: Colors.white)
+            : const Text(
+                'Complete',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
       ),
     );
   }

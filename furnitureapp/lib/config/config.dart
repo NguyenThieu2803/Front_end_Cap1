@@ -8,4 +8,6 @@ class Config {
   static const String updateCartAPI = "api/v1/cart"; // Assuming the same endpoint for update
   static const String deleteCartAPI = "api/v1/cart"; // Assuming the same endpoint for delete
   static const String addressAPI = "api/v1/address";
+  static const String cardAPI = "api/v1/card"; // Add this line for card operations
+  static const String checkoutAPI = "api/v1/checkout"; // Add this line for checkout operations
 }
