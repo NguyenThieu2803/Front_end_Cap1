@@ -52,6 +52,7 @@ class DataService {
   Future<List<Address>> loadAddresses() async {
     try {
       List<Map<String, dynamic>> addressData = await APIService.getAllAddresses();
+      print("Address data received: $addressData");
       return addressData.map((data) => Address.fromJson(data)).toList();
     } catch (error) {
       print('Failed to load addresses: $error');

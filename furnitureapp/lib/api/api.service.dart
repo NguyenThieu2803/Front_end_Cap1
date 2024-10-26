@@ -238,7 +238,7 @@ static Future<bool> deleteCartItem(String productId) async {
 // Address operations
 
 // Add address
-static Future<bool> addAddress(String name, String phone, String street, String city, String province, bool isDefault) async {
+static Future<bool> addAddress(Map<String, dynamic> addressData) async {
   String? token = await ShareService.getToken();
   if (token == null) {
     throw Exception('User not logged in');
@@ -248,22 +248,15 @@ static Future<bool> addAddress(String name, String phone, String street, String 
     'Authorization': 'Bearer $token',
   };
   var url = Uri.http(Config.apiURL, Config.addressAPI);
-  var repository = await client.post(
+  var response = await client.post(
     url,
     headers: requestHeaders,
-    body: jsonEncode({
-      'name': name,
-      'phone': phone,
-      'street': street,
-      'city': city,
-      'province': province,
-      'isDefault': isDefault,
-    }),
+    body: jsonEncode(addressData),
   );
-  if (repository.statusCode == 201) {
+  if (response.statusCode == 201) {
     return true;
   } else {
-    throw Exception('Failed to add address: ${repository.statusCode} - ${repository.body}');
+    throw Exception('Failed to add address: ${response.statusCode} - ${response.body}');
   }
 }
 
@@ -282,6 +275,7 @@ static Future<bool> updateAddress(String addressId, String name, String phone, S
     url,
     headers: requestHeaders,
     body: jsonEncode({
+      "addressId": addressId,
       'name': name,
       'phone': phone,
       'street': street,
@@ -311,6 +305,9 @@ static Future<bool> deleteAddress(String addressId) async {
   var repository = await client.delete(
     url,
     headers: requestHeaders,
+    body: jsonEncode({
+      "addressId": addressId,
+    }),
   );
   if (repository.statusCode == 200) {
     return true;
@@ -335,9 +332,18 @@ static Future<List<Map<String, dynamic>>> getAllAddresses() async {
     headers: requestHeaders,
   );
   if (repository.statusCode == 200) {
-    return List<Map<String, dynamic>>.from(jsonDecode(repository.body));
+    var jsonResponse = jsonDecode(repository.body);
+    if (jsonResponse is List) {
+      return List<Map<String, dynamic>>.from(jsonResponse);
+    } else if (jsonResponse is Map && jsonResponse.containsKey('addresses')) {
+      // Adjust this line if the API response wraps the list in an object
+      return List<Map<String, dynamic>>.from(jsonResponse['addresses']);
+    } else {
+      throw Exception('Unexpected JSON format');
+    }
   } else {
     throw Exception('Failed to fetch addresses: ${repository.statusCode} - ${repository.body}');
   }
 }
 }
+
