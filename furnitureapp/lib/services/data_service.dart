@@ -68,13 +68,14 @@ class DataService {
   
   Future<List<Categories>> loadCategories() async {
     try {
-      List<Map<String, dynamic>> categoriesList = await APIService.fetchAllCategories();
-      return categoriesList.map((categoryJson) => Categories.fromJson(categoryJson)).toList();
-    } catch (error) {
-      print('Failed to load categories: $error');
+      final categoriesData = await APIService.fetchAllCategories();
+      return categoriesData.map((data) => Categories.fromJson(data)).toList();
+    } catch (e) {
+      print('Lỗi khi tải danh mục: $e');
+      return []; // Trả về list rỗng thay vì null
     }
   }
-  
+
   Future<List<Address>> loadAddresses() async {
     try {
       List<Map<String, dynamic>> addressData = await APIService.getAllAddresses();
