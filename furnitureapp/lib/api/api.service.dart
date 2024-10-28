@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http; //+
 import 'package:furnitureapp/config/config.dart';
 import 'package:furnitureapp/utils/share_service.dart';
@@ -243,3 +242,296 @@ class APIService {
     }
   }
 }
+// Update cart item
+static Future<bool> updateCartItem(String productId, int quantity) async {
+  String? token = await ShareService.getToken();
+  if (token == null) {
+    throw Exception('User not logged in');
+  }
+  Map<String, String> requestHeaders = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer $token',
+  };
+
+  var url = Uri.http(Config.apiURL, Config.updateCartAPI); // Ensure the correct API endpoint
+  var repository = await client.put(
+    url,
+    headers: requestHeaders,
+    body: jsonEncode({
+      'productId': productId,
+      'quantity': quantity,
+    }),
+  );
+  print("Update Cart API Response Status Code: ${repository.statusCode}");
+  print("Update Cart API Response Body: ${repository.body}");
+
+  if (repository.statusCode == 200) {
+    return true;
+  } else {
+    throw Exception('Failed to update cart item: ${repository.statusCode} - ${repository.body}');
+  }
+}
+
+// Delete cart item
+static Future<bool> deleteCartItem(String productId) async {
+  String? token = await ShareService.getToken();
+  if (token == null) {
+    throw Exception('User not logged in');
+  }
+  Map<String, String> requestHeaders = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer $token',
+  };
+
+  var url = Uri.http(Config.apiURL, Config.deleteCartAPI); // Ensure the correct API endpoint
+  var repository = await client.delete(
+    url,
+    headers: requestHeaders,
+    body: jsonEncode({
+      'productId': productId,
+    }),
+  );
+  print("Delete Cart API Response Status Code: ${repository.statusCode}");
+  print("Delete Cart API Response Body: ${repository.body}");
+
+  if (repository.statusCode == 200) {
+    return true;
+  } else {
+    throw Exception('Failed to delete cart item: ${repository.statusCode} - ${repository.body}');
+  }
+}
+
+// Address operations
+
+// Add address
+static Future<bool> addAddress(Map<String, dynamic> addressData) async {
+  String? token = await ShareService.getToken();
+  if (token == null) {
+    throw Exception('User not logged in');
+  }
+  Map<String, String> requestHeaders = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer $token',
+  };
+  var url = Uri.http(Config.apiURL, Config.addressAPI);
+  var response = await client.post(
+    url,
+    headers: requestHeaders,
+    body: jsonEncode(addressData),
+  );
+  if (response.statusCode == 201) {
+    return true;
+  } else {
+    throw Exception('Failed to add address: ${response.statusCode} - ${response.body}');
+  }
+}
+
+// Update address
+static Future<bool> updateAddress(String addressId, String name, String phone, String street, String city, String province, bool isDefault) async {
+  String? token = await ShareService.getToken();
+  if (token == null) {
+    throw Exception('User not logged in');
+  }
+  Map<String, String> requestHeaders = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer $token',
+  };
+  var url = Uri.http(Config.apiURL, Config.addressAPI);
+  var repository = await client.put(
+    url,
+    headers: requestHeaders,
+    body: jsonEncode({
+      "addressId": addressId,
+      'name': name,
+      'phone': phone,
+      'street': street,
+      'city': city,
+      'province': province,
+      'isDefault': isDefault,
+    }),
+  );
+  if (repository.statusCode == 200) {
+    return true;
+  } else {
+    throw Exception('Failed to update address: ${repository.statusCode} - ${repository.body}');
+  }
+}
+
+// Delete address
+static Future<bool> deleteAddress(String addressId) async {
+  String? token = await ShareService.getToken();
+  if (token == null) {
+    throw Exception('User not logged in');
+  }
+  Map<String, String> requestHeaders = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer $token',
+  };
+  var url = Uri.http(Config.apiURL, Config.addressAPI);
+  var repository = await client.delete(
+    url,
+    headers: requestHeaders,
+    body: jsonEncode({
+      "addressId": addressId,
+    }),
+  );
+  if (repository.statusCode == 200) {
+    return true;
+  } else {
+    throw Exception('Failed to delete address: ${repository.statusCode} - ${repository.body}');
+  }
+}
+
+// Get all addresses
+static Future<List<Map<String, dynamic>>> getAllAddresses() async {
+  String? token = await ShareService.getToken();
+  if (token == null) {
+    throw Exception('User not logged in');
+  }
+  Map<String, String> requestHeaders = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer $token',
+  };
+  var url = Uri.http(Config.apiURL, Config.addressAPI);
+  var repository = await client.get(
+    url,
+    headers: requestHeaders,
+  );
+  if (repository.statusCode == 200) {
+    var jsonResponse = jsonDecode(repository.body);
+    if (jsonResponse is List) {
+      return List<Map<String, dynamic>>.from(jsonResponse);
+    } else if (jsonResponse is Map && jsonResponse.containsKey('addresses')) {
+      // Adjust this line if the API response wraps the list in an object
+      return List<Map<String, dynamic>>.from(jsonResponse['addresses']);
+    } else {
+      throw Exception('Unexpected JSON format');
+    }
+  } else {
+    throw Exception('Failed to fetch addresses: ${repository.statusCode} - ${repository.body}');
+  }
+}
+
+// Add card
+static Future<bool> addCard(Map<String, dynamic> cardData) async {
+  String? token = await ShareService.getToken();
+  if (token == null) {
+    throw Exception('User not logged in');
+  }
+  Map<String, String> requestHeaders = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer $token',
+  };
+  var url = Uri.http(Config.apiURL, Config.cardAPI);
+  var response = await client.post(
+    url,
+    headers: requestHeaders,
+    body: jsonEncode(cardData),
+  );
+  if (response.statusCode == 201) {
+    return true;
+  } else {
+    throw Exception('Failed to add card: ${response.statusCode} - ${response.body}');
+  }
+}
+
+// Update card
+static Future<bool> updateCard(String cardId, Map<String, dynamic> cardData) async {
+  String? token = await ShareService.getToken();
+  if (token == null) {
+    throw Exception('User not logged in');
+  }
+  Map<String, String> requestHeaders = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer $token',
+  };
+  var url = Uri.http(Config.apiURL, '${Config.cardAPI}/$cardId');
+  var response = await client.put(
+    url,
+    headers: requestHeaders,
+    body: jsonEncode(cardData),
+  );
+  if (response.statusCode == 200) {
+    return true;
+  } else {
+    throw Exception('Failed to update card: ${response.statusCode} - ${response.body}');
+  }
+}
+
+// Delete card
+static Future<bool> deleteCard(String cardId) async {
+  String? token = await ShareService.getToken();
+  if (token == null) {
+    throw Exception('User not logged in');
+  }
+  Map<String, String> requestHeaders = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer $token',
+  };
+  var url = Uri.http(Config.apiURL, '${Config.cardAPI}/$cardId');
+  var response = await client.delete(
+    url,
+    headers: requestHeaders,
+  );
+  if (response.statusCode == 200) {
+    return true;
+  } else {
+    throw Exception('Failed to delete card: ${response.statusCode} - ${response.body}');
+  }
+}
+
+// Get all cards
+static Future<List<Map<String, dynamic>>> getAllCards() async {
+  String? token = await ShareService.getToken();
+  if (token == null) {
+    throw Exception('User not logged in');
+  }
+  Map<String, String> requestHeaders = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer $token',
+  };
+  var url = Uri.http(Config.apiURL, Config.cardAPI);
+  var response = await client.get(
+    url,
+    headers: requestHeaders,
+  );
+  if (response.statusCode == 200) {
+    var jsonResponse = jsonDecode(response.body);
+    if (jsonResponse is List) {
+      return List<Map<String, dynamic>>.from(jsonResponse);
+    } else if (jsonResponse is Map && jsonResponse.containsKey('cards')) {
+      // Giả sử API trả về một đối tượng với key 'cards' chứa danh sách thẻ
+      return List<Map<String, dynamic>>.from(jsonResponse['cards']);
+    } else {
+      throw Exception('Unexpected JSON format');
+    }
+  } else {
+    throw Exception('Failed to fetch cards: ${response.statusCode} - ${response.body}');
+  }
+}
+
+static Future<Map<String, dynamic>> checkout(String cardId) async {
+  String? token = await ShareService.getToken();
+  if (token == null) {
+    throw Exception('User not logged in');
+  }
+  Map<String, String> requestHeaders = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer $token',
+  };
+  var url = Uri.http(Config.apiURL, Config.checkoutAPI);
+  var response = await client.post(
+    url,
+    headers: requestHeaders,
+    body: jsonEncode({
+      'cardId': cardId,
+    }),
+  );
+  if (response.statusCode == 200) {
+    return jsonDecode(response.body);
+  } else {
+    throw Exception('Checkout failed: ${response.statusCode} - ${response.body}');
+  }
+}
+}
+

@@ -1,9 +1,12 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:furnitureapp/model/product.dart';
+import 'package:furnitureapp/api/api.service.dart';
+import 'package:furnitureapp/services/data_service.dart';
 import 'package:furnitureapp/widgets/ProductReviews.dart';
 
 class ProductPage extends StatefulWidget {
-  final product;
+  final Product product; // Ensure this is typed as Product
 
   const ProductPage({super.key, required this.product});
 
@@ -17,8 +20,8 @@ class _ProductPageState extends State<ProductPage> {
   bool isFavorite = false;
 
   List<Map<String, dynamic>> favoriteProducts = [];
-
   void increaseQuantity() {
+    
     setState(() {
       quantity++;
     });
@@ -47,6 +50,41 @@ class _ProductPageState extends State<ProductPage> {
       }
     });
   }
+
+  void _addToCart() async {
+    final productId = widget.product.id;
+    if (productId == null) {
+      print("Product ID is null. Cannot add to cart.");
+      return;
+    }
+
+    try {
+      bool success = await APIService.addToCart(productId, quantity);
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Product added to cart successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to add product to cart.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -112,6 +150,7 @@ class _ProductPageState extends State<ProductPage> {
   }
 
   Widget _buildProductImage(double screenWidth, double screenHeight) {
+    final imageUrl = widget.product.images?.first ?? 'default_image.png'; // Provide a default image
     return Stack(
       children: [
         Center(
@@ -161,7 +200,7 @@ class _ProductPageState extends State<ProductPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.product.name,
+              widget.product.name!,
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -184,7 +223,7 @@ class _ProductPageState extends State<ProductPage> {
         Row(
           children: List.generate(5, (index) {
             return Icon(
-              index < rating.round() ? Icons.star : Icons.star_border,
+              index < (widget.product.rating ?? 0).round() ? Icons.star : Icons.star_border,
               color: Colors.black,
               size: 20,
             );
@@ -247,7 +286,7 @@ class _ProductPageState extends State<ProductPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '- Kích thước:\n${widget.product.dimensions}',
+            '- Kích thước:\n${widget.product.dimensions!.width} x ${widget.product.dimensions!.height} x ${widget.product.dimensions!.depth}',
             style: const TextStyle(
                 fontSize: 15, color: Color(0xFF2B2321)), // Màu cho Kích thước
           ),
@@ -278,14 +317,14 @@ class _ProductPageState extends State<ProductPage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            '${(widget.product.price * quantity).toStringAsFixed(0)}\$',
+            '${(widget.product.price! * quantity).toStringAsFixed(0)}\$',
             style: const TextStyle(
               fontSize: 30,
               fontWeight: FontWeight.bold,
             ),
           ),
           ElevatedButton.icon(
-            onPressed: () {}, // Thêm sản phẩm vào giỏ hàng
+            onPressed: _addToCart, // Use the new method
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               backgroundColor: Colors.black,

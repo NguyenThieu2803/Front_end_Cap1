@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AdminItemSamples extends StatelessWidget {
-  const AdminItemSamples({Key? key}) : super(key: key);
+  const AdminItemSamples({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -97,10 +97,10 @@ class CityStatItem extends StatelessWidget {
   final int amount;
 
   const CityStatItem({
-    Key? key,
+    super.key,
     required this.city,
     required this.amount,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

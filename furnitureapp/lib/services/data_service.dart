@@ -1,6 +1,7 @@
 import 'dart:convert';
 import '../model/product.dart';
-import 'package:flutter/services.dart';
+import '../model/card_model.dart';
+import '../model/address_model.dart';
 import 'package:furnitureapp/api/api.service.dart';
 import 'package:furnitureapp/model/Cart_User_Model.dart';
 import 'package:furnitureapp/model/Categories.dart';
@@ -71,6 +72,26 @@ class DataService {
       return categoriesList.map((categoryJson) => Categories.fromJson(categoryJson)).toList();
     } catch (error) {
       print('Failed to load categories: $error');
+    }
+  }
+  
+  Future<List<Address>> loadAddresses() async {
+    try {
+      List<Map<String, dynamic>> addressData = await APIService.getAllAddresses();
+      print("Address data received: $addressData");
+      return addressData.map((data) => Address.fromJson(data)).toList();
+    } catch (error) {
+      print('Failed to load addresses: $error');
+      return [];
+    }
+  }
+
+  Future<List<CardModel>> loadCards() async {
+    try {
+      List<Map<String, dynamic>> cardData = await APIService.getAllCards();
+      return cardData.map((data) => CardModel.fromJson(data)).toList();
+    } catch (error) {
+      print('Failed to load cards: $error');
       return [];
     }
   }

@@ -136,6 +136,7 @@ class ProductTile extends StatelessWidget {
           ),
           InkWell(
             onTap: () {
+              print("Product Details: $product"); // Print product details
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -205,8 +206,7 @@ class ProductTile extends StatelessWidget {
                 ),
                 SizedBox(height: 2),
                 Text(
-                  // "${product.sold ?? 0} sold", // Thêm giá trị mặc định cho sold nếu null
-                  "10 sold",
+                  "${product.sold ?? 0} sold", // Thêm giá trị mặc định cho sold nếu null
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.grey[600],

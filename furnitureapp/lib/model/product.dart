@@ -1,4 +1,5 @@
 class Product {
+  String? _id; // Add the id field
   String? _name;
   String? _description;
   String? _shortDescription;
@@ -19,7 +20,8 @@ class Product {
   double? _rating;
 
   Product(
-      {String? name,
+      {String? id, // Add id to the constructor
+      String? name,
       String? description,
       String? shortDescription,
       double? price,
@@ -37,6 +39,9 @@ class Product {
       int? weight,
       int? sold,
       double? rating}) {
+    if (id != null) {
+      this._id = id;
+    }
     if (name != null) {
       this._name = name;
     }
@@ -93,6 +98,8 @@ class Product {
     }
   }
 
+  String? get id => _id; // Add getter for id
+  set id(String? id) => _id = id; // Add setter for id
   String? get name => _name;
   set name(String? name) => _name = name;
   String? get description => _description;
@@ -133,66 +140,48 @@ class Product {
   set rating(double? rating) => _rating = rating;
 
   Product.fromJson(Map<String, dynamic> json) {
-  _name = json['name'];
-  _description = json['description'];
-  _shortDescription = json['shortDescription'];
-  
-  // Xử lý price: chuyển đổi từ String hoặc int sang double
-  _price = (json['price'] is String) 
-      ? double.tryParse(json['price']) 
-      : (json['price'] is int) 
-          ? (json['price'] as int).toDouble() 
-          : json['price']?.toDouble();  // Đảm bảo chuyển đổi đúng kiểu.
-
-  _dimensions = json['dimensions'] != null
-      ? Dimensions.fromJson(json['dimensions'])
-      : null;
-
-  // Xử lý stockQuantity: chuyển đổi từ String sang int nếu cần
-  _stockQuantity = (json['stockQuantity'] is String) 
-      ? int.tryParse(json['stockQuantity']) 
-      : json['stockQuantity'];
-
-  _material = json['material'];
-
-  // Xử lý color
-  _color = json['color'] != null ? ProductColor.fromJson(json['color']) : null;
-  
-  // Xử lý images
-  _images = json['images'] != null ? List<String>.from(json['images']) : [];
-  
-  _category = json['category'];
-
-  // Xử lý discount
-  _discount = (json['discount'] is String) 
-      ? int.tryParse(json['discount']) 
-      : json['discount'];
-
-  _promotionId = json['promotionId'];
-  _brand = json['brand'];
-  _style = json['style'];
-  _assemblyRequired = json['assemblyRequired'];
-
-  // Xử lý weight
-  _weight = (json['weight'] is String) 
-      ? int.tryParse(json['weight']) 
-      : json['weight'];
-
-  // Xử lý sold
-  _sold = (json['sold'] is String) 
-      ? int.tryParse(json['sold']) 
-      : json['sold'];
-
-  // Xử lý rating
-  _rating = (json['rating'] is String) 
-      ? double.tryParse(json['rating']) 
-      : (json['rating'] is int) 
-          ? (json['rating'] as int).toDouble() 
-          : json['rating']?.toDouble();  // Đảm bảo chuyển đổi đúng kiểu.
-}
+    _id = json['_id']; // Ensure this matches the key in your JSON response
+    _name = json['name'];
+    _description = json['description'];
+    _shortDescription = json['shortDescription'];
+    _price = (json['price'] is String) 
+        ? double.tryParse(json['price']) 
+        : (json['price'] is int) 
+            ? (json['price'] as int).toDouble() 
+            : json['price']?.toDouble();
+    _dimensions = json['dimensions'] != null
+        ? Dimensions.fromJson(json['dimensions'])
+        : null;
+    _stockQuantity = (json['stockQuantity'] is String) 
+        ? int.tryParse(json['stockQuantity']) 
+        : json['stockQuantity'];
+    _material = json['material'];
+    _color = json['color'] != null ? ProductColor.fromJson(json['color']) : null;
+    _images = json['images'] != null ? List<String>.from(json['images']) : [];
+    _category = json['category'];
+    _discount = (json['discount'] is String) 
+        ? int.tryParse(json['discount']) 
+        : json['discount'];
+    _promotionId = json['promotionId'];
+    _brand = json['brand'];
+    _style = json['style'];
+    _assemblyRequired = json['assemblyRequired'];
+    _weight = (json['weight'] is String) 
+        ? int.tryParse(json['weight']) 
+        : json['weight'];
+    _sold = (json['sold'] is String) 
+        ? int.tryParse(json['sold']) 
+        : json['sold'];
+    _rating = (json['rating'] is String) 
+        ? double.tryParse(json['rating']) 
+        : (json['rating'] is int) 
+            ? (json['rating'] as int).toDouble() 
+            : json['rating']?.toDouble();
+  }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['_id'] = this._id; // Include id in JSON
     data['name'] = this._name;
     data['description'] = this._description;
     data['shortDescription'] = this._shortDescription;
@@ -216,6 +205,11 @@ class Product {
     data['sold'] = this._sold;
     data['rating'] = this._rating;
     return data;
+  }
+
+  @override
+  String toString() {
+    return 'Product{id: $_id, name: $_name, price: $_price, images: $_images, rating: $_rating, sold: $_sold}';
   }
 }
 
