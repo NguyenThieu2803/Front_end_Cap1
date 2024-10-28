@@ -18,35 +18,77 @@ class _HomeItemsWidgetState extends State<HomeItemsWidget> {
   @override
   void initState() {
     super.initState();
-    futureProducts = DataService().loadProducts(category: widget.selectedCategory);
+    _loadProducts();
+  }
+
+  @override
+  void didUpdateWidget(HomeItemsWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.selectedCategory != widget.selectedCategory) {
+      _loadProducts();
+    }
+  }
+
+  void _loadProducts() {
+    setState(() {
+      // DataService sẽ xử lý logic cho All Product
+      futureProducts = DataService().loadProducts(category: widget.selectedCategory);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<Product>>(
-      future: futureProducts,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Center(child: Text('No products found'));
-        } else {
-          final products = snapshot.data!;
-
-          return GridView.count(
-            childAspectRatio: 0.85,
-            physics: NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            padding: EdgeInsets.only(top: 10),
-            children: products
-                .map((product) => ProductTile(product: product))
-                .toList(),
-          );
-        }
-      },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Hiển thị tiêu đề dựa trên category được chọn
+        Container(
+          alignment: Alignment.centerLeft,
+          margin: EdgeInsets.only(top: 10, bottom: 10, left: 10, right: 10), // Điều chỉnh margin trên xuống 10
+          child: Text(
+            widget.selectedCategory == "All Product" 
+                ? "All Products" 
+                : "Products in ${widget.selectedCategory}",
+            style: TextStyle(
+              fontSize: 25,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF2B2321),
+            ),
+          ),
+        ),
+        FutureBuilder<List<Product>>(
+          future: futureProducts,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Text(
+                    'No products found in this category',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+              );
+            } else {
+              final products = snapshot.data!;
+              return GridView.count(
+                childAspectRatio: 0.85,
+                physics: NeverScrollableScrollPhysics(),
+                crossAxisCount: 2,
+                shrinkWrap: true,
+                padding: EdgeInsets.only(top: 10),
+                children: products
+                    .map((product) => ProductTile(product: product))
+                    .toList(),
+              );
+            }
+          },
+        ),
+      ],
     );
   }
 }

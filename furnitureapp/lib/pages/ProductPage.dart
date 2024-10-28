@@ -38,7 +38,7 @@ class _ProductPageState extends State<ProductPage> {
       if (isFavorite) {
         favoriteProducts.add({
           'name': widget.product.name,
-          'image': widget.product.image,
+          'images': widget.product.images,
           'price': widget.product.price,
           'quantity': quantity,
         });
@@ -130,8 +130,10 @@ class _ProductPageState extends State<ProductPage> {
               ),
             ),
             padding: const EdgeInsets.only(bottom: 10),
-            child: Image.asset(
-              widget.product.image,
+            child: Image.network(
+            (widget.product.images != null && widget.product.images!.isNotEmpty)
+                ? widget.product.images!.first
+                : 'https://example.com/default_image.png',
               width: screenWidth * 0.8,
               height: screenHeight * 0.4,
               fit: BoxFit.contain,
@@ -245,7 +247,7 @@ class _ProductPageState extends State<ProductPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '- Kích thước:\n${widget.product.size}',
+            '- Kích thước:\n${widget.product.dimensions}',
             style: const TextStyle(
                 fontSize: 15, color: Color(0xFF2B2321)), // Màu cho Kích thước
           ),
@@ -257,7 +259,7 @@ class _ProductPageState extends State<ProductPage> {
           ),
           const SizedBox(height: 10),
           Text(
-            '- Các tính năng:\n${widget.product.features}',
+            '- Các tính năng:\n${widget.product.description}',
             style: const TextStyle(
                 fontSize: 15,
                 color: Color(0xFF2B2321)), // Màu cho Các tính năng
