@@ -4,16 +4,32 @@ import '../model/card_model.dart';
 import '../model/address_model.dart';
 import 'package:furnitureapp/api/api.service.dart';
 import 'package:furnitureapp/model/Cart_User_Model.dart';
-
+import 'package:furnitureapp/model/Categories.dart';
 class DataService {
   Future<List<Product>> loadProducts({required String category}) async {
     try {
-      List<Map<String, dynamic>> productList = await APIService.fetchAllProducts();
-      print("Product List: " + productList.toString());
-
-      return productList
-          .map((productJson) => Product.fromJson(productJson))
-          .toList();
+      List<Map<String, dynamic>> productList;
+      
+      if (category == 'All Product') {
+        productList = await APIService.fetchAllProducts();
+      } else {
+        // Lấy danh sách categories để tìm categoryId
+        List<Categories> categories = await loadCategories();
+        Categories? selectedCategory = categories.firstWhere(
+          (cat) => cat.name == category,
+          orElse: () => Categories(),
+        );
+        
+        if (selectedCategory.id != null) {
+          print('Loading products for category: ${selectedCategory.id}');
+          productList = await APIService.fetchProductsByCategory(selectedCategory.id!);
+        } else {
+          print('Category ID not found for: $category');
+          productList = await APIService.fetchAllProducts();
+        }
+      }
+      
+      return productList.map((productJson) => Product.fromJson(productJson)).toList();
     } catch (error) {
       print('Failed to load products: $error');
       return [];
@@ -47,6 +63,16 @@ class DataService {
         print('FormatException details: ${error.message}');
       }
       return null;
+    }
+  }
+  
+  Future<List<Categories>> loadCategories() async {
+    try {
+      final categoriesData = await APIService.fetchAllCategories();
+      return categoriesData.map((data) => Categories.fromJson(data)).toList();
+    } catch (e) {
+      print('Lỗi khi tải danh mục: $e');
+      return []; // Trả về list rỗng thay vì null
     }
   }
 

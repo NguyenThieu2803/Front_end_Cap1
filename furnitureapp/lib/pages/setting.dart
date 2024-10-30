@@ -27,55 +27,56 @@ class Setting extends StatelessWidget {
         ),
       ),
       backgroundColor: Colors.grey[200],
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          buildSectionTitle(l10n.myAccount),
-          buildListTile(context, l10n.accountSecurity, () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => AccountSecurityPage()));
-          }),
-          buildListTile(context, l10n.address, () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => AddressPage()));
-          }),
-          buildListTile(context, l10n.bankAccount, () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => BankAccountPage()));
-          }),
-          buildSectionTitle('Setting'),
-          buildListTile(context, l10n.notificationSettings, () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => NotificationSettingsPage()));
-          }),
-          buildListTile(context, l10n.language, () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => LanguagePage()));
-          }),
-          buildSectionTitle(l10n.supportCenter),
-          buildListTile(context, l10n.supportCenter, () {}),
-          buildListTile(context, l10n.communityStandards, () {}),
-          buildListTile(context, l10n.satisfactionSurvey, () {}),
-          const Spacer(),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
-                padding: const EdgeInsets.symmetric(vertical: 15),
-              ),
-              child: Text(
-                l10n.logOut,
-                style: const TextStyle(fontSize: 18, color: Colors.white),
+      body: SafeArea(
+        child: ListView(
+          children: <Widget>[
+            buildSectionTitle(l10n.myAccount),
+            buildListTile(context, l10n.accountSecurity, () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => AccountSecurityPage()));
+            }),
+            buildListTile(context, l10n.address, () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => AddressPage()));
+            }),
+            buildListTile(context, l10n.bankAccount, () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => BankAccountPage()));
+            }),
+            buildSectionTitle(l10n.setting),
+            buildListTile(context, l10n.notificationSettings, () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => NotificationSettingsPage()));
+            }),
+            buildListTile(context, l10n.language, () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => LanguagePage()));
+            }),
+            buildSectionTitle(l10n.supportCenter),
+            buildListTile(context, l10n.supportCenter, () {}),
+            buildListTile(context, l10n.communityStandards, () {}),
+            buildListTile(context, l10n.satisfactionSurvey, () {}),
+            SizedBox(height: 20), // Add some space before the logout button
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                ),
+                child: Text(
+                  l10n.logOut,
+                  style: const TextStyle(fontSize: 18, color: Colors.white),
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
