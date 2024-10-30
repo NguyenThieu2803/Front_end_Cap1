@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import '../api/api.service.dart'; // Import the API service
 
 class UpdateAddressPage extends StatefulWidget {
-  final Address address;
+  final AddressUser address;
 
   const UpdateAddressPage({
     super.key,

@@ -444,23 +444,24 @@ static Future<List<Map<String, dynamic>>> getAllCards() async {
   }
 }
 
-static Future<Map<String, dynamic>> checkout(String cardId) async {
+static Future<Map<String, dynamic>> checkout(Map<String, dynamic> checkoutData) async {
   String? token = await ShareService.getToken();
   if (token == null) {
     throw Exception('User not logged in');
   }
+
   Map<String, String> requestHeaders = {
     'Content-Type': 'application/json',
     'Authorization': 'Bearer $token',
   };
+
   var url = Uri.http(Config.apiURL, Config.checkoutAPI);
   var response = await client.post(
     url,
     headers: requestHeaders,
-    body: jsonEncode({
-      'cardId': cardId,
-    }),
+    body: jsonEncode(checkoutData),
   );
+
   if (response.statusCode == 200) {
     return jsonDecode(response.body);
   } else {

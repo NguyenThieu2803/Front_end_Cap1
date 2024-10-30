@@ -14,7 +14,7 @@ class AddressPage extends StatefulWidget {
 }
 
 class _AddressPageState extends State<AddressPage> {
-  List<Address> addresses = [];
+  List<AddressUser> addresses = [];
   final DataService dataService = DataService();
 
   @override
@@ -25,7 +25,7 @@ class _AddressPageState extends State<AddressPage> {
 
   Future<void> _fetchAddresses() async {
     try {
-      List<Address> addressList = await dataService.loadAddresses();
+      List<AddressUser> addressList = await dataService.loadAddresses();
       setState(() {
         addresses = addressList;
       });
@@ -53,7 +53,7 @@ class _AddressPageState extends State<AddressPage> {
     }
   }
 
-  void _setDefaultAddress(Address newDefaultAddress) {
+  void _setDefaultAddress(AddressUser newDefaultAddress) {
     setState(() {
       for (var address in addresses) {
         address.isDefault = address.id == newDefaultAddress.id;
@@ -61,7 +61,7 @@ class _AddressPageState extends State<AddressPage> {
     });
   }
 
-  Future<void> _updateAddress(Address address) async {
+  Future<void> _updateAddress(AddressUser address) async {
     final result = await Navigator.push<Map<String, dynamic>>(
       context,
       MaterialPageRoute(
@@ -85,7 +85,7 @@ class _AddressPageState extends State<AddressPage> {
           setState(() {
             int index = addresses.indexWhere((a) => a.id == address.id);
             if (index != -1) {
-              addresses[index] = Address(
+              addresses[index] = AddressUser(
                 id: address.id,
                 userId: address.userId,
                 fullName: result['name'],
@@ -229,7 +229,7 @@ class _AddressPageState extends State<AddressPage> {
 
                   if (result != null) {
                     setState(() {
-                      final newAddress = Address(
+                      final newAddress = AddressUser(
                         id: result['id'], // Ensure you provide the id here
                         userId: result['userId'],
                         fullName: result['fullName'],

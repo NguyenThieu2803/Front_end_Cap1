@@ -30,6 +30,7 @@ dependencies:
   # flutter_unity_widget: ^2022.2.1
 
   sqflite_common_ffi: ^2.3.3+1
+  flutter_stripe: ^11.2.0
 
 dev_dependencies:
   flutter_test:
@@ -46,3 +47,4 @@ flutter:
     - assets/detail/product.json
     - assets/detail/Review.json
     - assets/detail/vn_only_simplified_json_generated_data_vn_units.json
+

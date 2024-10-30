@@ -9,8 +9,9 @@ import 'package:furnitureapp/model/product.dart';
 import 'package:furnitureapp/pages/sign_up.dart';
 import 'package:furnitureapp/pages/setting.dart';
 import 'package:furnitureapp/pages/StartNow.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:furnitureapp/pages/ProductPage.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart'; 
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:furnitureapp/admin/HomePageAdmin.dart';
 import 'package:furnitureapp/utils/share_service.dart';
 import 'package:furnitureapp/translate/localization.dart';
@@ -23,21 +24,21 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized(); // Đảm bảo tất cả plugin được khởi tạo trước khi chạy ứng dụng
+  WidgetsFlutterBinding
+      .ensureInitialized(); // Đảm bảo tất cả plugin được khởi tạo trước khi chạy ứng dụng
 
   // Khởi tạo cho desktop platforms
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     sqfliteFfiInit(); // Khởi tạo ffi cho SQLite trên các nền tảng desktop
     databaseFactory = databaseFactoryFfi; // Đặt databaseFactory cho FFI
   }
-
+  Stripe.publishableKey =
+      "pk_test_51Q4IszJ48Cc6e6PCqLUztrVyJYvPsIWd1hAOFRN842Jj7ldseweNpvw7eXXhBF26YTRZc3dvqEFAcRK8hCSFPSF400utPbzD2Q";
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-  
-
 
   @override
   Widget build(BuildContext context) {
@@ -50,22 +51,24 @@ class MyApp extends StatelessWidget {
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
-        AppLocalizations.delegate, 
+        AppLocalizations.delegate,
       ],
       supportedLocales: [
         Locale('en', 'US'), // English
         Locale('vi', 'VN'), // Vietnamese
       ],
       navigatorKey: navigatorKey,
-      
+
       // Định nghĩa các routes cho ứng dụng
       routes: {
         "/startnow": (context) => StartNow(),
         "/home": (context) => HomePage(), // Trang khởi đầu
         "/": (context) => HomePageAdmin(), // Trang khởi đầu
         "/login": (context) => LoginPage(), // Trang login
-        "/main": (context) => HomeMainNavigationBar(), // Trang chính với bottom navigation
-        "/product": (context) => ProductPage(product: Product()), // Pass a default Product instance
+        "/main": (context) =>
+            HomeMainNavigationBar(), // Trang chính với bottom navigation
+        "/product": (context) =>
+            ProductPage(product: Product()), // Pass a default Product instance
         "/notifications": (context) => NotificationPage(),
         "/register": (context) => SignUp()
       },

@@ -1,11 +1,11 @@
 import 'dart:convert';
-import '../model/address_model.dart';
+    import '../model/address_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../api/api.service.dart'; // Import the API service
 
 class AddNewAddressPage extends StatefulWidget {
-  final List<Address> existingAddresses;
+  final List<AddressUser> existingAddresses;
 
   const AddNewAddressPage({
     super.key,
