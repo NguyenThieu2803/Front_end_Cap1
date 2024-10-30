@@ -6,6 +6,7 @@ import 'package:furnitureapp/widgets/CategoriesWidget.dart';
 import 'package:furnitureapp/widgets/HomeAppBar.dart';
 import 'package:furnitureapp/widgets/HomeItemsWidget.dart';
 import 'package:furnitureapp/widgets/HomeNavigationBar.dart';
+import 'package:furnitureapp/translate/localization.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -62,6 +63,8 @@ class HomeContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    
     return Column(
       children: [
         Expanded(
@@ -95,7 +98,7 @@ class HomeContent extends StatelessWidget {
                                 child: TextFormField(
                                   decoration: InputDecoration(
                                     border: InputBorder.none,
-                                    hintText: "Search here...",
+                                    hintText: l10n.searchHint,
                                   ),
                                 ),
                               ),
@@ -112,7 +115,7 @@ class HomeContent extends StatelessWidget {
                         alignment: Alignment.centerLeft,
                         margin: EdgeInsets.symmetric(vertical: 20, horizontal: 10),
                         child: Text(
-                          "Categories",
+                          l10n.categories,
                           style: TextStyle(
                             fontSize: 25,
                             fontWeight: FontWeight.bold,
@@ -129,7 +132,7 @@ class HomeContent extends StatelessWidget {
                         alignment: Alignment.centerLeft,
                         margin: EdgeInsets.symmetric(horizontal: 10),
                         child: Text(
-                          "Best Selling",
+                          l10n.bestSelling,
                           style: TextStyle(
                             fontSize: 25,
                             fontWeight: FontWeight.bold,
