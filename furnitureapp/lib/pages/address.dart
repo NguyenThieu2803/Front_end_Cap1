@@ -1,7 +1,10 @@
 import 'add_new_address.dart';
 import '../model/address_model.dart';
 import 'package:flutter/material.dart';
+import 'package:furnitureapp/pages/update_address.dart';
+import '../api/api.service.dart'; // Import the APIService
 import '../services/data_service.dart'; // Import the DataService
+
 
 class AddressPage extends StatefulWidget {
   const AddressPage({super.key});
@@ -31,6 +34,88 @@ class _AddressPageState extends State<AddressPage> {
     }
   }
 
+  Future<void> _deleteAddress(String addressId) async {
+    try {
+      bool success = await APIService.deleteAddress(addressId);
+      if (success) {
+        setState(() {
+          addresses.removeWhere((address) => address.id == addressId);
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Address deleted successfully')),
+        );
+      }
+    } catch (e) {
+      print("Error deleting address: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to delete address')),
+      );
+    }
+  }
+
+  void _setDefaultAddress(Address newDefaultAddress) {
+    setState(() {
+      for (var address in addresses) {
+        address.isDefault = address.id == newDefaultAddress.id;
+      }
+    });
+  }
+
+  Future<void> _updateAddress(Address address) async {
+    final result = await Navigator.push<Map<String, dynamic>>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => UpdateAddressPage(address: address),
+      ),
+    );
+
+    if (result != null) {
+      try {
+        bool success = await APIService.updateAddress(
+          address.id,
+          result['name'],
+          result['phone'],
+          result['street'],
+          result['city'],
+          result['province'],
+          result['isDefault'],
+        );
+
+        if (success) {
+          setState(() {
+            int index = addresses.indexWhere((a) => a.id == address.id);
+            if (index != -1) {
+              addresses[index] = Address(
+                id: address.id,
+                userId: address.userId,
+                fullName: result['name'],
+                phoneNumber: result['phone'],
+                streetAddress: result['street'],
+                district: result['district'],
+                ward: result['ward'],
+                commune: result['commune'],
+                city: result['city'],
+                province: result['province'],
+                isDefault: result['isDefault'],
+              );
+              if (result['isDefault']) {
+                _setDefaultAddress(addresses[index]);
+              }
+            }
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Address updated successfully')),
+          );
+        }
+      } catch (e) {
+        print("Error updating address: $e");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update address')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,10 +123,10 @@ class _AddressPageState extends State<AddressPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
+        title: const Text(
           'Address',
           style: TextStyle(color: Colors.black),
         ),
@@ -74,14 +159,23 @@ class _AddressPageState extends State<AddressPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(address.fullName),
-                              SizedBox(width: 8),
-                              Text('|'),
-                              SizedBox(width: 8),
-                              Text(
-                                address.phoneNumber,
-                                style: TextStyle(color: Colors.black54),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(address.fullName),
+                                  SizedBox(width: 8),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    address.phoneNumber,
+                                    style: TextStyle(color: Colors.black54),
+                                  ),
+                                ],
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.settings),
+                                onPressed: () => _updateAddress(address),
                               ),
                             ],
                           ),
@@ -89,7 +183,7 @@ class _AddressPageState extends State<AddressPage> {
                           Text(address.streetAddress),
                           Divider(thickness: 1),
                           Text(
-                              '${address.commune}, ${address.district}, ${address.province}'),
+                              '${address.ward}, ${address.district}, ${address.city}, ${address.province}'),
                           SizedBox(height: 8),
                           if (address.isDefault)
                             ElevatedButton(
@@ -103,6 +197,17 @@ class _AddressPageState extends State<AddressPage> {
                                 style: TextStyle(color: Colors.red),
                               ),
                             ),
+                          SizedBox(height: 8),
+                          ElevatedButton(
+                            onPressed: () => _deleteAddress(address.id),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                            ),
+                            child: Text(
+                              'Delete',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -125,12 +230,16 @@ class _AddressPageState extends State<AddressPage> {
                   if (result != null) {
                     setState(() {
                       final newAddress = Address(
+                        id: result['id'], // Ensure you provide the id here
+                        userId: result['userId'],
                         fullName: result['fullName'],
                         phoneNumber: result['phoneNumber'],
                         streetAddress: result['streetAddress'],
-                        province: result['province'],
                         district: result['district'],
+                        ward: result['ward'],
                         commune: result['commune'],
+                        city: result['city'],
+                        province: result['province'],
                         isDefault: result['isDefault'],
                       );
 

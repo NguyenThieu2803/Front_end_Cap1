@@ -46,3 +46,4 @@ flutter:
     - assets/detail/product.json
     - assets/detail/Review.json
     - assets/detail/user.json
+    - assets/detail/vn_only_simplified_json_generated_data_vn_units.json

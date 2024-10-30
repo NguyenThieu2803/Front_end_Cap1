@@ -17,7 +17,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
-  String _selectedCategory = 'All Product';
+  String _selectedCategory = 'All Product'; // Giữ nguyên giá trị mặc định
 
   // Không nên bao gồm HomePage trong danh sách các trang
   final List<Widget> _pages = [
@@ -36,6 +36,13 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _selectedCategory = category;
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Đảm bảo load tất cả sản phẩm khi khởi động
+    _onCategorySelected('All Product');
   }
 
   @override
@@ -59,7 +66,7 @@ class HomeContent extends StatelessWidget {
   final String selectedCategory;
   final Function(String) onCategorySelected;
 
-  const HomeContent({super.key, required this.selectedCategory, required this.onCategorySelected});
+  const HomeContent({Key? key, required this.selectedCategory, required this.onCategorySelected}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -83,6 +90,7 @@ class HomeContent extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
+                      // Search bar
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         child: Container(
@@ -111,6 +119,7 @@ class HomeContent extends StatelessWidget {
                           ),
                         ),
                       ),
+                      // Categories title
                       Container(
                         alignment: Alignment.centerLeft,
                         margin: EdgeInsets.symmetric(vertical: 20, horizontal: 10),
@@ -123,23 +132,12 @@ class HomeContent extends StatelessWidget {
                           ),
                         ),
                       ),
+                      // Categories widget
                       CategoriesWidget(
                         selectedCategory: selectedCategory,
                         onCategorySelected: onCategorySelected,
                       ),
                       SizedBox(height: 20),
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        margin: EdgeInsets.symmetric(horizontal: 10),
-                        child: Text(
-                          l10n.bestSelling,
-                          style: TextStyle(
-                            fontSize: 25,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF2B2321),
-                          ),
-                        ),
-                      ),
                       HomeItemsWidget(selectedCategory: selectedCategory),
                     ],
                   ),

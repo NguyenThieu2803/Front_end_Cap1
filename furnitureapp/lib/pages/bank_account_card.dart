@@ -1,10 +1,41 @@
-import 'package:flutter/material.dart';
-
 import 'add_bank_card.dart';
 import 'add_credit_card.dart';
+import '../model/card_model.dart';
+import 'package:flutter/material.dart';
+import '../services/data_service.dart';
 
-class BankAccountPage extends StatelessWidget {
-  const BankAccountPage({super.key});
+class BankAccountPage extends StatefulWidget {
+  const BankAccountPage({Key? key}) : super(key: key);
+
+  @override
+  _BankAccountPageState createState() => _BankAccountPageState();
+}
+
+class _BankAccountPageState extends State<BankAccountPage> {
+  final DataService _dataService = DataService();
+  List<CardModel> _cards = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCards();
+  }
+
+  Future<void> _loadCards() async {
+    try {
+      final cards = await _dataService.loadCards();
+      setState(() {
+        _cards = cards;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error loading cards: $e');
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +88,6 @@ class BankAccountPage extends StatelessWidget {
   }
 
   Widget _buildCardSection(BuildContext context) {
-    // Thêm BuildContext context
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -65,6 +95,37 @@ class BankAccountPage extends StatelessWidget {
       ),
       child: Column(
         children: [
+          if (_isLoading)
+            const Center(child: CircularProgressIndicator())
+          else if (_cards.isEmpty)
+            ListTile(
+              title: Text(
+                'No cards added yet',
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+            ),
+          ..._cards.map((card) => ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 25,
+                  decoration: BoxDecoration(
+                    color: Colors.blue[400],
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Center(
+                    child: Text(
+                      card.cardType ?? 'CARD',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                title: Text('**** **** **** ${card.lastFourDigits}'),
+                subtitle: Text(card.cardHolderName ?? ''),
+              )),
           ListTile(
             leading: Container(
               width: 40,
@@ -84,23 +145,21 @@ class BankAccountPage extends StatelessWidget {
                 ),
               ),
             ),
-            title: Row(
-              children: [
-                Text(
-                  '+ Add new cards',
-                  style: TextStyle(
-                    color: Colors.red[400],
-                    fontSize: 14,
-                  ),
-                ),
-              ],
+            title: Text(
+              '+ Add new cards',
+              style: TextStyle(
+                color: Colors.red[400],
+                fontSize: 14,
+              ),
             ),
-            onTap: () {
-              Navigator.push(
+            onTap: () async {
+              final result = await Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (context) => const AddCreditCardPage()),
+                MaterialPageRoute(builder: (context) => const AddCreditCardPage()),
               );
+              if (result == true) {
+                _loadCards(); // Reload cards if a new card was added
+              }
             },
           ),
         ],

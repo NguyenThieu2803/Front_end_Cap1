@@ -40,7 +40,7 @@ class _ProductPageState extends State<ProductPage> {
       if (isFavorite) {
         favoriteProducts.add({
           'name': widget.product.name,
-          'image': widget.product.images![0],
+          'images': widget.product.images,
           'price': widget.product.price,
           'quantity': quantity,
         });
@@ -137,7 +137,9 @@ class _ProductPageState extends State<ProductPage> {
             ),
             padding: const EdgeInsets.only(bottom: 10),
             child: Image.network(
-              imageUrl,
+            (widget.product.images != null && widget.product.images!.isNotEmpty)
+                ? widget.product.images!.first
+                : 'https://example.com/default_image.png',
               width: screenWidth * 0.8,
               height: screenHeight * 0.4,
               fit: BoxFit.contain,
