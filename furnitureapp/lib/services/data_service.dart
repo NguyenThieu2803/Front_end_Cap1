@@ -5,15 +5,19 @@ import '../model/address_model.dart';
 import 'package:furnitureapp/api/api.service.dart';
 import 'package:furnitureapp/model/Cart_User_Model.dart';
 import 'package:furnitureapp/model/Categories.dart';
+
 class DataService {
-  Future<List<Product>> loadProducts({required String category}) async {
+  Future<List<Product>> loadProducts({
+    String? category,
+    double? minPrice,
+    double? maxPrice,
+  }) async {
     try {
       List<Map<String, dynamic>> productList;
       
-      if (category == 'All Product') {
+      if (category == null || category == 'All Product') {
         productList = await APIService.fetchAllProducts();
       } else {
-        // Lấy danh sách categories để tìm categoryId
         List<Categories> categories = await loadCategories();
         Categories? selectedCategory = categories.firstWhere(
           (cat) => cat.name == category,
@@ -24,12 +28,27 @@ class DataService {
           print('Loading products for category: ${selectedCategory.id}');
           productList = await APIService.fetchProductsByCategory(selectedCategory.id!);
         } else {
-          print('Category ID not found for: $category');
           productList = await APIService.fetchAllProducts();
         }
       }
       
-      return productList.map((productJson) => Product.fromJson(productJson)).toList();
+      List<Product> products = productList
+          .map((productJson) => Product.fromJson(productJson))
+          .where((product) {
+            if (product.price == null) return false;
+            
+            bool meetsMinPrice = minPrice == null || product.price! >= minPrice;
+            bool meetsMaxPrice = maxPrice == null || product.price! <= maxPrice;
+            
+            print('Product: ${product.name}, Price: ${product.price}, ' 
+                  'Meets min: $meetsMinPrice, Meets max: $meetsMaxPrice');
+            
+            return meetsMinPrice && meetsMaxPrice;
+          })
+          .toList();
+      
+      print('Filtered products count: ${products.length}');
+      return products;
     } catch (error) {
       print('Failed to load products: $error');
       return [];

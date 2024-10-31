@@ -6,6 +6,7 @@ import 'package:furnitureapp/widgets/CategoriesWidget.dart';
 import 'package:furnitureapp/widgets/HomeAppBar.dart';
 import 'package:furnitureapp/widgets/HomeItemsWidget.dart';
 import 'package:furnitureapp/widgets/HomeNavigationBar.dart';
+import 'package:furnitureapp/model/Categories.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -16,7 +17,9 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
-  String _selectedCategory = 'All Product'; // Giữ nguyên giá trị mặc định
+  String _selectedCategory = 'All Product';
+  double? _minPrice;
+  double? _maxPrice;
 
   // Không nên bao gồm HomePage trong danh sách các trang
   final List<Widget> _pages = [
@@ -37,6 +40,14 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void _onFiltersApplied(String? category, double? minPrice, double? maxPrice) {
+    setState(() {
+      if (category != null) _selectedCategory = category;
+      _minPrice = minPrice;
+      _maxPrice = maxPrice;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -50,7 +61,9 @@ class _HomePageState extends State<HomePage> {
       body: _selectedIndex == 0
           ? HomeContent(
               selectedCategory: _selectedCategory,
-              onCategorySelected: _onCategorySelected,
+              minPrice: _minPrice,
+              maxPrice: _maxPrice,
+              onFiltersApplied: _onFiltersApplied,
             )
           : _pages[_selectedIndex - 1], // Giảm chỉ số để truy cập đúng trang
       bottomNavigationBar: HomeNavigationBar(
@@ -63,9 +76,11 @@ class _HomePageState extends State<HomePage> {
 
 class HomeContent extends StatelessWidget {
   final String selectedCategory;
-  final Function(String) onCategorySelected;
+  final double? minPrice;
+  final double? maxPrice;
+  final Function(String?, double?, double?) onFiltersApplied;
 
-  const HomeContent({Key? key, required this.selectedCategory, required this.onCategorySelected}) : super(key: key);
+  const HomeContent({Key? key, required this.selectedCategory, this.minPrice, this.maxPrice, required this.onFiltersApplied}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +90,9 @@ class HomeContent extends StatelessWidget {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                HomeAppBar(),
+                HomeAppBar(
+                  onFiltersApplied: onFiltersApplied,
+                ),
                 Container(
                   padding: EdgeInsets.only(top: 15),
                   decoration: BoxDecoration(
@@ -132,10 +149,10 @@ class HomeContent extends StatelessWidget {
                       // Categories widget
                       CategoriesWidget(
                         selectedCategory: selectedCategory,
-                        onCategorySelected: onCategorySelected,
+                        onCategorySelected: (category) => onFiltersApplied(category, null, null),
                       ),
                       SizedBox(height: 20),
-                      HomeItemsWidget(selectedCategory: selectedCategory),
+                      HomeItemsWidget(selectedCategory: selectedCategory, minPrice: minPrice, maxPrice: maxPrice),
                     ],
                   ),
                 ),

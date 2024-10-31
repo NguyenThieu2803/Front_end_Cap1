@@ -4,6 +4,8 @@ import 'package:furnitureapp/config/config.dart';
 import 'package:furnitureapp/utils/share_service.dart';
 import 'package:furnitureapp/model/login_response_model.dart';
 import 'package:furnitureapp/model/Categories.dart';
+import 'package:furnitureapp/services/data_service.dart';
+
 
 class APIService {
   static var client = http.Client();
@@ -157,7 +159,9 @@ class APIService {
           'id': product['_id'],
           'name': product['name'],
           'description': product['description'],
-          'price': product['price'],
+          'price': product['price'] is String 
+              ? double.tryParse(product['price']) 
+              : product['price']?.toDouble(),
           'stockQuantity': product['stockQuantity'],
           'material': product['material'],
           'color': product['color'],
@@ -219,7 +223,9 @@ class APIService {
           'id': product['_id'],
           'name': product['name'],
           'description': product['description'],
-          'price': product['price'],
+          'price': product['price'] is String 
+              ? double.tryParse(product['price']) 
+              : product['price']?.toDouble(),
           'stockQuantity': product['stockQuantity'],
           'material': product['material'],
           'color': product['color'],
