@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:furnitureapp/widgets/FavoriteItemSamples.dart';
 import 'package:furnitureapp/widgets/ProductManagementAppBar.dart';
+import 'package:furnitureapp/widgets/ProductManagementBottomNavBar.dart';
+import 'package:furnitureapp/widgets/ProductManagementItemSamples.dart';
 
 
 class ProductManagement extends StatefulWidget {
@@ -32,7 +33,7 @@ class _ProductManagementState extends State<ProductManagement> {
                   child: ListView(
                     padding: EdgeInsets.only(top: 10),
                     children: [
-                      FavoriteItemSamples(),
+                      ProductManagementItemSamples(),
                       // Thêm SizedBox để tạo khoảng trống ở cuối danh sách
                       SizedBox(height: 20),
                     ],
@@ -43,6 +44,7 @@ class _ProductManagementState extends State<ProductManagement> {
           ],
         ),
       ),
+      bottomNavigationBar: ProductManagementBottomNavBar(),
     );
   }
 }

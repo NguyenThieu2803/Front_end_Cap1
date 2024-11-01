@@ -19,11 +19,9 @@ class _UserManagementAppBarState extends State<UserManagementAppBar> {
         children: [
           InkWell(
             onTap: () {
-              // Chuyển về trang chủ
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => AdminSetting()),
-              );
+              // Quay về trang trước đó
+              Navigator.pop(
+                  context); // Đóng trang hiện tại và quay về trang trước đó
             },
             child: Icon(
               Icons.arrow_back,
@@ -34,7 +32,8 @@ class _UserManagementAppBarState extends State<UserManagementAppBar> {
           // Sử dụng Expanded để căn giữa tiêu đề
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.only(right: 27), // Thêm khoảng cách bên trái
+              padding:
+                  const EdgeInsets.only(right: 27), // Thêm khoảng cách bên trái
               child: Center(
                 child: Text(
                   "User Management",

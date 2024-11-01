@@ -33,16 +33,15 @@ class UserProfileItemSamples extends StatelessWidget {
                 ],
               ),
             ),
-            // Divider below the profile section
+            // Divider below the profile section          
             Divider(thickness: 1),
 
-            // Purchase Order Section
+            SizedBox(height: 5), // Thêm khoảng cách ở đây
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   children: [
-                    
                     SizedBox(width: 8),
                     Text(
                       "Purchase Order",
@@ -56,7 +55,10 @@ class UserProfileItemSamples extends StatelessWidget {
                 ),
               ],
             ),
-            // Divider after the purchase order section
+            // Adding space before the order status buttons
+            SizedBox(height: 10), // Thêm khoảng cách ở đây
+
+            // Order status buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -67,12 +69,9 @@ class UserProfileItemSamples extends StatelessWidget {
                 _buildOrderStatusButton(Icons.star, "Evaluate", Colors.black),
               ],
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 20), // Khoảng cách dưới hàng biểu tượng
 
             // Divider above My Utilities section
-            Divider(thickness: 1),
-           
-            // Divider below My Utilities section
           ],
         ),
       ),

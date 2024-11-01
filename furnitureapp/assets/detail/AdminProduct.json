@@ -1,0 +1,34 @@
+{
+  "products": [
+    {
+      "name": "Table A2343B",
+      "price": 100,
+      "image": "assets/images/1.png"
+    },
+    {
+      "name": "Chair B45", 
+      "price": 50,
+      "image": "assets/images/2.png"
+    },
+    {
+      "name": "Lamp C23",
+      "price": 30,
+      "image": "assets/images/3.png"
+    },
+    {
+      "name": "Sofa D12",
+      "price": 200,
+      "image": "assets/images/4.png"
+    },
+    {
+      "name": "Bed E56",
+      "price": 300,
+      "image": "assets/images/5.png"
+    },
+    {
+      "name": "Desk F78",
+      "price": 150,
+      "image": "assets/images/6.png"
+    }
+  ]
+}

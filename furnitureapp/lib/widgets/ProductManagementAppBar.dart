@@ -18,11 +18,9 @@ class _ProductManagementAppBarState extends State<ProductManagementAppBar> {
         children: [
           InkWell(
             onTap: () {
-              // Chuyển về trang chủ
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => AdminSetting()),
-              );
+              // Quay về trang trước đó
+              Navigator.pop(
+                  context); // Đóng trang hiện tại và quay về trang trước đó
             },
             child: Icon(
               Icons.arrow_back,
@@ -36,7 +34,7 @@ class _ProductManagementAppBarState extends State<ProductManagementAppBar> {
               padding: const EdgeInsets.only(right: 27), // Thêm khoảng cách bên trái
               child: Center(
                 child: Text(
-                  "ProductManagement",
+                  "Product Management",
                   style: TextStyle(
                     fontSize: 23,
                     fontWeight: FontWeight.bold,

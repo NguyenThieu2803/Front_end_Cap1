@@ -149,6 +149,8 @@ class Product {
     data['weight'] = _weight;
     return data;
   }
+
+  saveChanges() {}
 }
 
 class Id {
