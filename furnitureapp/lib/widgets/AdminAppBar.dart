@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:furnitureapp/admin/AdminSetting.dart';
 import 'package:furnitureapp/admin/HomePageAdmin.dart';
-import 'package:furnitureapp/pages/HomePage.dart';
 
 class AdminAppBar extends StatelessWidget {
   const AdminAppBar({super.key});

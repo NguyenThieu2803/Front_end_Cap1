@@ -1,44 +1,96 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
-class Product {
-  String name;
-  String image;
-  double price;
-  int quantity; // Thêm quantity
-
-  Product({
-    required this.name,
-    required this.image,
-    required this.price,
-    this.quantity = 1, // Khởi tạo quantity với giá trị mặc định là 1
-  });
-}
+import 'package:flutter/cupertino.dart';
+import 'package:furnitureapp/api/api.service.dart';
+import 'package:furnitureapp/model/Cart_User_Model.dart';
+import 'package:furnitureapp/services/data_service.dart';
 
 class CartItemSamples extends StatefulWidget {
-  const CartItemSamples({super.key});
+  final Function(double) onTotalPriceChanged;
+
+  const CartItemSamples({super.key, required this.onTotalPriceChanged});
 
   @override
   _CartItemSamplesState createState() => _CartItemSamplesState();
 }
 
 class _CartItemSamplesState extends State<CartItemSamples> {
-  // Danh sách các sản phẩm
-  List<Product> products = [
-    Product(name: "Table A2343B", price: 100, image: "assets/images/1.png"),
-    Product(name: "Chair B45", price: 50, image: "assets/images/2.png"),
-    Product(name: "Lamp C23", price: 30, image: "assets/images/3.png"),
-    Product(name: "Sofa D12", price: 200, image: "assets/images/4.png"),
-    Product(name: "Bed E56", price: 300, image: "assets/images/5.png"),
-    Product(name: "Desk F78", price: 150, image: "assets/images/6.png"),
-  ];
+  Cart? cart;
+  bool isLoading = true;
+  Set<String> selectedProductIds = {}; // To track selected checkboxes
+  bool isAllSelected = false; // Track the state of the "Select All" checkbox
+
+  @override
+  void initState() {
+    super.initState();
+    loadCart();
+  }
+
+  Future<void> loadCart() async {
+    DataService dataService = DataService();
+    Cart? loadedCart = await dataService.loadCart();
+    setState(() {
+      cart = loadedCart;
+      isLoading = false;
+    });
+    _updateTotalPrice();
+  }
+
+  void _updateTotalPrice() {
+    double totalPrice = calculateTotalPrice();
+    widget.onTotalPriceChanged(totalPrice);
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return Center(child: CircularProgressIndicator());
+    }
+
+    if (cart == null || cart!.items == null || cart!.items!.isEmpty) {
+      return Center(child: Text("Your cart is empty"));
+    }
+
     return Column(
       children: [
-        for (int i = 0; i < products.length; i++)
-        Container(
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Checkbox(
+              value: isAllSelected,
+              activeColor: Color(0xFF2B2321),
+              onChanged: (bool? value) {
+                setState(() {
+                  isAllSelected = value ?? false;
+                  if (isAllSelected) {
+                    selectedProductIds = cart!.items!.map((item) => item.id!).toSet();
+                  } else {
+                    selectedProductIds.clear();
+                  }
+                  _updateTotalPrice();
+                });
+              },
+            ),
+            Text(
+              "Select All",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF2B2321),
+              ),
+            ),
+          ],
+        ),
+        Column(
+          children: cart!.items!.map((item) => buildCartItem(item)).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget buildCartItem(CartItem item) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Container(
           height: 110,
           margin: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
           padding: EdgeInsets.all(10),
@@ -48,56 +100,76 @@ class _CartItemSamplesState extends State<CartItemSamples> {
           ),
           child: Row(
             children: [
-              Radio(
-                value: "",
-                groupValue: "",      
+              Checkbox(
+                value: selectedProductIds.contains(item.id),
                 activeColor: Color(0xFF2B2321),
-                onChanged: (index) {},
+                onChanged: (bool? value) {
+                  setState(() {
+                    if (value == true) {
+                      selectedProductIds.add(item.id!);
+                    } else {
+                      selectedProductIds.remove(item.id);
+                    }
+                    _updateTotalPrice();
+                  });
+                },
               ),
               Container(
                 height: 70,
                 width: 70,
                 margin: EdgeInsets.only(right: 15),
-                child: Image.asset(products[i].image), // Sử dụng đúng đường dẫn hình ảnh
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      products[i].name, // Tên sản phẩm
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF2B2321),      
-                      ),
-                    ),
-                    Text(
-                      "\$${products[i].price.toInt() == products[i].price ? products[i].price.toInt() : products[i].price}", // Kiểm tra và loại bỏ .0 nếu không cần thiết
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF2B2321),                              
-                      ),
-                    ),
-                  ],
+                child: FadeInImage.assetNetwork(
+                  placeholder: "assets/images/placeholder.png",
+                  image: item.product?.images?.first ?? "",
+                  imageErrorBuilder: (context, error, stackTrace) {
+                    return Image.asset("assets/images/placeholder.png");
+                  },
+                  fit: BoxFit.cover,
                 ),
               ),
-              Spacer(),
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        item.name ?? "Unknown Product",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF2B2321),
+                        ),
+                      ),
+                      Text(
+                        "\$${item.price?.toStringAsFixed(2) ?? '0.00'}",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF2B2321),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
               Padding(
                 padding: EdgeInsets.symmetric(vertical: 9),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Nút xóa sản phẩm
                     InkWell(
-                      onTap: () {
-                        setState(() {
-                          products.removeAt(i); // Xóa sản phẩm
-                        });
+                      onTap: () async {
+                        print("Product ID: ${item.product}");
+                        bool success = await APIService.deleteCartItem(item.product?.id ?? '');
+                        if (success) {
+                          setState(() {
+                            cart!.items!.remove(item);
+                          });
+                          _updateTotalPrice();
+                        }
                       },
                       child: Icon(
                         Icons.delete,
@@ -106,12 +178,16 @@ class _CartItemSamplesState extends State<CartItemSamples> {
                     ),
                     Row(
                       children: [
-                        // Nút tăng số lượng
                         InkWell(
-                          onTap: () {
-                            setState(() {
-                              products[i].quantity++; // Tăng số lượng
-                            });
+                          onTap: () async {
+                            int newQuantity = (item.quantity ?? 0) + 1;
+                            bool success = await APIService.updateCartItem(item.product?.id ?? '', newQuantity);
+                            if (success) {
+                              setState(() {
+                                item.quantity = newQuantity;
+                              });
+                              _updateTotalPrice();
+                            }
                           },
                           child: Container(
                             padding: EdgeInsets.all(4),
@@ -135,22 +211,26 @@ class _CartItemSamplesState extends State<CartItemSamples> {
                         Container(
                           margin: EdgeInsets.symmetric(horizontal: 10),
                           child: Text(
-                            "${products[i].quantity}", // Hiển thị số lượng
+                            "${item.quantity ?? 0}",
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF2B2321),                              
+                              color: Color(0xFF2B2321),
                             ),
                           ),
                         ),
-                        // Nút giảm số lượng
                         InkWell(
-                          onTap: () {
-                            setState(() {
-                              if (products[i].quantity > 1) {
-                                products[i].quantity--; // Giảm số lượng nhưng không giảm xuống dưới 1
+                          onTap: () async {
+                            if ((item.quantity ?? 0) > 1) {
+                              int newQuantity = (item.quantity ?? 0) - 1;
+                              bool success = await APIService.updateCartItem(item.product?.id ?? '', newQuantity);
+                              if (success) {
+                                setState(() {
+                                  item.quantity = newQuantity;
+                                });
+                                _updateTotalPrice();
                               }
-                            });
+                            }
                           },
                           child: Container(
                             padding: EdgeInsets.all(4),
@@ -178,8 +258,18 @@ class _CartItemSamplesState extends State<CartItemSamples> {
               ),
             ],
           ),
-        ),
-      ],
+        );
+      },
     );
+  }
+
+  double calculateTotalPrice() {
+    if (cart == null || cart!.items == null) return 0.0;
+    return cart!.items!.fold(0.0, (sum, item) {
+      if (selectedProductIds.contains(item.id)) {
+        return sum + (item.price ?? 0) * (item.quantity ?? 0);
+      }
+      return sum;
+    });
   }
 }

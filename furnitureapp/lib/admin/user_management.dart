@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:furnitureapp/admin/user_details_view.dart';
 
 class UserManagementPage extends StatefulWidget {
@@ -9,18 +11,7 @@ class UserManagementPage extends StatefulWidget {
 }
 
 class _UserManagementPageState extends State<UserManagementPage> {
-  final List<Map<String, String>> allUsers = [
-    {"name": "Chiến Thiều", "address": "Da Nang", "phone": "0353654234"},
-    {"name": "Bất Khả Thắng Bại", "address": "Da Nang", "phone": "0823362835"},
-    {"name": "Giang Hồ Hiểm Ác", "address": "Da Nang", "phone": "0353654234"},
-    {
-      "name": "Chiến Thần Thăng Chinh",
-      "address": "Da Nang",
-      "phone": "0353654234"
-    },
-    {"name": "Thiên An", "address": "Da Nang", "phone": "0353654234"},
-  ];
-
+  List<Map<String, String>> allUsers = [];
   List<Map<String, String>> displayedUsers = [];
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
@@ -29,7 +20,17 @@ class _UserManagementPageState extends State<UserManagementPage> {
   @override
   void initState() {
     super.initState();
-    displayedUsers = allUsers;
+    loadUsers();
+  }
+
+  Future<void> loadUsers() async {
+    final String response = await rootBundle.loadString('assets/users.json');
+    final List<dynamic> data = json.decode(response);
+    
+    setState(() {
+      allUsers = data.map((user) => user as Map<String, String>).toList();
+      displayedUsers = allUsers;
+    });
   }
 
   void searchUsers() {
@@ -143,9 +144,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
                               backgroundImage:
                                   AssetImage('assets/default_avatar.png'),
                             ),
-                            title: Text(displayedUsers[index]["name"]!,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold)),
+                            title: Text(displayedUsers[index]["name"]!),
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [

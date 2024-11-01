@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:furnitureapp/services/language_manager.dart';
 import 'package:furnitureapp/translate/localization.dart';
+import 'package:provider/provider.dart';
 
 class LanguagePage extends StatefulWidget {
   const LanguagePage({super.key});
@@ -10,7 +11,7 @@ class LanguagePage extends StatefulWidget {
 }
 
 class _LanguagePageState extends State<LanguagePage> {
-  final LanguageManager _languageManager = LanguageManager();
+  late LanguageManager _languageManager;
   String _selectedLanguage = 'English';
   bool _hasChanges = false;
 
@@ -22,6 +23,7 @@ class _LanguagePageState extends State<LanguagePage> {
   @override
   void initState() {
     super.initState();
+    _languageManager = Provider.of<LanguageManager>(context, listen: false);
     _selectedLanguage = _languageManager.currentLocale.languageCode == 'en'
         ? 'English'
         : 'Tiếng Việt';
@@ -30,7 +32,7 @@ class _LanguagePageState extends State<LanguagePage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -72,7 +74,7 @@ class _LanguagePageState extends State<LanguagePage> {
           itemBuilder: (context, index) {
             final language = _languages[index];
             final isSelected = _selectedLanguage == language['name'];
-            
+
             return Container(
               color: Colors.white,
               child: ListTile(

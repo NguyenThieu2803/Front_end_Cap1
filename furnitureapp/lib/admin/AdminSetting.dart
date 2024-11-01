@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:furnitureapp/admin/InventoryManagement.dart';
+import 'package:furnitureapp/admin/UserManagement.dart';
 import 'package:furnitureapp/admin/OrderManagement.dart';
 import 'package:furnitureapp/admin/ProductManagement.dart';
 import 'package:furnitureapp/admin/ReviewAndFeedback.dart';
-import 'package:furnitureapp/admin/UserManagement.dart';
+import 'package:furnitureapp/admin/InventoryManagement.dart';
 
 
 class AdminSetting extends StatelessWidget {
-  const AdminSetting({Key? key}) : super(key: key);
+  const AdminSetting({super.key});
 
   void _navigateToScreen(BuildContext context, Widget screen) {
     Navigator.push(

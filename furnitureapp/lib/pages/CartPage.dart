@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:furnitureapp/widgets/CartAppBar.dart';
-import 'package:furnitureapp/widgets/CartBottomNavBar.dart';
 import 'package:furnitureapp/widgets/CartItemSamples.dart';
+import 'package:furnitureapp/widgets/CartBottomNavBar.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});
@@ -11,6 +11,8 @@ class CartPage extends StatefulWidget {
 }
 
 class _CartPageState extends State<CartPage> {
+  double _totalAmount = 0.0;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,7 +20,7 @@ class _CartPageState extends State<CartPage> {
       body: SafeArea(
         child: Column(
           children: [
-            CartAppBar(), // AppBar sẽ luôn ở trên cùng
+            CartAppBar(),
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
@@ -32,8 +34,13 @@ class _CartPageState extends State<CartPage> {
                   child: ListView(
                     padding: EdgeInsets.only(top: 10),
                     children: [
-                      CartItemSamples(),
-                      // Thêm SizedBox để tạo khoảng trống ở cuối danh sách
+                      CartItemSamples(
+                        onTotalPriceChanged: (double totalPrice) {
+                          setState(() {
+                            _totalAmount = totalPrice;
+                          });
+                        },
+                      ),
                       SizedBox(height: 20),
                     ],
                   ),
@@ -43,7 +50,7 @@ class _CartPageState extends State<CartPage> {
           ],
         ),
       ),
-      bottomNavigationBar: CartBottomNavBar(),
+      bottomNavigationBar: CartBottomNavBar(totalAmount: _totalAmount),
     );
   }
 }

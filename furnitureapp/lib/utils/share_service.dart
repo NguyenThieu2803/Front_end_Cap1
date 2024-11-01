@@ -1,10 +1,14 @@
 import 'dart:convert';
 import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
+import 'package:furnitureapp/main.dart';
 import 'package:api_cache_manager/api_cache_manager.dart';
 import 'package:api_cache_manager/models/cache_db_model.dart';
 import 'package:furnitureapp/model/login_response_model.dart';
 
 const String KEY_NAME = "login_key";
+
+// Assuming you have a global navigator key defined somewhere in your app
 
 class ShareService {
   static Future<bool> isLoggedIn() async {
@@ -28,14 +32,9 @@ class ShareService {
 
     if (isCacheDataExist) {
       var cacheData = await APICacheManager().getCacheData(KEY_NAME);
-      if (cacheData.syncData != null) {
-        return loginResponseJson(cacheData
-            .syncData); // Chuyển đổi JSON từ cache về đối tượng LoginResponseModel
-      } else {
-        // Nếu cacheData hoặc syncData bị null
-        return null;
-      }
-    } else {
+      return loginResponseJson(cacheData
+          .syncData); // Chuyển đổi JSON từ cache về đối tượng LoginResponseModel
+        } else {
       // Nếu cache key không tồn tại
       return null;
     }
@@ -44,6 +43,9 @@ class ShareService {
   // Lấy token từ đối tượng loginDetails
   static Future<String?> getToken() async {
     LoginResponseModel? loginDetails = await getLoginDetails();
+    if (loginDetails?.accesstoken == null) {
+      navigatorKey.currentState?.pushNamedAndRemoveUntil("/login", (route) => false);
+    }
     return loginDetails?.accesstoken;
   }
 

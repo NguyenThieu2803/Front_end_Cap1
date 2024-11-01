@@ -1,36 +1,43 @@
 import 'dart:convert';
-    import '../model/address_model.dart';
+import '../model/address_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../api/api.service.dart'; // Import the API service
 
-class AddNewAddressPage extends StatefulWidget {
-  final List<AddressUser> existingAddresses;
+class UpdateAddressPage extends StatefulWidget {
+  final AddressUser address;
 
-  const AddNewAddressPage({
+  const UpdateAddressPage({
     super.key,
-    required this.existingAddresses,
+    required this.address,
   });
 
   @override
-  _AddNewAddressPageState createState() => _AddNewAddressPageState();
+  _UpdateAddressPageState createState() => _UpdateAddressPageState();
 }
 
-class _AddNewAddressPageState extends State<AddNewAddressPage> {
-  final _fullNameController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _streetController = TextEditingController();
+class _UpdateAddressPageState extends State<UpdateAddressPage> {
+  late TextEditingController _fullNameController;
+  late TextEditingController _phoneController;
+  late TextEditingController _streetController;
   bool isDefaultAddress = false;
   String selectedProvince = '';
   String selectedDistrict = '';
-  String selectedWard = ''; // Changed from selectedCommune to selectedWard
+  String selectedWard = '';
   List<dynamic> provinces = [];
   List<dynamic> districts = [];
-  List<dynamic> wards = []; // Changed from communes to wards
+  List<dynamic> wards = [];
 
   @override
   void initState() {
     super.initState();
+    _fullNameController = TextEditingController(text: widget.address.fullName);
+    _phoneController = TextEditingController(text: widget.address.phoneNumber);
+    _streetController = TextEditingController(text: widget.address.streetAddress);
+    isDefaultAddress = widget.address.isDefault;
+    selectedProvince = widget.address.province;
+    selectedDistrict = widget.address.district;
+    selectedWard = widget.address.ward;
     _loadAddressData();
   }
 
@@ -40,10 +47,15 @@ class _AddNewAddressPageState extends State<AddNewAddressPage> {
     final data = await json.decode(response);
     setState(() {
       provinces = data;
+      // Initialize districts and wards based on the current address
+      districts = provinces.firstWhere((province) =>
+          province['FullName'] == selectedProvince)['District'];
+      wards = districts.firstWhere((district) =>
+          district['FullName'] == selectedDistrict)['Ward'];
     });
   }
 
-  Future<void> _submitAddress() async {
+  Future<void> _updateAddress() async {
     if (_fullNameController.text.isEmpty ||
         _phoneController.text.isEmpty ||
         _streetController.text.isEmpty ||
@@ -59,28 +71,26 @@ class _AddNewAddressPageState extends State<AddNewAddressPage> {
     }
 
     try {
-      bool success = await APIService.addAddress({
-        'name': _fullNameController.text,
-        'phone': _phoneController.text,
-        'street': _streetController.text,
-        'district': selectedDistrict,
-        'ward': selectedWard,
-        'commune': selectedWard,
-        'city': selectedDistrict,
-        'province': selectedProvince,
-        'isDefault': isDefaultAddress,
-      });
+      bool success = await APIService.updateAddress(
+        widget.address.id,
+        _fullNameController.text,
+        _phoneController.text,
+        _streetController.text,
+        selectedDistrict,
+        selectedProvince,
+        isDefaultAddress,
+      );
 
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Address added successfully!'),
+            content: Text('Address updated successfully!'),
             backgroundColor: Colors.green,
           ),
         );
         Navigator.pop(context, {
-          'id': 'newly_generated_id', // Replace with actual ID if available
-          'userId': 'current_user_id', // Replace with actual user ID
+          'id': widget.address.id,
+          'userId': widget.address.userId,
           'fullName': _fullNameController.text,
           'phoneNumber': _phoneController.text,
           'streetAddress': _streetController.text,
@@ -112,7 +122,7 @@ class _AddNewAddressPageState extends State<AddNewAddressPage> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'Add New Address',
+          'Update Address',
           style: TextStyle(color: Colors.black),
         ),
       ),
@@ -235,7 +245,7 @@ class _AddNewAddressPageState extends State<AddNewAddressPage> {
               ),
               const Spacer(),
               ElevatedButton(
-                onPressed: _submitAddress, // Call the submit function
+                onPressed: _updateAddress, // Call the update function
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
                   shape: RoundedRectangleBorder(
@@ -244,7 +254,7 @@ class _AddNewAddressPageState extends State<AddNewAddressPage> {
                   backgroundColor: Colors.black,
                 ),
                 child: const Text(
-                  'Complete',
+                  'Update',
                   style: TextStyle(fontSize: 16),
                 ),
               ),
