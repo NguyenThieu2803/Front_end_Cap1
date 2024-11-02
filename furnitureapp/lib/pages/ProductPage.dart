@@ -13,12 +13,27 @@ class ProductPage extends StatefulWidget {
   _ProductPageState createState() => _ProductPageState();
 }
 
-class _ProductPageState extends State<ProductPage> {
+class _ProductPageState extends State<ProductPage>
+    with SingleTickerProviderStateMixin {
   int quantity = 1;
   bool isFavorite = false;
   Color? selectedColor;
 
   List<Map<String, dynamic>> favoriteProducts = [];
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(
+        length: 2, vsync: this); // Two tabs for Details and Reviews
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   void increaseQuantity() {
     setState(() {
@@ -90,6 +105,17 @@ class _ProductPageState extends State<ProductPage> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          widget.product.name!,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
+        backgroundColor: Colors.white,
+        iconTheme: IconThemeData(color: Colors.black),
+      ),
       backgroundColor: const Color(0xFFEDECF2),
       body: Column(
         children: [
@@ -99,11 +125,10 @@ class _ProductPageState extends State<ProductPage> {
                 children: [
                   _buildProductImage(screenWidth, screenHeight),
                   const SizedBox(height: 20),
-                  _buildColorOptions(), // Thêm phần chọn màu
-                  const SizedBox(height: 20),
                   _buildProductDetails(),
                   const SizedBox(height: 20),
-                  const ProductReviews(), // Hiển thị đánh giá sản phẩm
+                  _buildTabBar(),
+                  _buildTabBarView(),
                   const SizedBox(height: 80),
                 ],
               ),
@@ -116,42 +141,24 @@ class _ProductPageState extends State<ProductPage> {
   }
 
   Widget _buildProductImage(double screenWidth, double screenHeight) {
-    final imageUrl =
-        widget.product.images?.first ?? 'default_image.png'; // Lấy ảnh từ JSON
+    final imageUrl = widget.product.images?.first ?? 'default_image.png';
     return Stack(
       children: [
         Center(
           child: Container(
             width: screenWidth,
+            height: screenHeight * 0.4,
             decoration: BoxDecoration(
               color: const Color(0xFFD9D9D9),
               borderRadius: const BorderRadius.only(
                 bottomLeft: Radius.elliptical(250, 70),
                 bottomRight: Radius.elliptical(250, 70),
               ),
-              border: Border(
-                bottom: BorderSide(
-                  color: Colors.grey[300]!,
-                ),
+              image: DecorationImage(
+                image: NetworkImage(imageUrl),
+                fit: BoxFit.cover,
               ),
             ),
-            padding: const EdgeInsets.only(bottom: 10),
-            child: Image.network(
-            (widget.product.images != null && widget.product.images!.isNotEmpty)
-                ? widget.product.images!.first
-                : 'https://example.com/default_image.png',
-              width: screenWidth * 0.8,
-              height: screenHeight * 0.4,
-              fit: BoxFit.contain,
-            ),
-          ),
-        ),
-        Positioned(
-          right: screenWidth * 0.01,
-          top: screenHeight * 0.28,
-          child: IconButton(
-            icon: const Icon(Icons.view_in_ar, size: 40),
-            onPressed: () {}, // Xử lý khi nhấn vào nút AR
           ),
         ),
       ],
@@ -176,72 +183,91 @@ class _ProductPageState extends State<ProductPage> {
             const SizedBox(height: 5),
             _buildRatingRow(),
             const SizedBox(height: 10),
-            _buildProductSpecs(),
+            Row(
+              children: [
+                Text(
+                  'Color: ${selectedColor != null ? _getColorNameFromColor(selectedColor!) : "No color selected"}',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Color(0xFF2B2321),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
     );
+  }
+
+  String _getColorNameFromColor(Color color) {
+    if (color == Colors.brown) return 'Nâu';
+    if (color == Colors.black) return 'Đen';
+    if (color == Colors.white) return 'Trắng';
+    if (color == Colors.grey) return 'Xám';
+    if (color == Colors.red) return 'Đỏ';
+    if (color == Colors.blue) return 'Xanh dương';
+    if (color == Colors.green) return 'Xanh lá';
+    if (color == Colors.yellow) return 'Vàng';
+    return 'chưa có';
+  }
+
+  Color _colorFromString(String colorString) {
+    switch (colorString.toLowerCase()) {
+      case 'brown':
+        return Colors.brown;
+      case 'black':
+        return Colors.black;
+      case 'red':
+        return Colors.red;
+      case 'blue':
+        return Colors.blue;
+      case 'green':
+        return Colors.green;
+      case 'yellow':
+        return Colors.yellow;
+      case 'white':
+        return Colors.white;
+      case 'grey':
+        return Colors.grey;
+      default:
+        return Colors.transparent; // Mặc định cho các màu không xác định
+    }
   }
 
   Widget _buildRatingRow() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Row(
-          children: List.generate(5, (index) {
-            return Icon(
-              index < (widget.product.rating ?? 0).round()
-                  ? Icons.star // Sao vàng
-                  : Icons.star_border,
-              color: Colors.amber, // Màu vàng cho sao
-              size: 20,
-            );
-          }),
-        ),
-        const Spacer(),
-        _buildQuantityControls(),
-      ],
-    );
-  }
-
-  Widget _buildQuantityControls() {
-    return Row(
-      children: [
-        _buildQuantityButton(CupertinoIcons.minus, decreaseQuantity),
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 10),
-          child: Text(
-            "$quantity",
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF2B2321),
-            ),
+        Text(
+          'Brand: ${widget.product.brand ?? 'N/A'}',
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2B2321),
           ),
         ),
-        _buildQuantityButton(CupertinoIcons.plus, increaseQuantity),
-      ],
-    );
-  }
-
-  Widget _buildQuantityButton(IconData icon, VoidCallback onPressed) {
-    return InkWell(
-      onTap: onPressed,
-      child: Container(
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.5),
-              spreadRadius: 1,
-              blurRadius: 10,
+        const SizedBox(width: 8),
+        Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.remove),
+              onPressed: decreaseQuantity,
+            ),
+            Text(
+              '$quantity',
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: increaseQuantity,
             ),
           ],
         ),
-        child: Icon(icon, size: 15),
-      ),
+      ],
     );
   }
 
@@ -253,19 +279,40 @@ class _ProductPageState extends State<ProductPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '- Kích thước:\n${widget.product.dimensions!.width} x ${widget.product.dimensions!.height} x ${widget.product.dimensions!.depth}',
+            '- Dimensions (L x W x H):\n${widget.product.dimensions!.width} x ${widget.product.dimensions!.depth} x ${widget.product.dimensions!.height}',
             style: const TextStyle(fontSize: 15, color: Color(0xFF2B2321)),
           ),
           const SizedBox(height: 10),
           Text(
-            '- Chất liệu:\n${widget.product.material}',
+            '- Material:\n${widget.product.material}',
             style: const TextStyle(fontSize: 15, color: Color(0xFF2B2321)),
           ),
           const SizedBox(height: 10),
           Text(
-            '- Các tính năng:\n${widget.product.description}',
+            '- Weight:\n${widget.product.weight} kg',
             style: const TextStyle(fontSize: 15, color: Color(0xFF2B2321)),
           ),
+          const SizedBox(height: 10),
+          Text(
+            '- Stock Quantity:\n${widget.product.stockQuantity} items',
+            style: const TextStyle(
+                fontSize: 15, color: Color.fromARGB(255, 67, 63, 62)),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            '- Sold:\n${widget.product.sold} items',
+            style: const TextStyle(fontSize: 15, color: Color(0xFF2B2321)),
+          ),
+          const SizedBox(height: 10),
+          if (widget.product.discount != null && widget.product.discount! > 0)
+            Text(
+              '- Discount:\n${widget.product.discount}%',
+              style: const TextStyle(
+                fontSize: 15,
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
         ],
       ),
     );
@@ -313,43 +360,90 @@ class _ProductPageState extends State<ProductPage> {
   }
 
   Widget _buildColorOptions() {
-    List<Color> colors = [
-      Colors.brown, // Màu chính
-      Colors.black, // Màu phụ
-      Colors.white, // Màu trắng
-      // Thêm các màu khác nếu cần
-    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'choose colors:',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 10),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildColorOption(Colors.red),
+            _buildColorOption(Colors.blue),
+            _buildColorOption(Colors.green),
+            _buildColorOption(Colors.brown),
+            _buildColorOption(Colors.black),
+            _buildColorOption(Colors.white),
+            _buildColorOption(Colors.grey),
+          ],
+        ),
+      ],
+    );
+  }
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: colors.map((color) {
-        return GestureDetector(
-          onTap: () {
-            setState(() {
-              selectedColor = color; // Cập nhật màu đã chọn
-            });
-          },
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 5),
-            width: 30,
-            height: 30,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color:
-                    selectedColor == color ? Colors.blue : Colors.transparent,
-                width: 2,
-              ),
+  Widget _buildColorOption(Color color) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedColor = color;
+        });
+      },
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(20),
+          border: selectedColor == color
+              ? Border.all(color: Colors.black, width: 2)
+              : null,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTabBar() {
+    return TabBar(
+      controller: _tabController,
+      tabs: const [
+        Tab(text: 'Description'),
+        Tab(text: 'Reviews'),
+      ],
+    );
+  }
+
+  Widget _buildTabBarView() {
+    return SizedBox(
+      height: 300, // Increased height to accommodate color options
+      child: TabBarView(
+        controller: _tabController,
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.product.description ?? 'No description available',
+                  style: const TextStyle(fontSize: 16),
+                ),
+                const SizedBox(height: 20),
+                _buildColorOptions(), // Added color options here
+                const SizedBox(height: 20),
+                _buildProductSpecs(),
+              ],
             ),
           ),
-        );
-      }).toList(),
+          ProductReviews(),
+        ],
+      ),
     );
   }
 }
 
-// Tạo một clipper để tạo hình parabol lồi ra
 class InvertedParabolaClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
