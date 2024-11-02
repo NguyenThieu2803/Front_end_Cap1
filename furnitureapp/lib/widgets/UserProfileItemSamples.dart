@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:furnitureapp/widgets/Evaluate.dart';
+import 'package:furnitureapp/widgets/WaitForConfirmation.dart';
+import 'package:furnitureapp/widgets/WaitingForDelivery.dart';
 
 class UserProfileItemSamples extends StatelessWidget {
   const UserProfileItemSamples({super.key});
@@ -31,9 +34,7 @@ class UserProfileItemSamples extends StatelessWidget {
                 ],
               ),
             ),
-            // Divider below the profile section          
             Divider(thickness: 1),
-
             SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -53,10 +54,7 @@ class UserProfileItemSamples extends StatelessWidget {
                 ),
               ],
             ),
-            // Adding space before the order status buttons
             SizedBox(height: 10),
-
-            // Order status buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -75,34 +73,40 @@ class UserProfileItemSamples extends StatelessWidget {
     );
   }
 
-  // Helper function to build buttons for purchase order status
-  Widget _buildOrderStatusButton(IconData icon, String label, Color color, BuildContext context, VoidCallback onTap) {
+  // Updated: Change onTap's type to a function that accepts BuildContext
+  Widget _buildOrderStatusButton(
+      IconData icon, String label, Color color, BuildContext context, Function(BuildContext) onTap) {
     return InkWell(
-      onTap: onTap,
+      onTap: () => onTap(context),
       child: Column(
         children: [
           Icon(icon, size: 40, color: color),
           SizedBox(height: 8),
-          Text(label,
-              textAlign: TextAlign.center, style: TextStyle(fontSize: 12)),
+          Text(label, textAlign: TextAlign.center, style: TextStyle(fontSize: 12)),
         ],
       ),
     );
   }
 
-  // Event handlers for each button
-  void _onWaitForConfirmation() {
-    // Xử lý sự kiện khi ấn vào "Wait for confirmation"
-    print("Wait for confirmation clicked");
+  // Event handlers for each button with navigation
+  void _onWaitForConfirmation(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const WaitForConfirmation()),
+    );
   }
 
-  void _onWaitingForDelivery() {
-    // Xử lý sự kiện khi ấn vào "Waiting for delivery"
-    print("Waiting for delivery clicked");
+  void _onWaitingForDelivery(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const WaitingForDelivery()),
+    );
   }
 
-  void _onEvaluate() {
-    // Xử lý sự kiện khi ấn vào "Evaluate"
-    print("Evaluate clicked");
+  void _onEvaluate(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const Evaluate()),
+    );
   }
 }
