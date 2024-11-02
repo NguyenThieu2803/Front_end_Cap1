@@ -9,6 +9,9 @@ environment:
 
 dependencies:
   curved_navigation_bar: ^1.0.6 # Latest version
+  path_provider: ^2.0.11
+  image_picker: ^0.8.5+3
+  
 
   flutter:
     sdk: flutter
@@ -46,6 +49,9 @@ flutter:
     - assets/images/
     - assets/detail/product.json
     - assets/detail/Review.json
+    - assets/detail/ReviewAndFeedback.json
+    - assets/detail/AdminProduct.json
+    
     - assets/detail/user.json
     - assets/detail/vn_only_simplified_json_generated_data_vn_units.json
 

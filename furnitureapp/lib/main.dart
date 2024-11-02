@@ -133,18 +133,18 @@ class MyApp extends StatelessWidget {
 
       // Định nghĩa các routes cho ứng dụng
       routes: {
-        "/startnow": (context) => StartNow(),
+        // "/startnow": (context) => StartNow(),
         "/home": (context) => HomePage(), // Trang khởi đầu
         "/": (context) => HomePageAdmin(), // Trang khởi đầu
-        "/login": (context) => LoginPage(), // Trang login
+        // "/login": (context) => LoginPage(), // Trang login
         "/main": (context) =>
             HomeMainNavigationBar(), // Trang chính với bottom navigation
         "/product": (context) =>
             ProductPage(product: Product()), // Pass a default Product instance
         "/notifications": (context) => NotificationPage(),
-        "/register": (context) => SignUp()
+        // "/register": (context) => SignUp()
       },
-      initialRoute: "/login", // Định nghĩa trang bắt đầu khi ứng dụng chạy
+      initialRoute: "/home", // Định nghĩa trang bắt đầu khi ứng dụng chạy
     );
   }
 }

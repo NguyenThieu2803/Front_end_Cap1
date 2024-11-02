@@ -1,0 +1,19 @@
+[
+    {
+      "customerName": "Nguyễn Văn Thiệu",
+      "date": "20/09/2024",
+      "productName": "Ghế Công Thái Học",
+      "productDetails": "Vật liệu: Lưng da, đệm da PU, chân thép mạ crom, ngả lưng dưới chân\nMàu sắc: Đen, xám, trắng\nXuất xứ: Nhập khẩu",
+      "reviewContent": "Dùng ghế công thái học giúp cải thiện tư thế và giảm đau lưng đáng kể khi làm việc lâu. Phần lưng và đệm thoải mái, thoáng khí. Tuy nhiên, tựa đầu chưa phù hợp lắm với người cao trên 1m80. Nhìn chung, đây là lựa chọn tốt cho sức khỏe cột sống!",
+      "rating": 5
+    },
+    {
+        "customerName": "Nguyễn Văn Thiệu",
+        "date": "20/09/2025",
+        "productName": "Ghế Công Thái Học",
+        "productDetails": "Vật liệu: Lưng da, đệm da PU, chân thép mạ crom, ngả lưng dưới chân\nMàu sắc: Đen, xám, trắng\nXuất xứ: Nhập khẩu",
+        "reviewContent": "Dùng ghế công thái học giúp cải thiện tư thế và giảm đau lưng đáng kể khi làm việc lâu. Phần lưng và đệm thoải mái, thoáng khí. Tuy nhiên, tựa đầu chưa phù hợp lắm với người cao trên 1m80. Nhìn chung, đây là lựa chọn tốt cho sức khỏe cột sống!",
+        "rating": 5
+      }
+  ]
+  

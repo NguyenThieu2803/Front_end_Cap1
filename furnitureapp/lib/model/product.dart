@@ -114,7 +114,7 @@ class Product {
   int? get stockQuantity => _stockQuantity;
   set stockQuantity(int? stockQuantity) => _stockQuantity = stockQuantity;
   String? get material => _material;
-  set material(String? material) => _material = material;
+set material(String? material) => _material = material;
   ProductColor? get color => _color;
   set color(ProductColor? color) => _color = color;
   List<String>? get images => _images;
@@ -186,7 +186,7 @@ class Product {
     data['description'] = this._description;
     data['shortDescription'] = this._shortDescription;
     data['price'] = this._price;
-    if (this._dimensions != null) {
+if (this._dimensions != null) {
       data['dimensions'] = this._dimensions!.toJson();
     }
     data['stockQuantity'] = this._stockQuantity;
