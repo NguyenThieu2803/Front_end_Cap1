@@ -5,6 +5,7 @@ import '../model/address_model.dart';
 import 'package:furnitureapp/api/api.service.dart';
 import 'package:furnitureapp/model/Cart_User_Model.dart';
 import 'package:furnitureapp/model/Categories.dart';
+import 'package:furnitureapp/model/Review.dart';
 
 class DataService {
   Future<List<Product>> loadProducts({
@@ -95,11 +96,11 @@ class DataService {
     }
   }
 
-  Future<List<Address>> loadAddresses() async {
+  Future<List<AddressUser>> loadAddresses() async {
     try {
       List<Map<String, dynamic>> addressData = await APIService.getAllAddresses();
       print("Address data received: $addressData");
-      return addressData.map((data) => Address.fromJson(data)).toList();
+      return addressData.map((data) => AddressUser.fromJson(data)).toList();
     } catch (error) {
       print('Failed to load addresses: $error');
       return [];
@@ -112,6 +113,21 @@ class DataService {
       return cardData.map((data) => CardModel.fromJson(data)).toList();
     } catch (error) {
       print('Failed to load cards: $error');
+      return [];
+    }
+  }
+
+  Future<List<Review>> loadReviews(String productId) async {
+    try {
+      final response = await APIService.getReviewsByProduct(productId);
+      
+      if (response['success'] == true && response['data'] != null) {
+        List<dynamic> reviewsData = response['data']['reviews'];
+        return reviewsData.map((reviewJson) => Review.fromJson(reviewJson)).toList();
+      }
+      return [];
+    } catch (e) {
+      print('Error loading reviews: $e');
       return [];
     }
   }

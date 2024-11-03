@@ -28,6 +28,11 @@ class AppLocalizations {
           'Satisfied with FurniFit AR? Let\'s evaluate together.',
       'logOut': 'Log Out',
       'save': 'Save',
+      'searchHint': 'Search here...',
+      'categories': 'Categories',
+      'bestSelling': 'Best Selling',
+      'allProduct': 'All Product',
+      'setting': 'Settings', // Note: Usually this is plural in English
     },
     'vi': {
       'appTitle': 'Thiết lập tài khoản',
@@ -42,6 +47,11 @@ class AppLocalizations {
       'satisfactionSurvey': 'Hài lòng với FurniFit AR? Hãy đánh giá cùng nhau.',
       'logOut': 'Đăng xuất',
       'save': 'Lưu',
+      'searchHint': 'Tìm kiếm ở đây...',
+      'categories': 'Danh mục',
+      'bestSelling': 'Bán chạy nhất',
+      'allProduct': 'Tất cả sản phẩm',
+      'setting': 'Cài đặt',
     },
   };
 
@@ -63,6 +73,16 @@ class AppLocalizations {
       _localizedValues[locale.languageCode]!['satisfactionSurvey']!;
   String get logOut => _localizedValues[locale.languageCode]!['logOut']!;
   String get save => _localizedValues[locale.languageCode]!['save']!;
+  String get searchHint =>
+      _localizedValues[locale.languageCode]!['searchHint']!;
+  String get categories =>
+      _localizedValues[locale.languageCode]!['categories']!;
+  String get bestSelling =>
+      _localizedValues[locale.languageCode]!['bestSelling']!;
+  String get allProduct =>
+      _localizedValues[locale.languageCode]!['allProduct']!;
+
+  String get setting => _localizedValues[locale.languageCode]!['setting']!;
 }
 
 class _AppLocalizationsDelegate

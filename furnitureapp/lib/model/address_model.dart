@@ -1,4 +1,4 @@
-class Address {
+class AddressUser {
   final String id;
   final String userId;
   final String fullName;
@@ -11,7 +11,7 @@ class Address {
   final String province;
   bool isDefault; // Change from final to mutable
 
-  Address({
+  AddressUser({
     required this.id,
     required this.userId,
     required this.fullName,
@@ -25,8 +25,8 @@ class Address {
     this.isDefault = false, // Provide a default value
   });
 
-  factory Address.fromJson(Map<String, dynamic> json) {
-    return Address(
+  factory AddressUser.fromJson(Map<String, dynamic> json) {
+    return AddressUser(
       id: json['_id'] ?? '', // Provide a default value
       userId: json['user_id'] ?? '', // Provide a default value
       fullName: json['name'] ?? '', // Provide a default value

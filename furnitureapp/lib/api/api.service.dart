@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http; //+
 import 'package:furnitureapp/config/config.dart';
+import 'package:furnitureapp/model/Categories.dart';
 import 'package:furnitureapp/utils/share_service.dart';
 import 'package:furnitureapp/model/login_response_model.dart';
 import 'package:furnitureapp/model/Categories.dart';
 import 'package:furnitureapp/services/data_service.dart';
-
+import 'package:furnitureapp/model/Review.dart';
 
 class APIService {
   static var client = http.Client();
@@ -203,6 +204,30 @@ class APIService {
     }
   }
 
+static Future<Map<String, dynamic>> checkout(Map<String, dynamic> checkoutData) async {
+  String? token = await ShareService.getToken();
+  if (token == null) {
+    throw Exception('User not logged in');
+  }
+
+  Map<String, String> requestHeaders = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer $token',
+  };
+
+  var url = Uri.http(Config.apiURL, Config.checkoutAPI);
+  var response = await client.post(
+    url,
+    headers: requestHeaders,
+    body: jsonEncode(checkoutData),
+  );
+
+  if (response.statusCode == 200) {
+    return jsonDecode(response.body);
+  } else {
+    throw Exception('Checkout failed: ${response.statusCode} - ${response.body}');
+    }
+  }
   static Future<List<Map<String, dynamic>>> fetchProductsByCategory(String categoryId) async {
     Map<String, String> requestHeaders = {'Content-Type': 'application/json'};
 
@@ -505,27 +530,34 @@ class APIService {
     }
   }
 
-  static Future<Map<String, dynamic>> checkout(String cardId) async {
-    String? token = await ShareService.getToken();
-    if (token == null) {
-      throw Exception('User not logged in');
-    }
-    Map<String, String> requestHeaders = {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    };
-    var url = Uri.http(Config.apiURL, Config.checkoutAPI);
-    var response = await client.post(
-      url,
-      headers: requestHeaders,
-      body: jsonEncode({
-        'cardId': cardId,
-      }),
-    );
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception('Checkout failed: ${response.statusCode} - ${response.body}');
+  static Future<Map<String, dynamic>> getReviewsByProduct(String productId) async {
+    try {
+      Map<String, String> requestHeaders = {
+        'Content-Type': 'application/json',
+      };
+      
+      var url = Uri.http(Config.apiURL, '${Config.reviewByProductAPI}/$productId');
+      var response = await client.get(url, headers: requestHeaders);
+      
+      print('Fetching reviews for product: $productId');
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        var jsonResponse = jsonDecode(response.body);
+        return {
+          'success': jsonResponse['success'] ?? false,
+          'data': {
+            'reviews': jsonResponse['data']['reviews'] ?? [],
+            'pagination': jsonResponse['data']['pagination'] ?? {},
+          }
+        };
+      } else {
+        throw Exception('Failed to load reviews: ${response.statusCode}');
+      }
+    } catch (e) {
+      print("Error fetching reviews: $e");
+      rethrow;
     }
   }
 }
