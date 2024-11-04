@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http; //+
 import 'package:furnitureapp/config/config.dart';
-import 'package:furnitureapp/model/Categories.dart';
 import 'package:furnitureapp/utils/share_service.dart';
 import 'package:furnitureapp/model/login_response_model.dart';
 import 'package:furnitureapp/model/Categories.dart';
 import 'package:furnitureapp/services/data_service.dart';
 import 'package:furnitureapp/model/Review.dart';
+import 'dart:convert';
 
 class APIService {
   static var client = http.Client();
@@ -558,6 +558,44 @@ static Future<Map<String, dynamic>> checkout(Map<String, dynamic> checkoutData) 
     } catch (e) {
       print("Error fetching reviews: $e");
       rethrow;
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> searchProducts(String query) async {
+    Map<String, String> requestHeaders = {'Content-Type': 'application/json'};
+    
+    // Tạo URL với tham số tìm kiếm
+    var url = Uri.http(Config.apiURL, Config.listProductAPI, {'search': query});
+    
+    var response = await http.get(url, headers: requestHeaders);
+    
+    if (response.statusCode == 200) {
+      var jsonResponse = jsonDecode(response.body);
+      List<dynamic> products = jsonResponse['products'];
+      
+      return products.map((product) => {
+        'id': product['_id'],
+        'name': product['name'],
+        'description': product['description'],
+        'price': product['price'] is String 
+            ? double.tryParse(product['price']) 
+            : product['price']?.toDouble(),
+        'stockQuantity': product['stockQuantity'],
+        'material': product['material'],
+        'color': product['color'],
+        'images': product['images'],
+        'discount': product['discount'] != 0 ? product['discount'].toString() : '',
+        'category': product['category'],
+        'brand': product['brand'],
+        'style': product['style'],
+        'assemblyRequired': product['assemblyRequired'],
+        'dimensions': product['dimensions'],
+        'weight': product['weight'],
+        'sold': product['sold'],
+        'rating': product['rating'],
+      }).toList();
+    } else {
+      throw Exception('Failed to search products');
     }
   }
 }

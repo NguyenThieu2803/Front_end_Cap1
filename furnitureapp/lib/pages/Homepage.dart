@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:furnitureapp/pages/CartPage.dart';
 import 'package:furnitureapp/pages/FavoritePage.dart';
 import 'package:furnitureapp/pages/UserProfilePage.dart';
+import 'package:furnitureapp/pages/SearchPage.dart';
 import 'package:furnitureapp/widgets/CategoriesWidget.dart';
 import 'package:furnitureapp/widgets/HomeAppBar.dart';
 import 'package:furnitureapp/widgets/HomeItemsWidget.dart';
 import 'package:furnitureapp/widgets/HomeNavigationBar.dart';
 import 'package:furnitureapp/model/Categories.dart';
 import 'package:furnitureapp/translate/localization.dart';
+import 'package:furnitureapp/config/config.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -110,29 +113,43 @@ class HomeContent extends StatelessWidget {
                       // Search bar
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
-                        child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 15),
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: TextFormField(
-                                  decoration: InputDecoration(
-                                    border: InputBorder.none,
-                                    hintText: l10n.searchHint,
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => SearchPage(),
+                                fullscreenDialog: true,
+                              ),
+                            );
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 15),
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: AbsorbPointer(
+                                    child: TextFormField(
+                                      decoration: InputDecoration(
+                                        border: InputBorder.none,
+                                        hintText: l10n.searchHint,
+                                        enabled: false,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                              Icon(
-                                Icons.search,
-                                size: 27,
-                                color: Color(0xFF2B2321),
-                              ),
-                            ],
+                                Icon(
+                                  Icons.search,
+                                  size: 27,
+                                  color: Color(0xFF2B2321),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),

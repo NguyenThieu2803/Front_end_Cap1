@@ -131,4 +131,21 @@ class DataService {
       return [];
     }
   }
+
+  Future<List<Product>> searchProducts(String query) async {
+    try {
+      List<Map<String, dynamic>> productList = await APIService.searchProducts(query);
+      List<Product> products = productList
+          .map((productJson) => Product.fromJson(productJson))
+          .where((product) => 
+              product.name?.toLowerCase().contains(query.toLowerCase()) ?? false)
+          .toList();
+      
+      print('Search results count: ${products.length}');
+      return products;
+    } catch (error) {
+      print('Failed to search products: $error');
+      return [];
+    }
+  }
 }

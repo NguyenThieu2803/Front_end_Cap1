@@ -27,7 +27,7 @@ class UserProfileAppBar extends StatelessWidget {
           ),
           Spacer(),
           Text(
-            "UserProfile",
+            "User Profile",
             style: TextStyle(
               fontSize: 23,
               fontWeight: FontWeight.bold,

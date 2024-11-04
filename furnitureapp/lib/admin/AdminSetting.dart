@@ -41,7 +41,7 @@ class AdminSetting extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: const Color(0xFFEDECF2),
       appBar: AppBar(
         toolbarHeight: 80,
         backgroundColor: Colors.white,

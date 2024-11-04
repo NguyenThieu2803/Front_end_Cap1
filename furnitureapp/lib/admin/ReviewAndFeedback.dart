@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:furnitureapp/widgets/FavoriteItemSamples.dart';
 import 'package:furnitureapp/widgets/ReviewAndFeedbackAppBar.dart';
+import 'package:furnitureapp/widgets/ReviewAndFeedbackItemSamples.dart';
 
 
 class ReviewAndFeedback extends StatefulWidget {
@@ -13,35 +13,37 @@ class ReviewAndFeedback extends StatefulWidget {
 class _ReviewAndFeedbackState extends State<ReviewAndFeedback> {
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          children: [
-            ReviewAndFeedbackAppBar(), // Đảm bảo FavoriteAppBar không null
-            Expanded(
-              child: Container(
-                decoration: const BoxDecoration(
-                  color: Color(0xFFEDECF2),
+      body: Column(
+        children: [
+          // AppBar sẽ luôn ở trên cùng và cố định.
+          ReviewAndFeedbackAppBar(),
+
+          // Expanded để nội dung thông báo chiếm hết phần còn lại của màn hình.
+          Expanded(
+            child: Container(
+              color: const Color(0xFFEDECF2), // Màu nền phía sau
+              child: ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(30),
+                  topRight: Radius.circular(30),
                 ),
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    topRight: Radius.circular(30),
-                  ),
-                  child: ListView(
-                    padding: EdgeInsets.only(top: 10),
-                    children: [
-                      FavoriteItemSamples(),
-                      // Thêm SizedBox để tạo khoảng trống ở cuối danh sách
-                      SizedBox(height: 20),
-                    ],
-                  ),
+                // Sử dụng ListView để hiển thị danh sách các thông báo.
+                child: ListView(
+                  padding: const EdgeInsets.only(top: 10),
+                  children: const [
+                    // Import và hiển thị các mẫu thông báo.
+                    ReviewAndFeedbackItemSamples(),
+                    // Khoảng trống ở cuối danh sách để tạo khoảng cách.
+                    SizedBox(height: 20),
+                  ],
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

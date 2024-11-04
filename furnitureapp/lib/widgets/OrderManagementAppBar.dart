@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:furnitureapp/admin/AdminSetting.dart';
 
 class OrderManagementAppBar extends StatefulWidget {
   const OrderManagementAppBar({super.key});
@@ -18,11 +17,9 @@ class _OrderManagementAppBarState extends State<OrderManagementAppBar> {
         children: [
           InkWell(
             onTap: () {
-              // Chuyển về trang chủ
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => AdminSetting()),
-              );
+              // Quay về trang trước đó
+              Navigator.pop(
+                  context); // Đóng trang hiện tại và quay về trang trước đó
             },
             child: Icon(
               Icons.arrow_back,
