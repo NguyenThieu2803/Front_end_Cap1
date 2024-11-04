@@ -54,17 +54,20 @@ class Evaluate extends StatelessWidget {
                 itemCount: products.length,
                 itemBuilder: (context, index) {
                   final product = products[index];
-                  return _buildProductSection(
-                    context, // Thêm context vào đây
-                    headerText: product.headerText,
-                    imageUrl: product.imageUrl,
-                    productName: product.productName,
-                    productDetail: product.productDetail,
-                    totalAmountLabel: product.totalAmountLabel,
-                    totalAmount: product.totalAmount,
-                    estimatedDeliveryDate: product.estimatedDeliveryDate,
-                    returnButtonText: product.returnButtonText,
-                    cancelButtonText: product.cancelButtonText,
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 10), // Thêm khoảng cách 10 giữa các thẻ
+                    child: _buildProductSection(
+                      context,
+                      headerText: product.headerText,
+                      imageUrl: product.imageUrl,
+                      productName: product.productName,
+                      productDetail: product.productDetail,
+                      totalAmountLabel: product.totalAmountLabel,
+                      totalAmount: product.totalAmount,
+                      estimatedDeliveryDate: product.estimatedDeliveryDate,
+                      returnButtonText: product.returnButtonText,
+                      cancelButtonText: product.cancelButtonText,
+                    ),
                   );
                 },
               ),
@@ -83,29 +86,31 @@ class Evaluate extends StatelessWidget {
         .toList();
   }
 
-  Widget _buildProductSection(
-    BuildContext context, { // Thêm BuildContext vào đây
-    required String headerText,
-    required String imageUrl,
-    required String productName,
-    required String productDetail,
-    required String totalAmountLabel,
-    required String totalAmount,
-    required String estimatedDeliveryDate,
-    required String returnButtonText,
-    required String cancelButtonText,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.all(15.0),
-      child: Card(
-        color: Colors.white,
+Widget _buildProductSection(
+  BuildContext context, {
+  required String headerText,
+  required String imageUrl,
+  required String productName,
+  required String productDetail,
+  required String totalAmountLabel,
+  required String totalAmount,
+  required String estimatedDeliveryDate,
+  required String returnButtonText,
+  required String cancelButtonText,
+}) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15), // Reduce horizontal padding
+    child: Card(
+      color: Colors.white,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 350), // Set a max width for the card
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(10.0), // Reduce padding inside the card
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildProductHeader(headerText),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8), // Adjust spacing
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -113,12 +118,12 @@ class Evaluate extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                     child: Image.network(
                       imageUrl,
-                      width: 100,
-                      height: 100,
+                      width: 90, // Adjust image width
+                      height: 90, // Adjust image height
                       fit: BoxFit.cover,
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 8), // Adjust spacing
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -126,16 +131,16 @@ class Evaluate extends StatelessWidget {
                         Text(
                           productName,
                           style: const TextStyle(
-                            fontSize: 16,
+                            fontSize: 15, // Adjust font size
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6), // Adjust spacing
                         Text(
                           productDetail,
                           style: const TextStyle(
                             color: Colors.grey,
-                            fontSize: 14,
+                            fontSize: 13, // Adjust font size
                           ),
                         ),
                       ],
@@ -143,21 +148,23 @@ class Evaluate extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8), // Adjust spacing
               _buildTotalAmountSection(totalAmountLabel, totalAmount),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8), // Adjust spacing
               Text(
                 estimatedDeliveryDate,
-                style: const TextStyle(fontSize: 16, color: Colors.grey),
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
               ),
-              const SizedBox(height: 10),
-              _buildActionButtons(context, returnButtonText, cancelButtonText), // Cập nhật ở đây
+              const SizedBox(height: 8), // Adjust spacing
+              _buildActionButtons(context, returnButtonText, cancelButtonText),
             ],
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   Widget _buildProductHeader(String headerText) {
     Color textColor;
