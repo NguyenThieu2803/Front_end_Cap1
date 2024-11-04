@@ -36,9 +36,22 @@ class _ProductPageState extends State<ProductPage>
   }
 
   void increaseQuantity() {
-    setState(() {
-      quantity++;
-    });
+    if (widget.product.stockQuantity != null &&
+        quantity < widget.product.stockQuantity!) {
+      setState(() {
+        quantity++;
+      });
+    } else {
+      // Hiển thị thông báo khi đạt giới hạn stock
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              'Cannot exceed available stock (${widget.product.stockQuantity} items)'),
+          duration: const Duration(seconds: 2),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void decreaseQuantity() {
@@ -186,7 +199,7 @@ class _ProductPageState extends State<ProductPage>
             Row(
               children: [
                 Text(
-                  'Color: ${selectedColor != null ? _getColorNameFromColor(selectedColor!) : "No color selected"}',
+                  'Color: ${selectedColor != null ? _getColorNameFromColor(selectedColor!) : "Please choose product color"}',
                   style: const TextStyle(
                     fontSize: 16,
                     color: Color(0xFF2B2321),
@@ -201,14 +214,14 @@ class _ProductPageState extends State<ProductPage>
   }
 
   String _getColorNameFromColor(Color color) {
-    if (color == Colors.brown) return 'Nâu';
-    if (color == Colors.black) return 'Đen';
-    if (color == Colors.white) return 'Trắng';
-    if (color == Colors.grey) return 'Xám';
-    if (color == Colors.red) return 'Đỏ';
-    if (color == Colors.blue) return 'Xanh dương';
-    if (color == Colors.green) return 'Xanh lá';
-    if (color == Colors.yellow) return 'Vàng';
+    if (color == Colors.brown) return 'brown';
+    if (color == Colors.black) return 'black';
+    if (color == Colors.white) return 'white';
+    if (color == Colors.grey) return 'grey';
+    if (color == Colors.red) return 'red';
+    if (color == Colors.blue) return 'blue';
+    if (color == Colors.green) return 'green';
+    if (color == Colors.yellow) return 'yellow';
     return 'chưa có';
   }
 
@@ -278,47 +291,68 @@ class _ProductPageState extends State<ProductPage>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '- Dimensions (L x W x H):\n${widget.product.dimensions!.width} x ${widget.product.dimensions!.depth} x ${widget.product.dimensions!.height}',
-            style: const TextStyle(fontSize: 15, color: Color(0xFF2B2321)),
+          const Text(
+            'Product Specifications',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF2B2321),
+            ),
           ),
           const SizedBox(height: 10),
-          Text(
-            '- Material:\n${widget.product.material}',
-            style: const TextStyle(fontSize: 15, color: Color(0xFF2B2321)),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            '- Weight:\n${widget.product.weight} kg',
-            style: const TextStyle(fontSize: 15, color: Color(0xFF2B2321)),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            '- Stock Quantity:\n${widget.product.stockQuantity} items',
-            style: const TextStyle(
-                fontSize: 15, color: Color.fromARGB(255, 67, 63, 62)),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            '- Sold:\n${widget.product.sold} items',
-            style: const TextStyle(fontSize: 15, color: Color(0xFF2B2321)),
-          ),
-          const SizedBox(height: 10),
-          if (widget.product.discount != null && widget.product.discount! > 0)
-            Text(
-              '- Discount:\n${widget.product.discount}%',
+          _buildSpecItem('- Style:', widget.product.style ?? 'N/A'),
+          _buildSpecItem('- Dimensions:',
+              '${widget.product.dimensions!.width} x ${widget.product.dimensions!.depth} x ${widget.product.dimensions!.height} (L x W x H)'),
+          _buildSpecItem('- Material:', widget.product.material ?? 'N/A'),
+          _buildSpecItem('- Weight:', '${widget.product.weight ?? 0} kg'),
+          _buildSpecItem('- Stock Quantity:',
+              '${widget.product.stockQuantity ?? 0} items'),
+          _buildSpecItem('- Sold:', '${widget.product.sold ?? 0} items'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSpecItem(String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 1,
+            child: Text(
+              title,
               style: const TextStyle(
                 fontSize: 15,
-                color: Colors.red,
-                fontWeight: FontWeight.bold,
+                color: Color(0xFF2B2321),
+                fontWeight: FontWeight.w500,
               ),
             ),
+          ),
+          const SizedBox(width: 20), // Thêm khoảng cách giữa tiêu đề và giá trị
+          Expanded(
+            flex: 2,
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 15,
+                color: Color(0xFF2B2321),
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildBottomBar() {
+    // Tính toán giá sau khi giảm giá
+    double originalPrice = widget.product.price! * quantity;
+    int discountPercentage = widget.product.discount ?? 0;
+    double discountAmount = originalPrice * (discountPercentage / 100);
+    double finalPrice = originalPrice - discountAmount;
+
     return Container(
       height: 90,
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
@@ -326,13 +360,45 @@ class _ProductPageState extends State<ProductPage>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            '${(widget.product.price! * quantity).toStringAsFixed(0)}\$',
-            style: const TextStyle(
-              fontSize: 30,
-              fontWeight: FontWeight.bold,
-            ),
+          // Hiển thị giá đã giảm
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '${finalPrice.toStringAsFixed(0)}\$',
+                style: const TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           ),
+          // Hiển thị giá gốc và tỷ lệ giảm bên phải
+          if (discountPercentage > 0)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  '${originalPrice.toStringAsFixed(0)}\$',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey,
+                    decoration: TextDecoration.lineThrough,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  '-$discountPercentage%',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.red,
+                  ),
+                ),
+              ],
+            ),
+          // Nút thêm vào giỏ hàng
           ElevatedButton.icon(
             onPressed: _addToCart,
             style: ElevatedButton.styleFrom(
@@ -360,25 +426,53 @@ class _ProductPageState extends State<ProductPage>
   }
 
   Widget _buildColorOptions() {
+    // Lấy màu từ dữ liệu sản phẩm
+    List<Color> productColors = [];
+
+    // Thêm màu chính nếu có
+    if (widget.product.color?.primary != null) {
+      Color? primaryColor = _colorFromString(widget.product.color!.primary!);
+      if (primaryColor != Colors.transparent) {
+        productColors.add(primaryColor);
+      }
+    }
+
+    // Thêm màu phụ nếu có và khác null và "None"
+    if (widget.product.color?.secondary != null &&
+        widget.product.color!.secondary!.toLowerCase() != "none") {
+      Color? secondaryColor =
+          _colorFromString(widget.product.color!.secondary!);
+      if (secondaryColor != Colors.transparent) {
+        productColors.add(secondaryColor);
+      }
+    }
+
+    // Nếu không có màu nào được tìm thấy, trả về thông báo
+    if (productColors.isEmpty) {
+      return const Text(
+        'Other colors have not been updated yet',
+        style: TextStyle(fontSize: 16, color: Colors.grey),
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'choose colors:',
+          'Choose colors:',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 10),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildColorOption(Colors.red),
-            _buildColorOption(Colors.blue),
-            _buildColorOption(Colors.green),
-            _buildColorOption(Colors.brown),
-            _buildColorOption(Colors.black),
-            _buildColorOption(Colors.white),
-            _buildColorOption(Colors.grey),
-          ],
+          mainAxisAlignment:
+              MainAxisAlignment.start, // Đổi từ spaceAround sang start
+          children: productColors.map((color) {
+            return Padding(
+              padding: const EdgeInsets.only(
+                  right: 16.0), // Thêm padding giữa các màu
+              child: _buildColorOption(color),
+            );
+          }).toList(),
         ),
       ],
     );
