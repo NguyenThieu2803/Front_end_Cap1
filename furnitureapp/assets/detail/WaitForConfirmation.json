@@ -1,0 +1,25 @@
+{
+    "products": [
+      {
+        "headerText": "Delivered",
+        "imageUrl": "https://images2.thanhnien.vn/528068263637045248/2024/1/25/e093e9cfc9027d6a142358d24d2ee350-65a11ac2af785880-17061562929701875684912.jpg",
+        "productName": "Set Bộ Áo Thun Nữ Form Rộng Tay Lỡ + Q...",
+        "productDetail": "BỘ KRAKEN BE XANH,L(45-70kg)",
+        "totalAmountLabel": "Total amount (1 product):",
+        "totalAmount": "$180",
+        "cancelButtonText": "Cancel Order",
+        "tags": ["Free Returns", "Pre-Order"]
+      },
+      {
+        "headerText": "Delivered",
+        "imageUrl": "https://images2.thanhnien.vn/528068263637045248/2024/1/25/e093e9cfc9027d6a142358d24d2ee350-65a11ac2af785880-17061562929701875684912.jpg",
+        "productName": "Set Bộ Áo Thun Nữ Form Rộng Tay Lỡ + Q...",
+        "productDetail": "BỘ KRAKEN BE XANH,L(45-70kg)",
+        "totalAmountLabel": "Total amount (1 product):",
+        "totalAmount": "$150",
+        "cancelButtonText": "Cancel Order",
+        "tags": ["Free Returns", "Pre-Order"]
+      }
+    ]
+  }
+  
