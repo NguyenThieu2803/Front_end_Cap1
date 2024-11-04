@@ -12,6 +12,7 @@ class CartPage extends StatefulWidget {
 
 class _CartPageState extends State<CartPage> {
   double _totalAmount = 0.0;
+  Set<String> _selectedProductIds = {};
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +40,10 @@ class _CartPageState extends State<CartPage> {
                           setState(() {
                             _totalAmount = totalPrice;
                           });
+                        }, onSelectedItemsChanged: (Set<String> selectedIds) {
+                          setState(() {
+                            _selectedProductIds = selectedIds;
+                          });
                         },
                       ),
                       SizedBox(height: 20),
@@ -50,7 +55,7 @@ class _CartPageState extends State<CartPage> {
           ],
         ),
       ),
-      bottomNavigationBar: CartBottomNavBar(totalAmount: _totalAmount),
+      bottomNavigationBar: CartBottomNavBar(totalAmount: _totalAmount, selectedProductIds: _selectedProductIds),
     );
   }
 }

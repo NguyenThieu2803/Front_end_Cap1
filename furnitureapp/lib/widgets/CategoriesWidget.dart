@@ -6,7 +6,7 @@ class CategoriesWidget extends StatefulWidget {
   final String selectedCategory;
   final Function(String) onCategorySelected;
 
-  CategoriesWidget({Key? key, required this.selectedCategory, required this.onCategorySelected}) : super(key: key);
+  const CategoriesWidget({super.key, required this.selectedCategory, required this.onCategorySelected});
 
   @override
   _CategoriesWidgetState createState() => _CategoriesWidgetState();

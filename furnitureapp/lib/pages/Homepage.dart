@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:furnitureapp/pages/CartPage.dart';
 import 'package:furnitureapp/pages/FavoritePage.dart';
-import 'package:furnitureapp/pages/UserProfilePage.dart';
-import 'package:furnitureapp/widgets/CategoriesWidget.dart';
 import 'package:furnitureapp/widgets/HomeAppBar.dart';
-import 'package:furnitureapp/widgets/HomeItemsWidget.dart';
-import 'package:furnitureapp/widgets/HomeNavigationBar.dart';
+import 'package:furnitureapp/pages/UserProfilePage.dart';
 import 'package:furnitureapp/translate/localization.dart';
+import 'package:furnitureapp/widgets/HomeItemsWidget.dart';
+import 'package:furnitureapp/widgets/CategoriesWidget.dart';
+import 'package:furnitureapp/widgets/HomeNavigationBar.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -66,7 +66,7 @@ class HomeContent extends StatelessWidget {
   final String selectedCategory;
   final Function(String) onCategorySelected;
 
-  const HomeContent({Key? key, required this.selectedCategory, required this.onCategorySelected}) : super(key: key);
+  const HomeContent({super.key, required this.selectedCategory, required this.onCategorySelected});
 
   @override
   Widget build(BuildContext context) {

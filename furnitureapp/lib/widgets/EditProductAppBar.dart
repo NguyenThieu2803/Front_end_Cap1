@@ -8,13 +8,13 @@ class EditProductAppBar extends StatelessWidget {
   final bool isFormValid;
 
   const EditProductAppBar({
-    Key? key,
+    super.key,
     required this.initialProductName,
     required this.initialProductDescription,
     required this.initialPrice,
     required this.isFormValid,
     this.onAddPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

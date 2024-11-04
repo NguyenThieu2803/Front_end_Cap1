@@ -3,8 +3,8 @@ import '../model/product.dart';
 import '../model/card_model.dart';
 import '../model/address_model.dart';
 import 'package:furnitureapp/api/api.service.dart';
-import 'package:furnitureapp/model/Cart_User_Model.dart';
 import 'package:furnitureapp/model/Categories.dart';
+import 'package:furnitureapp/model/Cart_User_Model.dart';
 class DataService {
   Future<List<Product>> loadProducts({required String category}) async {
     try {
