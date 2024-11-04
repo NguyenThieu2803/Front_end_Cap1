@@ -157,7 +157,7 @@ class APIService {
       // Chuyển đổi danh sách thành List<Map<String, dynamic>>
       List<Map<String, dynamic>> productList = products.map((product) {
         return {
-          'id': product['_id'],
+          '_id': product['_id'],
           'name': product['name'],
           'description': product['description'],
           'price': product['price'] is String 

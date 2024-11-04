@@ -6,7 +6,9 @@ import 'package:furnitureapp/model/address_model.dart';
 import 'package:furnitureapp/model/Cart_User_Model.dart';
 
 class CheckOutPage extends StatefulWidget {
-  const CheckOutPage({Key? key}) : super(key: key);
+  final Set<String> selectedProductIds;
+
+  const CheckOutPage({super.key, required this.selectedProductIds});
 
   @override
   _CheckOutPageState createState() => _CheckOutPageState();
@@ -24,7 +26,9 @@ class _CheckOutPageState extends State<CheckOutPage> {
   final _cardExpYearController = TextEditingController();
   final _cardCVCController = TextEditingController();
   final _cardHolderNameController = TextEditingController();
-
+final double shippingFee = 30.0;
+    late double subTotal;
+    late double total;
   @override
   void initState() {
     super.initState();
@@ -43,9 +47,13 @@ class _CheckOutPageState extends State<CheckOutPage> {
       final cartData = await APIService.getCart();
       _cart = Cart.fromJson(cartData);
       
+      // Filter cart items based on selected product IDs
+      _cart?.items = _cart?.items?.where((item) => widget.selectedProductIds.contains(item.product?.id)).toList();
+      
       final cardsData = await APIService.getAllCards();
       _cards = cardsData.map((cardData) => CardModel.fromJson(cardData)).toList();
-      
+      subTotal = _cart?.cartTotal ?? 0;
+      total=subTotal + shippingFee;
       setState(() {
         _isLoading = false;
       });
@@ -59,6 +67,25 @@ class _CheckOutPageState extends State<CheckOutPage> {
     var month = _cardExpMonthController.text.trim();
     var year = _cardExpYearController.text.trim();
 
+    // Ensure month and year are not empty and are valid integers
+    if (month.isEmpty || year.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Expiration month and year are required.')),
+      );
+      return null;
+    }
+
+    int? expMonth = int.tryParse(month);
+    int? expYear = int.tryParse("20$year");
+
+    // Check if parsing was successful
+    if (expMonth == null || expYear == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Invalid expiration date.')),
+      );
+      return null;
+    }
+
     CardTokenParams cardParams = CardTokenParams(
       type: TokenType.Card,
       name: _cardHolderNameController.text,
@@ -67,8 +94,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
     await Stripe.instance.dangerouslyUpdateCardDetails(CardDetails(
       number: _cardNumberController.text,
       cvc: _cardCVCController.text,
-      expirationMonth: int.tryParse(month),
-      expirationYear: int.tryParse("20$year"),
+      expirationMonth: expMonth,
+      expirationYear: expYear,
     ));
 
     try {
@@ -89,14 +116,24 @@ class _CheckOutPageState extends State<CheckOutPage> {
   }
 
   Future<void> _processCheckout() async {
-    final cardToken = await generateStripeToken();
-    if (cardToken == null) return;
+    // print(widget.selectedProductIds);
+    
+    // Generate card token only if the selected payment method is 'Credit Card'
+    String? cardToken;
+    if (_selectedPaymentMethod == 'Credit Card') {
+      cardToken = await generateStripeToken();
+      if (cardToken == null) return; // Exit if token generation failed
+    }
+    
 
     try {
       Map<String, dynamic> checkoutData = {
         'paymentMethod': _selectedPaymentMethod,
         'addressId': _defaultAddress?.id,
-        'cardToken': cardToken, // Use the token instead of raw card details
+        'totalPrices': total,
+        // Include cardToken only if it's not null (i.e., payment method is 'Credit Card')
+        if (cardToken != null) 'cardToken': cardToken,
+        'products': widget.selectedProductIds.map((id) => ({ 'productId': id })).toList(),
       };
 
       final result = await APIService.checkout(checkoutData);
@@ -138,6 +175,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
               children: [
                 Positioned.fill(
                   child: SingleChildScrollView(
+                    padding: EdgeInsets.only(bottom: 100),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -175,6 +213,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
   }
 
   Widget _buildCartItems() {
+    print(_cart);
     if (_cart == null || _cart!.items == null || _cart!.items!.isEmpty) {
       return Container(
         padding: EdgeInsets.all(16),
@@ -196,7 +235,19 @@ class _CheckOutPageState extends State<CheckOutPage> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          ..._cart!.items!.map((item) => _buildCartItem(item)).toList(),
+          SizedBox(height: 8),
+          SizedBox(
+            height: 200, // Adjust height as needed
+            child: ListView.builder(
+              scrollDirection: Axis.vertical,
+              itemCount: _cart!.items!.length,
+              itemBuilder: (context, index) {
+                final item = _cart!.items![index];
+                print(item.toJson()); // Log the item to the console
+                return _buildCartItem(item);
+              },
+            ),
+          ),
         ],
       ),
     );
@@ -205,13 +256,29 @@ class _CheckOutPageState extends State<CheckOutPage> {
   Widget _buildCartItem(CartItem item) {
     return Container(
       margin: EdgeInsets.symmetric(vertical: 8),
+      padding: EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.3),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
       child: Row(
         children: [
-          Image.network(
-            item.product?.images?.first ?? '',
-            width: 80,
-            height: 80,
-            fit: BoxFit.cover,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.network(
+              item.product?.images?.first ?? '',
+              width: 80,
+              height: 80,
+              fit: BoxFit.cover,
+            ),
           ),
           SizedBox(width: 16),
           Expanded(
@@ -222,45 +289,45 @@ class _CheckOutPageState extends State<CheckOutPage> {
                   item.name ?? 'Unknown Product',
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF3E3364),
                   ),
                 ),
                 SizedBox(height: 4),
-                if (item.product?.description != null)
-                  Text(
-                    item.product!.description!,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
+                Text(
+                  '\$${item.price?.toStringAsFixed(2) ?? '0.00'}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey,
                   ),
-                SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Quantity: ${item.quantity}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                    Text(
-                      '\$${(item.price ?? 0) * (item.quantity ?? 1)}',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ],
                 ),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildQuantityButton(IconData icon) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.3),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: IconButton(
+        icon: Icon(icon, color: Color(0xFF3E3364)),
+        onPressed: () {
+          // Handle quantity change
+        },
       ),
     );
   }
@@ -271,16 +338,76 @@ class _CheckOutPageState extends State<CheckOutPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Address', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(
+            'Shipping to',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF3E3364),
+            ),
+          ),
+          SizedBox(height: 8),
           if (_defaultAddress != null)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(_defaultAddress!.fullName),
-                Text(_defaultAddress!.phoneNumber),
-                Text(_defaultAddress!.streetAddress),
-                Text('${_defaultAddress!.ward}, ${_defaultAddress!.district}, ${_defaultAddress!.province}'),
-              ],
+            Container(
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.3),
+                    spreadRadius: 1,
+                    blurRadius: 5,
+                    offset: Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.radio_button_checked,
+                    color: Colors.orange,
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _defaultAddress!.fullName,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          _defaultAddress!.phoneNumber,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        Text(
+                          _defaultAddress!.streetAddress,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        Text(
+                          '${_defaultAddress!.ward}, ${_defaultAddress!.district}, ${_defaultAddress!.province}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
         ],
       ),
@@ -353,52 +480,78 @@ class _CheckOutPageState extends State<CheckOutPage> {
   }
 
   Widget _buildTotalAndBuyButton() {
+
     return Container(
       padding: EdgeInsets.all(16),
-      color: Colors.white,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Total:', 
-                style: TextStyle(
-                  fontSize: 18, 
-                  fontWeight: FontWeight.bold
-                )
-              ),
-              Text(
-                '\$${(_cart?.cartTotal ?? 0) + 10}', 
-                style: TextStyle(
-                  fontSize: 18, 
-                  fontWeight: FontWeight.bold,
-                  color: Colors.red,
-                )
-              ),
-            ],
-          ),
-          SizedBox(height: 16),
-          ElevatedButton(
-            child: Text(
-              'BUY', 
-              style: TextStyle(
-                fontSize: 18, 
-                color: Colors.white
-              )
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.black,
-              minimumSize: Size(double.infinity, 50),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            onPressed: _processCheckout, // Call _processCheckout
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.3),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: Offset(0, -3),
           ),
         ],
       ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildRow('Shipping fee', '\$${shippingFee.toStringAsFixed(2)}'),
+          SizedBox(height: 8),
+          _buildRow('Sub total', '\$${subTotal.toStringAsFixed(2)}'),
+          Divider(thickness: 1, color: Colors.grey[300]),
+          _buildRow('Total', '\$${total.toStringAsFixed(2)}', isBold: true),
+          SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton(
+              onPressed: _processCheckout,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFF3E3364),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              child: Text(
+                'Payment',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Color(0xFFFFD700),
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.2,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRow(String label, String value, {bool isBold = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: isBold ? FontWeight.w600 : FontWeight.w400,
+            color: Colors.black87,
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: isBold ? FontWeight.w600 : FontWeight.w400,
+            color: isBold ? Colors.black : Colors.grey[600],
+          ),
+        ),
+      ],
     );
   }
 }
