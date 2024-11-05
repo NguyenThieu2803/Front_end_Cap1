@@ -5,11 +5,13 @@ import '../model/address_model.dart';
 import 'package:furnitureapp/api/api.service.dart';
 import 'package:furnitureapp/model/Categories.dart';
 import 'package:furnitureapp/model/Cart_User_Model.dart';
+import 'package:furnitureapp/model/UserProfile_model.dart';
+
 class DataService {
   Future<List<Product>> loadProducts({required String category}) async {
     try {
       List<Map<String, dynamic>> productList;
-      
+
       if (category == 'All Product') {
         productList = await APIService.fetchAllProducts();
       } else {
@@ -19,17 +21,20 @@ class DataService {
           (cat) => cat.name == category,
           orElse: () => Categories(),
         );
-        
+
         if (selectedCategory.id != null) {
           print('Loading products for category: ${selectedCategory.id}');
-          productList = await APIService.fetchProductsByCategory(selectedCategory.id!);
+          productList =
+              await APIService.fetchProductsByCategory(selectedCategory.id!);
         } else {
           print('Category ID not found for: $category');
           productList = await APIService.fetchAllProducts();
         }
       }
-      
-      return productList.map((productJson) => Product.fromJson(productJson)).toList();
+
+      return productList
+          .map((productJson) => Product.fromJson(productJson))
+          .toList();
     } catch (error) {
       print('Failed to load products: $error');
       return [];
@@ -40,7 +45,7 @@ class DataService {
     try {
       dynamic cartData = await APIService.getCart();
       print("Cart data received: $cartData");
-      
+
       Map<String, dynamic> parsedData;
       if (cartData is String) {
         print("Parsing String to JSON");
@@ -49,12 +54,13 @@ class DataService {
         print("Data is already a Map");
         parsedData = cartData;
       } else {
-        throw FormatException('Unexpected format of cart data: ${cartData.runtimeType}');
+        throw FormatException(
+            'Unexpected format of cart data: ${cartData.runtimeType}');
       }
-      
+
       print("Parsed data type: ${parsedData.runtimeType}");
       print("Parsed data: $parsedData");
-      
+
       Cart cart = Cart.fromJson(parsedData);
       return cart;
     } catch (error) {
@@ -65,7 +71,7 @@ class DataService {
       return null;
     }
   }
-  
+
   Future<List<Categories>> loadCategories() async {
     try {
       final categoriesData = await APIService.fetchAllCategories();
@@ -78,7 +84,8 @@ class DataService {
 
   Future<List<AddressUser>> loadAddresses() async {
     try {
-      List<Map<String, dynamic>> addressData = await APIService.getAllAddresses();
+      List<Map<String, dynamic>> addressData =
+          await APIService.getAllAddresses();
       print("Address data received: $addressData");
       return addressData.map((data) => AddressUser.fromJson(data)).toList();
     } catch (error) {
@@ -94,6 +101,18 @@ class DataService {
     } catch (error) {
       print('Failed to load cards: $error');
       return [];
+    }
+  }
+
+  // Get user Profile
+ Future<UserProfile?> loadUserProfile() async {
+    try {
+      final Map<String, dynamic> userData = await APIService.getUserProfile();
+      print("This is user profile: $userData");
+      return UserProfile.fromJson(userData);
+    } catch (error) {
+      print('Failed to load user profile: $error');
+      return null;
     }
   }
 }

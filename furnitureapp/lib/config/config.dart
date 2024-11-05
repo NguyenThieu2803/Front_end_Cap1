@@ -4,6 +4,7 @@ class Config {
   //static const String apiURL = "172.16.20.33:3000";
   static const String registerAPI = "api/auth/register";
   static const String loginAPI = "api/auth/login";
+  static const String profileAPI = "/api/auth/users/profile";
   static const String CartAPI = "api/v1/cart";
   static const String listProductAPI = "api/v1/getallproduct";
   static const String listCategoryAPI = "api/v1/getAllCategories";
