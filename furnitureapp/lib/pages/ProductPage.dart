@@ -186,6 +186,7 @@ class _ProductPageState extends State<ProductPage>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Product Name
             Text(
               widget.product.name!,
               style: const TextStyle(
@@ -193,20 +194,92 @@ class _ProductPageState extends State<ProductPage>
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 5),
-            _buildRatingRow(),
-            const SizedBox(height: 10),
+            const SizedBox(
+                height: 2), // Reduced space between product name and brand
+
+            // Brand and Choose Quantity
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                // Display brand
+                Expanded(
+                  child: Text(
+                    widget.product.brand ?? 'N/A',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2B2321),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                // Choose Quantity label
                 Text(
-                  'Color: ${selectedColor != null ? _getColorNameFromColor(selectedColor!) : "Please choose product color"}',
+                  'Choose Quantity:',
                   style: const TextStyle(
                     fontSize: 16,
-                    color: Color(0xFF2B2321),
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
+
+            // Quantity controls positioned next to Sold information
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Sold information displayed in a row
+                Row(
+                  children: [
+                    const Text(
+                      'Sold:',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(
+                        width: 5), // Space between 'Sold:' and quantity
+                    Text(
+                      '${widget.product.sold ?? 0} items',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ],
+                ),
+                // Quantity controls
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.remove),
+                      onPressed: decreaseQuantity,
+                      padding: EdgeInsets
+                          .zero, // Remove padding for better alignment
+                    ),
+                    SizedBox(
+                      width:
+                          40, // Fixed width for quantity display for better alignment
+                      child: Center(
+                        child: Text(
+                          '$quantity',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.add),
+                      onPressed: increaseQuantity,
+                      padding: EdgeInsets
+                          .zero, // Remove padding for better alignment
+                    ),
+                  ],
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 10), // Space after sold information
           ],
         ),
       ),
@@ -248,42 +321,6 @@ class _ProductPageState extends State<ProductPage>
     }
   }
 
-  Widget _buildRatingRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          'Brand: ${widget.product.brand ?? 'N/A'}',
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF2B2321),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Row(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.remove),
-              onPressed: decreaseQuantity,
-            ),
-            Text(
-              '$quantity',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: increaseQuantity,
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
   Widget _buildProductSpecs() {
     return Container(
       color: const Color(0xFFEDECF2),
@@ -305,9 +342,8 @@ class _ProductPageState extends State<ProductPage>
               '${widget.product.dimensions!.width} x ${widget.product.dimensions!.depth} x ${widget.product.dimensions!.height} (L x W x H)'),
           _buildSpecItem('- Material:', widget.product.material ?? 'N/A'),
           _buildSpecItem('- Weight:', '${widget.product.weight ?? 0} kg'),
-          _buildSpecItem('- Stock Quantity:',
-              '${widget.product.stockQuantity ?? 0} items'),
-          _buildSpecItem('- Sold:', '${widget.product.sold ?? 0} items'),
+          _buildSpecItem(
+              '- Quantity:', '${widget.product.stockQuantity ?? 0} items'),
         ],
       ),
     );
@@ -347,20 +383,32 @@ class _ProductPageState extends State<ProductPage>
   }
 
   Widget _buildBottomBar() {
-    // Tính toán giá sau khi giảm giá
+    // Calculate the price after discount
     double originalPrice = widget.product.price! * quantity;
     int discountPercentage = widget.product.discount ?? 0;
     double discountAmount = originalPrice * (discountPercentage / 100);
     double finalPrice = originalPrice - discountAmount;
 
     return Container(
-      height: 90,
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
-      color: Colors.white,
+      height: 100, // Increased height for better spacing
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: Offset(0, -2), // Changes position of shadow
+          ),
+        ],
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(20)), // Rounded corners
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Hiển thị giá đã giảm
+          // Display discounted price
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -368,37 +416,37 @@ class _ProductPageState extends State<ProductPage>
               Text(
                 '${finalPrice.toStringAsFixed(0)}\$',
                 style: const TextStyle(
-                  fontSize: 30,
+                  fontSize: 28, // Slightly larger font size
                   fontWeight: FontWeight.bold,
+                  color: Colors.black87, // Darker text for better readability
                 ),
               ),
+              if (discountPercentage > 0)
+                Row(
+                  children: [
+                    Text(
+                      '${originalPrice.toStringAsFixed(0)}\$',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                        decoration: TextDecoration.lineThrough,
+                      ),
+                    ),
+                    const SizedBox(
+                        width: 5), // Space between original price and discount
+                    Text(
+                      '-$discountPercentage%',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
             ],
           ),
-          // Hiển thị giá gốc và tỷ lệ giảm bên phải
-          if (discountPercentage > 0)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  '${originalPrice.toStringAsFixed(0)}\$',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
-                    decoration: TextDecoration.lineThrough,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  '-$discountPercentage%',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.red,
-                  ),
-                ),
-              ],
-            ),
-          // Nút thêm vào giỏ hàng
+
+          // Add to cart button
           ElevatedButton.icon(
             onPressed: _addToCart,
             style: ElevatedButton.styleFrom(
@@ -407,6 +455,7 @@ class _ProductPageState extends State<ProductPage>
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30),
               ),
+              elevation: 5, // Added elevation for a raised button effect
             ),
             icon: const Icon(
               Icons.shopping_cart,
@@ -426,10 +475,9 @@ class _ProductPageState extends State<ProductPage>
   }
 
   Widget _buildColorOptions() {
-    // Lấy màu từ dữ liệu sản phẩm
     List<Color> productColors = [];
 
-    // Thêm màu chính nếu có
+    // Lấy màu từ dữ liệu sản phẩm
     if (widget.product.color?.primary != null) {
       Color? primaryColor = _colorFromString(widget.product.color!.primary!);
       if (primaryColor != Colors.transparent) {
@@ -437,7 +485,6 @@ class _ProductPageState extends State<ProductPage>
       }
     }
 
-    // Thêm màu phụ nếu có và khác null và "None"
     if (widget.product.color?.secondary != null &&
         widget.product.color!.secondary!.toLowerCase() != "none") {
       Color? secondaryColor =
@@ -458,19 +505,49 @@ class _ProductPageState extends State<ProductPage>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Choose colors:',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Choose colors:',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              selectedColor != null
+                  ? _getColorNameFromColor(selectedColor!)
+                  : "Please choose product color",
+              style: const TextStyle(fontSize: 16, color: Color(0xFF2B2321)),
+            ),
+          ],
         ),
         const SizedBox(height: 10),
         Row(
-          mainAxisAlignment:
-              MainAxisAlignment.start, // Đổi từ spaceAround sang start
+          mainAxisAlignment: MainAxisAlignment.start,
           children: productColors.map((color) {
-            return Padding(
-              padding: const EdgeInsets.only(
-                  right: 16.0), // Thêm padding giữa các màu
-              child: _buildColorOption(color),
+            bool isSelected = selectedColor ==
+                color; // Kiểm tra xem màu này có được chọn không
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  selectedColor = color; // Cập nhật màu đã chọn
+                });
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: isSelected
+                        ? Colors.blue
+                        : Colors.transparent, // Đổi màu viền nếu được chọn
+                    width: 2,
+                  ),
+                  shape: BoxShape.circle,
+                ),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.all(8.0), // Thêm khoảng cách cho màu
+                  child: _buildColorOption(color),
+                ),
+              ),
             );
           }).toList(),
         ),
@@ -502,9 +579,16 @@ class _ProductPageState extends State<ProductPage>
   Widget _buildTabBar() {
     return TabBar(
       controller: _tabController,
+      labelColor: Colors.black, // Color for selected tab
+      unselectedLabelColor: Colors.grey, // Color for unselected tabs
+      indicatorColor: Colors.blue, // Color for the tab indicator
       tabs: const [
-        Tab(text: 'Description'),
-        Tab(text: 'Reviews'),
+        Tab(
+          text: 'Description',
+        ),
+        Tab(
+          text: 'Reviews',
+        ),
       ],
     );
   }
@@ -520,14 +604,19 @@ class _ProductPageState extends State<ProductPage>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Enhanced description styling
                 Text(
                   widget.product.description ?? 'No description available',
-                  style: const TextStyle(fontSize: 16),
+                  style: const TextStyle(
+                    fontSize: 18, // Increased font size for better readability
+                    fontWeight: FontWeight.bold, // Make description bold
+                    color: Color(0xFF2B2321), // Dark color for contrast
+                  ),
                 ),
                 const SizedBox(height: 20),
-                _buildColorOptions(), // Added color options here
+                _buildProductSpecs(), // Product specifications
                 const SizedBox(height: 20),
-                _buildProductSpecs(),
+                _buildColorOptions(), // Color options
               ],
             ),
           ),

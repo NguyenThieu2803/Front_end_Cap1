@@ -47,7 +47,6 @@ flutter:
   assets:
     - assets/
     - assets/images/
-    - assets/detail/product.json
     - assets/detail/Review.json
     - assets/detail/ReviewAndFeedback.json
     - assets/detail/AdminProduct.json
