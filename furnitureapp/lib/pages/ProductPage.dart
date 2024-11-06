@@ -3,6 +3,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:furnitureapp/model/product.dart';
 import 'package:furnitureapp/api/api.service.dart';
 import 'package:furnitureapp/widgets/ProductReviews.dart';
+import 'package:furnitureapp/config/config.dart';
+
 
 class ProductPage extends StatefulWidget {
   final Product product;
@@ -511,7 +513,7 @@ class _ProductPageState extends State<ProductPage>
 
   Widget _buildTabBarView() {
     return SizedBox(
-      height: 300, // Increased height to accommodate color options
+      height: 300,
       child: TabBarView(
         controller: _tabController,
         children: [
@@ -531,7 +533,7 @@ class _ProductPageState extends State<ProductPage>
               ],
             ),
           ),
-          ProductReviews(),
+          ProductReviews(productId: widget.product.id!),
         ],
       ),
     );

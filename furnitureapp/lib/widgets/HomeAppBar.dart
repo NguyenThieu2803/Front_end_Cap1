@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:furnitureapp/pages/NotificationPage.dart';
 import 'package:furnitureapp/pages/TaskBar.dart';
+import 'package:furnitureapp/model/Categories.dart';
+
 
 class HomeAppBar extends StatefulWidget {
-  const HomeAppBar({super.key});
+  final Function(String?, double?, double?) onFiltersApplied;
+
+  const HomeAppBar({
+    Key? key,
+    required this.onFiltersApplied,
+  }) : super(key: key);
 
   @override
   _HomeAppBarState createState() => _HomeAppBarState();
@@ -44,14 +51,13 @@ class _HomeAppBarState extends State<HomeAppBar> with SingleTickerProviderStateM
         builder: (context, child) {
           return Positioned(
             top: MediaQuery.of(context).padding.top + kToolbarHeight +
-                 (_animation.value * 300), // Điều chỉnh vị trí hiển thị
+                 (_animation.value * 300),
             left: 0,
             right: 0,
             child: Material(
               color: Colors.transparent,
               child: Stack(
                 children: [
-                  // Phần nền mờ để tap to dismiss
                   GestureDetector(
                     onTap: _hideTaskbarOverlay,
                     child: Container(
@@ -59,8 +65,10 @@ class _HomeAppBarState extends State<HomeAppBar> with SingleTickerProviderStateM
                       color: Colors.black.withOpacity(0.5),
                     ),
                   ),
-                  // TaskBar widget
-                  TaskBar(onClose: _hideTaskbarOverlay), // Truyền onClose
+                  TaskBar(
+                    onClose: _hideTaskbarOverlay,
+                    onFiltersApplied: widget.onFiltersApplied,
+                  ),
                 ],
               ),
             ),
@@ -109,12 +117,10 @@ class _HomeAppBarState extends State<HomeAppBar> with SingleTickerProviderStateM
             color: Color(0xFF2B2321),
           ),
           onPressed: () {
-            // Kiểm tra và ẩn TaskBar nếu nó đang hiển thị
             if (_overlayEntry != null) {
               _hideTaskbarOverlay();
             }
             
-            // Chuyển đến trang NotificationPage
             Navigator.push(
               context,
               MaterialPageRoute(
