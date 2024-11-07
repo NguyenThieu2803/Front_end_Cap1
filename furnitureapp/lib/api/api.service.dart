@@ -624,4 +624,24 @@ static Future<Map<String, dynamic>> checkout(Map<String, dynamic> checkoutData) 
       throw Exception('Failed to fetch profile: ${response.statusCode} - ${response.body}');
     }
   }
+
+
+  // get API order đơn hàng của user
+  static Future<Map<String, dynamic>> getOrders() async {
+    String? token = await ShareService.getToken();
+    if (token == null) {
+      throw Exception('User not logged in');
+    }
+    Map<String, String> requestHeaders = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+    var url = Uri.http(Config.apiURL, Config.userOrderAPI);
+    var response = await http.get(url, headers: requestHeaders);
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to fetch orders: ${response.statusCode} - ${response.body}');
+    }
+  }
 }

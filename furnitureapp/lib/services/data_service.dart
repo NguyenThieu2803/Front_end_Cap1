@@ -5,8 +5,10 @@ import '../model/address_model.dart';
 import 'package:furnitureapp/model/Review.dart';
 import 'package:furnitureapp/api/api.service.dart';
 import 'package:furnitureapp/model/Categories.dart';
+import 'package:furnitureapp/model/Order_model.dart';
 import 'package:furnitureapp/model/Cart_User_Model.dart';
 import 'package:furnitureapp/model/UserProfile_model.dart';
+
 
 class DataService {
   Future<List<Product>> loadProducts({
@@ -38,17 +40,16 @@ class DataService {
       List<Product> products = productList
           .map((productJson) => Product.fromJson(productJson))
           .where((product) {
-            if (product.price == null) return false;
+        if (product.price == null) return false;
 
-            bool meetsMinPrice = minPrice == null || product.price! >= minPrice;
-            bool meetsMaxPrice = maxPrice == null || product.price! <= maxPrice;
+        bool meetsMinPrice = minPrice == null || product.price! >= minPrice;
+        bool meetsMaxPrice = maxPrice == null || product.price! <= maxPrice;
 
-            print('Product: ${product.name}, Price: ${product.price}, '
-                'Meets min: $meetsMinPrice, Meets max: $meetsMaxPrice');
+        print('Product: ${product.name}, Price: ${product.price}, '
+            'Meets min: $meetsMinPrice, Meets max: $meetsMaxPrice');
 
-            return meetsMinPrice && meetsMaxPrice;
-          })
-          .toList();
+        return meetsMinPrice && meetsMaxPrice;
+      }).toList();
 
       print('Filtered products count: ${products.length}');
       return products;
@@ -92,7 +93,9 @@ class DataService {
   Future<List<Categories>> loadCategories() async {
     try {
       final categoriesData = await APIService.fetchAllCategories();
-      return categoriesData.map<Categories>((data) => Categories.fromJson(data)).toList();
+      return categoriesData
+          .map<Categories>((data) => Categories.fromJson(data))
+          .toList();
     } catch (e) {
       print('Lỗi khi tải danh mục: $e');
       return []; // Trả về list rỗng thay vì null
@@ -101,9 +104,12 @@ class DataService {
 
   Future<List<AddressUser>> loadAddresses() async {
     try {
-      List<Map<String, dynamic>> addressData = await APIService.getAllAddresses();
+      List<Map<String, dynamic>> addressData =
+          await APIService.getAllAddresses();
       print("Address data received: $addressData");
-      return addressData.map<AddressUser>((data) => AddressUser.fromJson(data)).toList();
+      return addressData
+          .map<AddressUser>((data) => AddressUser.fromJson(data))
+          .toList();
     } catch (error) {
       print('Failed to load addresses: $error');
       return [];
@@ -113,7 +119,9 @@ class DataService {
   Future<List<CardModel>> loadCards() async {
     try {
       List<Map<String, dynamic>> cardData = await APIService.getAllCards();
-      return cardData.map<CardModel>((data) => CardModel.fromJson(data)).toList();
+      return cardData
+          .map<CardModel>((data) => CardModel.fromJson(data))
+          .toList();
     } catch (error) {
       print('Failed to load cards: $error');
       return [];
@@ -126,7 +134,9 @@ class DataService {
 
       if (response['success'] == true && response['data'] != null) {
         List<dynamic> reviewsData = response['data']['reviews'];
-        return reviewsData.map<Review>((reviewJson) => Review.fromJson(reviewJson)).toList();
+        return reviewsData
+            .map<Review>((reviewJson) => Review.fromJson(reviewJson))
+            .toList();
       }
       return [];
     } catch (e) {
@@ -137,10 +147,13 @@ class DataService {
 
   Future<List<Product>> searchProducts(String query) async {
     try {
-      List<Map<String, dynamic>> productList = await APIService.searchProducts(query);
+      List<Map<String, dynamic>> productList =
+          await APIService.searchProducts(query);
       List<Product> products = productList
           .map<Product>((productJson) => Product.fromJson(productJson))
-          .where((product) => product.name?.toLowerCase().contains(query.toLowerCase()) ?? false)
+          .where((product) =>
+              product.name?.toLowerCase().contains(query.toLowerCase()) ??
+              false)
           .toList();
 
       print('Search results count: ${products.length}');
@@ -150,6 +163,7 @@ class DataService {
       return [];
     }
   }
+
   // Method to fetch user profile
   Future<UserProfile?> loadUserProfile() async {
     try {
@@ -159,6 +173,18 @@ class DataService {
     } catch (error) {
       print('Failed to load user profile: $error');
       return null;
+    }
+  }
+
+  // Get Order By UserId
+    Future<List<OrderData>> getOrdersByUserId() async {
+    try {
+      final response = await APIService.getOrders();
+      Order order = Order.fromJson(response);
+      return order.data;
+    } catch (error) {
+      print('Failed to load orders: $error');
+      return [];
     }
   }
 }
