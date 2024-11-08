@@ -3,17 +3,22 @@ import '../model/product.dart';
 import '../model/card_model.dart';
 import '../model/address_model.dart';
 import 'package:furnitureapp/api/api.service.dart';
-import 'package:furnitureapp/model/Cart_User_Model.dart';
 import 'package:furnitureapp/model/Categories.dart';
+import 'package:furnitureapp/model/Review.dart';
+
+import 'package:furnitureapp/model/Cart_User_Model.dart';
 class DataService {
-  Future<List<Product>> loadProducts({required String category}) async {
+  Future<List<Product>> loadProducts({
+    String? category,
+    double? minPrice,
+    double? maxPrice,
+  }) async {
     try {
       List<Map<String, dynamic>> productList;
       
-      if (category == 'All Product') {
+      if (category == null || category == 'All Product') {
         productList = await APIService.fetchAllProducts();
       } else {
-        // Lấy danh sách categories để tìm categoryId
         List<Categories> categories = await loadCategories();
         Categories? selectedCategory = categories.firstWhere(
           (cat) => cat.name == category,
@@ -24,12 +29,27 @@ class DataService {
           print('Loading products for category: ${selectedCategory.id}');
           productList = await APIService.fetchProductsByCategory(selectedCategory.id!);
         } else {
-          print('Category ID not found for: $category');
           productList = await APIService.fetchAllProducts();
         }
       }
       
-      return productList.map((productJson) => Product.fromJson(productJson)).toList();
+      List<Product> products = productList
+          .map((productJson) => Product.fromJson(productJson))
+          .where((product) {
+            if (product.price == null) return false;
+            
+            bool meetsMinPrice = minPrice == null || product.price! >= minPrice;
+            bool meetsMaxPrice = maxPrice == null || product.price! <= maxPrice;
+            
+            print('Product: ${product.name}, Price: ${product.price}, ' 
+                  'Meets min: $meetsMinPrice, Meets max: $meetsMaxPrice');
+            
+            return meetsMinPrice && meetsMaxPrice;
+          })
+          .toList();
+      
+      print('Filtered products count: ${products.length}');
+      return products;
     } catch (error) {
       print('Failed to load products: $error');
       return [];
@@ -93,6 +113,38 @@ class DataService {
       return cardData.map((data) => CardModel.fromJson(data)).toList();
     } catch (error) {
       print('Failed to load cards: $error');
+      return [];
+    }
+  }
+
+  Future<List<Review>> loadReviews(String productId) async {
+    try {
+      final response = await APIService.getReviewsByProduct(productId);
+      
+      if (response['success'] == true && response['data'] != null) {
+        List<dynamic> reviewsData = response['data']['reviews'];
+        return reviewsData.map((reviewJson) => Review.fromJson(reviewJson)).toList();
+      }
+      return [];
+    } catch (e) {
+      print('Error loading reviews: $e');
+      return [];
+    }
+  }
+
+  Future<List<Product>> searchProducts(String query) async {
+    try {
+      List<Map<String, dynamic>> productList = await APIService.searchProducts(query);
+      List<Product> products = productList
+          .map((productJson) => Product.fromJson(productJson))
+          .where((product) => 
+              product.name?.toLowerCase().contains(query.toLowerCase()) ?? false)
+          .toList();
+      
+      print('Search results count: ${products.length}');
+      return products;
+    } catch (error) {
+      print('Failed to search products: $error');
       return [];
     }
   }

@@ -5,15 +5,22 @@ import 'package:furnitureapp/pages/ProductPage.dart';
 
 class HomeItemsWidget extends StatefulWidget {
   final String selectedCategory;
+  final double? minPrice;
+  final double? maxPrice;
 
-  const HomeItemsWidget({super.key, required this.selectedCategory});
+  const HomeItemsWidget({
+    Key? key, 
+    required this.selectedCategory,
+    this.minPrice,
+    this.maxPrice,
+  }) : super(key: key);
 
   @override
   _HomeItemsWidgetState createState() => _HomeItemsWidgetState();
 }
 
 class _HomeItemsWidgetState extends State<HomeItemsWidget> {
-  late Future<List<Product>> futureProducts;
+  late Future<List<Product>> _productsFuture;
 
   @override
   void initState() {
@@ -24,16 +31,20 @@ class _HomeItemsWidgetState extends State<HomeItemsWidget> {
   @override
   void didUpdateWidget(HomeItemsWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.selectedCategory != widget.selectedCategory) {
+    if (oldWidget.selectedCategory != widget.selectedCategory ||
+        oldWidget.minPrice != widget.minPrice ||
+        oldWidget.maxPrice != widget.maxPrice) {
       _loadProducts();
     }
   }
 
   void _loadProducts() {
-    setState(() {
-      // DataService sẽ xử lý logic cho All Product
-      futureProducts = DataService().loadProducts(category: widget.selectedCategory);
-    });
+    final dataService = DataService();
+    _productsFuture = dataService.loadProducts(
+      category: widget.selectedCategory,
+      minPrice: widget.minPrice,
+      maxPrice: widget.maxPrice,
+    );
   }
 
   @override
@@ -57,7 +68,7 @@ class _HomeItemsWidgetState extends State<HomeItemsWidget> {
           ),
         ),
         FutureBuilder<List<Product>>(
-          future: futureProducts,
+          future: _productsFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator());
@@ -194,7 +205,7 @@ class ProductTile extends StatelessWidget {
                         ),
                         SizedBox(width: 2),
                         Text(
-                          "${product.rating?.toStringAsFixed(1) ?? '0.0'}", // Hiển thị rating
+                          product.rating?.toStringAsFixed(1) ?? '0.0', // Hiển thị rating
                           style: TextStyle(
                             fontSize: 15,
                             color: Colors.grey[600],

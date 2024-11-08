@@ -1,139 +1,109 @@
 import 'package:flutter/material.dart';
 import 'package:furnitureapp/model/Review.dart';
+import 'package:furnitureapp/services/data_service.dart';
 import 'package:furnitureapp/widgets/ProductReviewsItemSamples.dart';
 
 class ProductReviews extends StatelessWidget {
-  const ProductReviews({super.key});
+  final String productId;
+  final DataService _dataService = DataService();
+
+  ProductReviews({Key? key, required this.productId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Đánh giá của khách hàng (38)',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => ProductReviewsItemSamples()),
-                  );
-                },
-                child: Row(
-                  children: [
-                    Text(
-                      'Xem thêm',
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 15,
+    return FutureBuilder<List<Review>>(
+      future: _dataService.loadReviews(productId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
+
+        final reviews = snapshot.data ?? [];
+        final displayedReviews = reviews.take(2).toList();
+        
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Đánh giá của khách hàng (${reviews.length})',
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  if (reviews.length > 2)
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ProductReviewsItemSamples(
+                              productId: productId,
+                            ),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        'Xem thêm',
+                        style: TextStyle(
+                          color: Colors.blue,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                    Icon(
-                      Icons.chevron_right,
-                      color: Colors.grey,
-                    ),
-                  ],
-                ),
+                ],
               ),
-            ],
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              Text(
-                '4.5',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                '/5',
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Row(
-                children: List.generate(
-                  5,
-                  (index) => Icon(
-                    index < 4 ? Icons.star : Icons.star_half,
-                    color: Colors.amber,
-                    size: 24,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        // Sử dụng FutureBuilder để lấy đánh giá nổi bật
-        FutureBuilder<List<Review>>(
-          future: ProductReviewsItemSamples.loadReviews(), // Gọi hàm tải dữ liệu
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return CircularProgressIndicator();
-            } else if (snapshot.hasError) {
-              return Text('Lỗi: ${snapshot.error}');
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return Text('Không có đánh giá nổi bật.');
-            }
-
-            final reviews = snapshot.data!;
-            return Column(
-              children: [
-                _buildHighlightedReviewItem(reviews[0]), // Chỉ hiển thị đánh giá nổi bật
-                const Divider(thickness: 1),
-                const SizedBox(height: 16),
-                _buildHighlightedReviewItem(reviews[1]), // Chỉ hiển thị đánh giá nổi bật
-              ],
-            );
-          },
-        ),
-      ],
+            ),
+            if (reviews.isEmpty)
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text('Chưa có đánh giá nào'),
+              )
+            else
+              ...displayedReviews.map((review) => _buildReviewItem(review)).toList(),
+          ],
+        );
+      },
     );
   }
 
-  Widget _buildHighlightedReviewItem(Review review) {
+  Widget _buildReviewItem(Review review) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               CircleAvatar(
-                backgroundImage: AssetImage(review.avatarUrl),
-                radius: 20,
+                child: Text(review.userName?[0] ?? 'U'),
+                backgroundColor: Colors.grey[300],
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      review.name,
+                      review.userName ?? 'Unknown User',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     Row(
                       children: List.generate(
                         5,
                         (index) => Icon(
-                          index < review.rating ? Icons.star : Icons.star_border,
+                          index < (review.rating ?? 0) 
+                              ? Icons.star 
+                              : Icons.star_border,
                           color: Colors.amber,
                           size: 16,
                         ),
@@ -144,8 +114,28 @@ class ProductReviews extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Text(review.comment),
+          SizedBox(height: 8),
+          Text(review.comment ?? ''),
+          if (review.images != null && review.images!.isNotEmpty) ...[
+            SizedBox(height: 8),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: review.images!
+                    .map((image) => Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: Image.network(
+                            image,
+                            width: 100,
+                            height: 100,
+                            fit: BoxFit.cover,
+                          ),
+                        ))
+                    .toList(),
+              ),
+            ),
+          ],
+          Divider(height: 32),
         ],
       ),
     );

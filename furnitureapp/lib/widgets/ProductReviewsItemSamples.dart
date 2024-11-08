@@ -2,17 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert'; // Thêm import này
 import 'package:furnitureapp/model/Review.dart';
+import 'package:furnitureapp/services/data_service.dart';
 
 class ProductReviewsItemSamples extends StatelessWidget {
-  const ProductReviewsItemSamples({super.key});
+  final String productId;
+  final DataService _dataService = DataService();
 
-  // Hàm tải dữ liệu từ file JSON
-  static Future<List<Review>> loadReviews() async {
-    final String response =
-        await rootBundle.loadString('assets/detail/Review.json');
-    final data = json.decode(response) as List;
-    return data.map((reviewJson) => Review.fromJson(reviewJson)).toList();
-  }
+  ProductReviewsItemSamples({Key? key, required this.productId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -32,15 +28,15 @@ class ProductReviewsItemSamples extends StatelessWidget {
           style: TextStyle(
             color: Colors.black,
             fontSize: 23,
-            fontWeight: FontWeight.bold // Màu chữ, có thể thay đổi nếu cần
+            fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Colors.white, // Đặt màu nền là trắng
+        backgroundColor: Colors.white,
       ),
       body: Container(
-        color: const Color(0xFFEDECF2), // Đặt màu nền cho body
+        color: const Color(0xFFEDECF2),
         child: FutureBuilder<List<Review>>(
-          future: loadReviews(), // Gọi hàm tải dữ liệu
+          future: _dataService.loadReviews(productId),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator());
@@ -72,7 +68,8 @@ class ProductReviewsItemSamples extends StatelessWidget {
           Row(
             children: [
               CircleAvatar(
-                backgroundImage: AssetImage(review.avatarUrl),
+                child: Text(review.userName?[0] ?? 'U'),
+                backgroundColor: Colors.grey[300],
                 radius: 20,
               ),
               const SizedBox(width: 12),
@@ -81,14 +78,14 @@ class ProductReviewsItemSamples extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      review.name,
+                      review.userName ?? 'Unknown User',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     Row(
                       children: List.generate(
                         5,
                         (index) => Icon(
-                          index < review.rating
+                          index < (review.rating ?? 0)
                               ? Icons.star
                               : Icons.star_border,
                           color: Colors.amber,
@@ -96,31 +93,27 @@ class ProductReviewsItemSamples extends StatelessWidget {
                         ),
                       ),
                     ),
-                    Text(
-                      'Màu sắc: ${review.color}',
-                      style: TextStyle(color: Colors.grey),
-                    ),
                   ],
                 ),
               ),
             ],
           ),
           const SizedBox(height: 8),
-          Text(review.comment),
-          if (review.images.isNotEmpty) ...[
+          Text(review.comment ?? ''),
+          if (review.images != null && review.images!.isNotEmpty) ...[
             const SizedBox(height: 8),
             SizedBox(
               height: 100,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                itemCount: review.images.length,
+                itemCount: review.images?.length ?? 0,
                 itemBuilder: (context, index) {
                   return Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child: Image.asset(
-                        review.images[index],
+                      child: Image.network(
+                        review.images![index],
                         width: 100,
                         height: 100,
                         fit: BoxFit.cover,

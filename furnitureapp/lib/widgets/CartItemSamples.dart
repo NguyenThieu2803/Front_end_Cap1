@@ -6,8 +6,9 @@ import 'package:furnitureapp/services/data_service.dart';
 
 class CartItemSamples extends StatefulWidget {
   final Function(double) onTotalPriceChanged;
+  final Function(Set<String>) onSelectedItemsChanged;
 
-  const CartItemSamples({super.key, required this.onTotalPriceChanged});
+  const CartItemSamples({super.key, required this.onTotalPriceChanged, required this.onSelectedItemsChanged});
 
   @override
   _CartItemSamplesState createState() => _CartItemSamplesState();
@@ -38,6 +39,7 @@ class _CartItemSamplesState extends State<CartItemSamples> {
   void _updateTotalPrice() {
     double totalPrice = calculateTotalPrice();
     widget.onTotalPriceChanged(totalPrice);
+    widget.onSelectedItemsChanged(selectedProductIds);
   }
 
   @override
@@ -62,7 +64,7 @@ class _CartItemSamplesState extends State<CartItemSamples> {
                 setState(() {
                   isAllSelected = value ?? false;
                   if (isAllSelected) {
-                    selectedProductIds = cart!.items!.map((item) => item.id!).toSet();
+                    selectedProductIds = cart!.items!.map((item) => item.product!.id!).toSet(); // Sử dụng item.product!.id thay vì item.id!
                   } else {
                     selectedProductIds.clear();
                   }
@@ -101,14 +103,14 @@ class _CartItemSamplesState extends State<CartItemSamples> {
           child: Row(
             children: [
               Checkbox(
-                value: selectedProductIds.contains(item.id),
+                value: selectedProductIds.contains(item.product?.id),
                 activeColor: Color(0xFF2B2321),
                 onChanged: (bool? value) {
                   setState(() {
                     if (value == true) {
-                      selectedProductIds.add(item.id!);
+                      selectedProductIds.add(item.product!.id!);
                     } else {
-                      selectedProductIds.remove(item.id);
+                      selectedProductIds.remove(item.product?.id);
                     }
                     _updateTotalPrice();
                   });
@@ -266,7 +268,7 @@ class _CartItemSamplesState extends State<CartItemSamples> {
   double calculateTotalPrice() {
     if (cart == null || cart!.items == null) return 0.0;
     return cart!.items!.fold(0.0, (sum, item) {
-      if (selectedProductIds.contains(item.id)) {
+      if (selectedProductIds.contains(item.product?.id)) {
         return sum + (item.price ?? 0) * (item.quantity ?? 0);
       }
       return sum;

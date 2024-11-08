@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import '../services/data_service.dart';
 
 class BankAccountPage extends StatefulWidget {
-  const BankAccountPage({Key? key}) : super(key: key);
+  const BankAccountPage({super.key});
 
   @override
   _BankAccountPageState createState() => _BankAccountPageState();

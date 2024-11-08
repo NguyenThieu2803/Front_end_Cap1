@@ -1,28 +1,40 @@
 class Review {
-  final String avatarUrl;
-  final String name;
-  final int rating;
-  final String color;
-  final String comment;
-  final List<String> images;
+  String? id;
+  int? rating;
+  String? comment;
+  String? reviewDate;
+  List<String>? images;
+  String? userName;
+  String? userEmail;
 
-  Review({
-    required this.avatarUrl,
-    required this.name,
-    required this.rating,
-    required this.color,
-    required this.comment,
-    required this.images,
-  });
+  Review(
+      {this.id,
+      this.rating,
+      this.comment,
+      this.reviewDate,
+      this.images,
+      this.userName,
+      this.userEmail});
 
-  factory Review.fromJson(Map<String, dynamic> json) {
-    return Review(
-      avatarUrl: json['avatarUrl'] as String,
-      name: json['name'] as String,
-      rating: json['rating'] as int,
-      color: json['color'] as String,
-      comment: json['comment'] as String,
-      images: List<String>.from(json['images'] as List),
-    );
+  Review.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    rating = json['rating'];
+    comment = json['comment'];
+    reviewDate = json['review_date'];
+    images = json['images'].cast<String>();
+    userName = json['user_name'];
+    userEmail = json['user_email'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['id'] = this.id;
+    data['rating'] = this.rating;
+    data['comment'] = this.comment;
+    data['review_date'] = this.reviewDate;
+    data['images'] = this.images;
+    data['user_name'] = this.userName;
+    data['user_email'] = this.userEmail;
+    return data;
   }
 }

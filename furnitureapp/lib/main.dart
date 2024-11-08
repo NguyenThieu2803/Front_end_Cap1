@@ -1,26 +1,23 @@
 import 'dart:io';
-import 'package:furnitureapp/admin/UserManagement.dart';
-import 'package:furnitureapp/services/language_manager.dart';
 import 'pages/Homepage.dart';
 import 'pages/LoginPage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:furnitureapp/model/product.dart';
 import 'package:furnitureapp/model/product.dart';
 import 'package:furnitureapp/pages/sign_up.dart';
-import 'package:furnitureapp/pages/setting.dart';
-import 'package:furnitureapp/pages/StartNow.dart';
+import 'package:furnitureapp/pages/SearchPage.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:furnitureapp/pages/ProductPage.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:furnitureapp/admin/HomePageAdmin.dart';
-import 'package:furnitureapp/utils/share_service.dart';
+import 'package:furnitureapp/admin/UserManagement.dart';
 import 'package:furnitureapp/translate/localization.dart';
 import 'package:furnitureapp/pages/NotificationPage.dart';
-import 'package:furnitureapp/widgets/CartItemSamples.dart';
+import 'package:furnitureapp/services/language_manager.dart';
 import 'package:furnitureapp/widgets/HomeMainNavigationBar.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'dart:io';
-import 'package:provider/provider.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -74,6 +71,7 @@ class MyApp extends StatelessWidget {
           routes: {
             //  "/startnow": (context) => StartNow(),
             "/home": (context) => HomePage(),
+            "/search": (context) => SearchPage(),
             "/user": (context) => UserManagement(), // Trang khởi đầu
             "/": (context) => HomePageAdmin(), // Trang khởi đầu
             // "/login": (context) => LoginPage(), // Trang login
@@ -136,7 +134,7 @@ class MyApp extends StatelessWidget {
         // "/startnow": (context) => StartNow(),
         "/home": (context) => HomePage(), // Trang khởi đầu
         "/": (context) => HomePageAdmin(), // Trang khởi đầu
-        // "/login": (context) => LoginPage(), // Trang login
+        "/login": (context) => LoginPage(), // Trang login
         "/main": (context) =>
             HomeMainNavigationBar(), // Trang chính với bottom navigation
         "/product": (context) =>
@@ -144,7 +142,7 @@ class MyApp extends StatelessWidget {
         "/notifications": (context) => NotificationPage(),
         // "/register": (context) => SignUp()
       },
-      initialRoute: "/home", // Định nghĩa trang bắt đầu khi ứng dụng chạy
+      initialRoute: "/login", // Định nghĩa trang bắt đầu khi ứng dụng chạy
     );
   }
 }

@@ -4,9 +4,9 @@ class AddProductItemSamples extends StatefulWidget {
   final Function(bool) onValidationChanged;
   
   const AddProductItemSamples({
-    Key? key, 
+    super.key, 
     required this.onValidationChanged,
-  }) : super(key: key);
+  });
 
   @override
   State<AddProductItemSamples> createState() => _AddProductItemSamplesState();
