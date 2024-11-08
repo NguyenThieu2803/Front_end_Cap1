@@ -3,13 +3,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:furnitureapp/model/product.dart';
 import 'package:furnitureapp/api/api.service.dart';
 import 'package:furnitureapp/widgets/ProductReviews.dart';
-import 'package:furnitureapp/config/config.dart';
-
+import 'package:furnitureapp/model/Review.dart';
 
 class ProductPage extends StatefulWidget {
   final Product product;
+  final Review review;
 
-  const ProductPage({super.key, required this.product});
+  const ProductPage({super.key, required this.product, required this.review});
 
   @override
   _ProductPageState createState() => _ProductPageState();
@@ -199,7 +199,7 @@ class _ProductPageState extends State<ProductPage>
             const SizedBox(
                 height: 2), // Reduced space between product name and brand
 
-            // Brand and Choose Quantity
+            // Brand and Rating from Review model
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -215,18 +215,24 @@ class _ProductPageState extends State<ProductPage>
                   ),
                 ),
                 const SizedBox(width: 8),
-                // Choose Quantity label
-                Text(
-                  'Choose Quantity:',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                // Display Rating as Stars from the Review model
+                Row(
+                  children: [
+                    ..._buildStarRating(widget
+                        .review.rating), // Assuming you have a review instance
+                    const SizedBox(
+                        width: 4), // Space between stars and rating number
+                    Text(
+                      '(${widget.review.rating?.toStringAsFixed(1) ?? '0.0'})', // Show numeric rating in brackets
+                      style: const TextStyle(
+                          fontSize: 16, color: Color(0xFF2B2321)),
+                    ),
+                  ],
                 ),
               ],
             ),
 
-            // Quantity controls positioned next to Sold information
+            // Sold information and Quantity controls
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -288,6 +294,24 @@ class _ProductPageState extends State<ProductPage>
     );
   }
 
+// Function to build star rating based on the rating value from Review model
+  List<Widget> _buildStarRating(int? rating) {
+    List<Widget> stars = [];
+    int starCount = rating != null
+        ? rating.clamp(0, 5)
+        : 0; // Ensure rating is between 0 and 5
+
+    for (int i = 0; i < 5; i++) {
+      stars.add(Icon(
+        i < starCount ? Icons.star : Icons.star_border,
+        color: Colors.black, // Color of the stars
+        size: 20, // Size of the stars
+      ));
+    }
+
+    return stars;
+  }
+
   String _getColorNameFromColor(Color color) {
     if (color == Colors.brown) return 'brown';
     if (color == Colors.black) return 'black';
@@ -339,6 +363,7 @@ class _ProductPageState extends State<ProductPage>
             ),
           ),
           const SizedBox(height: 10),
+          // Product Specifications
           _buildSpecItem('- Style:', widget.product.style ?? 'N/A'),
           _buildSpecItem('- Dimensions:',
               '${widget.product.dimensions!.width} x ${widget.product.dimensions!.depth} x ${widget.product.dimensions!.height} (L x W x H)'),
@@ -479,7 +504,7 @@ class _ProductPageState extends State<ProductPage>
   Widget _buildColorOptions() {
     List<Color> productColors = [];
 
-    // Lấy màu từ dữ liệu sản phẩm
+    // Get colors from product data
     if (widget.product.color?.primary != null) {
       Color? primaryColor = _colorFromString(widget.product.color!.primary!);
       if (primaryColor != Colors.transparent) {
@@ -496,7 +521,7 @@ class _ProductPageState extends State<ProductPage>
       }
     }
 
-    // Nếu không có màu nào được tìm thấy, trả về thông báo
+    // If no colors found, return a message
     if (productColors.isEmpty) {
       return const Text(
         'Other colors have not been updated yet',
@@ -526,12 +551,12 @@ class _ProductPageState extends State<ProductPage>
         Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: productColors.map((color) {
-            bool isSelected = selectedColor ==
-                color; // Kiểm tra xem màu này có được chọn không
+            bool isSelected =
+                selectedColor == color; // Check if this color is selected
             return GestureDetector(
               onTap: () {
                 setState(() {
-                  selectedColor = color; // Cập nhật màu đã chọn
+                  selectedColor = color; // Update selected color
                 });
               },
               child: Container(
@@ -539,15 +564,16 @@ class _ProductPageState extends State<ProductPage>
                   border: Border.all(
                     color: isSelected
                         ? Colors.blue
-                        : Colors.transparent, // Đổi màu viền nếu được chọn
+                        : Colors.transparent, // Change border color if selected
                     width: 2,
                   ),
                   shape: BoxShape.circle,
                 ),
                 child: Padding(
                   padding:
-                      const EdgeInsets.all(8.0), // Thêm khoảng cách cho màu
-                  child: _buildColorOption(color),
+                      const EdgeInsets.all(8.0), // Add padding for the color
+                  child: _buildColorOption(
+                      color), // Method to build the colored circle
                 ),
               ),
             );

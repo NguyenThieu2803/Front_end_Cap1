@@ -1,3 +1,5 @@
+import 'package:furnitureapp/model/Review.dart';
+
 import '../model/product.dart';
 import 'package:flutter/material.dart';
 import '../services/data_service.dart';
@@ -9,11 +11,11 @@ class HomeItemsWidget extends StatefulWidget {
   final double? maxPrice;
 
   const HomeItemsWidget({
-    Key? key, 
+    super.key,
     required this.selectedCategory,
     this.minPrice,
     this.maxPrice,
-  }) : super(key: key);
+  });
 
   @override
   _HomeItemsWidgetState createState() => _HomeItemsWidgetState();
@@ -46,6 +48,20 @@ class _HomeItemsWidgetState extends State<HomeItemsWidget> {
       maxPrice: widget.maxPrice,
     );
   }
+// hàm này để gọi review vào detail 
+  List<Review> getReviewsForProducts(List<Product> products) {
+    // This is just an example. You would replace this with actual logic to fetch reviews.
+    return products.map((product) {
+      // Create a dummy review for each product
+      return Review(
+        id: product.id,
+        rating:
+            (product.rating ?? 0).toInt(), // Assuming rating is part of Product
+        comment: "This is a review for ${product.name}",
+        reviewDate: DateTime.now().toString(),
+      );
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,10 +71,14 @@ class _HomeItemsWidgetState extends State<HomeItemsWidget> {
         // Hiển thị tiêu đề dựa trên category được chọn
         Container(
           alignment: Alignment.centerLeft,
-          margin: EdgeInsets.only(top: 10, bottom: 10, left: 10, right: 10), // Điều chỉnh margin trên xuống 10
+          margin: EdgeInsets.only(
+              top: 10,
+              bottom: 10,
+              left: 10,
+              right: 10), // Điều chỉnh margin trên xuống 10
           child: Text(
-            widget.selectedCategory == "All Product" 
-                ? "All Products" 
+            widget.selectedCategory == "All Product"
+                ? "All Products"
                 : "Products in ${widget.selectedCategory}",
             style: TextStyle(
               fontSize: 25,
@@ -86,15 +106,21 @@ class _HomeItemsWidgetState extends State<HomeItemsWidget> {
               );
             } else {
               final products = snapshot.data!;
+              // Assuming you have a way to get reviews for each product
+              List<Review> reviews = getReviewsForProducts(
+                  products); // Define this method accordingly
               return GridView.count(
                 childAspectRatio: 0.85,
                 physics: NeverScrollableScrollPhysics(),
                 crossAxisCount: 2,
                 shrinkWrap: true,
                 padding: EdgeInsets.only(top: 10),
-                children: products
-                    .map((product) => ProductTile(product: product))
-                    .toList(),
+                children: List.generate(products.length, (index) {
+                  return ProductTile(
+                    product: products[index],
+                    review: reviews[index], // Pass corresponding review
+                  );
+                }),
               );
             }
           },
@@ -106,8 +132,9 @@ class _HomeItemsWidgetState extends State<HomeItemsWidget> {
 
 class ProductTile extends StatelessWidget {
   final Product product;
+  final Review review;
 
-  const ProductTile({super.key, required this.product});
+  const ProductTile({super.key, required this.product, required this.review});
 
   @override
   Widget build(BuildContext context) {
@@ -151,7 +178,8 @@ class ProductTile extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ProductPage(product: product),
+                  builder: (context) =>
+                      ProductPage(product: product, review: review),
                 ),
               );
             },
@@ -170,7 +198,8 @@ class ProductTile extends StatelessWidget {
             padding: EdgeInsets.only(bottom: 5),
             alignment: Alignment.centerLeft,
             child: Text(
-              product.name ?? 'Unknown Product', // Thêm giá trị mặc định cho name nếu null
+              product.name ??
+                  'Unknown Product', // Thêm giá trị mặc định cho name nếu null
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
@@ -205,7 +234,8 @@ class ProductTile extends StatelessWidget {
                         ),
                         SizedBox(width: 2),
                         Text(
-                          product.rating?.toStringAsFixed(1) ?? '0.0', // Hiển thị rating
+                          product.rating?.toStringAsFixed(1) ??
+                              '0.0', // Hiển thị rating
                           style: TextStyle(
                             fontSize: 15,
                             color: Colors.grey[600],

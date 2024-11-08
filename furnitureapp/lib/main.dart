@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:furnitureapp/model/Review.dart';
+
 import 'pages/Homepage.dart';
 import 'pages/LoginPage.dart';
 import 'package:flutter/material.dart';
@@ -79,7 +81,8 @@ class MyApp extends StatelessWidget {
             "/main": (context) =>
                 HomeMainNavigationBar(), // Trang chính với bottom navigation
             "/product": (context) => ProductPage(
-                product: Product()), // Pass a default Product instance
+                product: Product(),
+                review: Review(rating: 4),), // Pass a default Product instance
             "/notifications": (context) => NotificationPage(),
             "/register": (context) => SignUp()
           },
