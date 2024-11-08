@@ -90,6 +90,10 @@ class _CartItemSamplesState extends State<CartItemSamples> {
   }
 
   Widget buildCartItem(CartItem item) {
+    double originalPrice = item.price ?? 0;
+  int discountPercentage = item.discount ?? 0;
+  double discountAmount = originalPrice * (discountPercentage / 100);
+  double finalPrice = originalPrice - discountAmount;
     return LayoutBuilder(
       builder: (context, constraints) {
         return Container(
@@ -145,11 +149,12 @@ class _CartItemSamplesState extends State<CartItemSamples> {
                         ),
                       ),
                       Text(
-                        "\$${item.price?.toStringAsFixed(2) ?? '0.00'}",
+                        "\$${finalPrice.toStringAsFixed(2) ?? '0.00'}",
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF2B2321),
+                          decoration: TextDecoration.lineThrough, // Gạch ngang giá gốc
                         ),
                       ),
                     ],
@@ -266,10 +271,13 @@ class _CartItemSamplesState extends State<CartItemSamples> {
   }
 
   double calculateTotalPrice() {
+    
     if (cart == null || cart!.items == null) return 0.0;
     return cart!.items!.fold(0.0, (sum, item) {
+
       if (selectedProductIds.contains(item.product?.id)) {
-        return sum + (item.price ?? 0) * (item.quantity ?? 0);
+        double discountAmount = item.price! * (item.product!.discount! / 100);
+        return sum + (item.price ?? 0)*(item.quantity ?? 0) - discountAmount;
       }
       return sum;
     });

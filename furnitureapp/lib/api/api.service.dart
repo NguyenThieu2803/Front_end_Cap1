@@ -1,12 +1,16 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http; //+
-import 'package:furnitureapp/config/config.dart';
-import 'package:furnitureapp/utils/share_service.dart';
-import 'package:furnitureapp/model/login_response_model.dart';
-import 'package:furnitureapp/model/Categories.dart';
-import 'package:furnitureapp/services/data_service.dart';
-import 'package:furnitureapp/model/Review.dart';
 import 'dart:convert';
+import 'dart:convert';
+import 'package:http/http.dart' as http; //+
+import 'package:furnitureapp/model/Review.dart';
+import 'package:furnitureapp/model/Review.dart';
+import 'package:furnitureapp/config/config.dart';
+import 'package:furnitureapp/model/Categories.dart';
+import 'package:furnitureapp/model/Categories.dart';
+import 'package:furnitureapp/utils/share_service.dart';
+import 'package:furnitureapp/services/data_service.dart';
+import 'package:furnitureapp/services/data_service.dart';
+import 'package:furnitureapp/model/login_response_model.dart';
 
 class APIService {
   static var client = http.Client();
@@ -596,6 +600,48 @@ static Future<Map<String, dynamic>> checkout(Map<String, dynamic> checkoutData) 
       }).toList();
     } else {
       throw Exception('Failed to search products');
+    }
+  }
+
+  // get User Profile
+  static Future<Map<String, dynamic>> getUserProfile() async {
+    String? token = await ShareService.getToken();
+    if (token == null) {
+      throw Exception('User not logged in');
+    }
+    Map<String, String> requestHeaders = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+    var url = Uri.http(Config.apiURL, Config.profileAPI);
+    var response = await client.get(
+      url,
+      headers: requestHeaders,
+    );
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to fetch profile: ${response.statusCode} - ${response.body}');
+    }
+  }
+
+
+  // get API order đơn hàng của user
+  static Future<Map<String, dynamic>> getOrders() async {
+    String? token = await ShareService.getToken();
+    if (token == null) {
+      throw Exception('User not logged in');
+    }
+    Map<String, String> requestHeaders = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+    var url = Uri.http(Config.apiURL, Config.userOrderAPI);
+    var response = await http.get(url, headers: requestHeaders);
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to fetch orders: ${response.statusCode} - ${response.body}');
     }
   }
 }

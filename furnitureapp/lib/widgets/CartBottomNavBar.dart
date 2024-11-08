@@ -3,7 +3,7 @@ import 'package:furnitureapp/pages/CheckOutPage.dart';
 
 class CartBottomNavBar extends StatelessWidget {
   final double totalAmount;  // Nhận tổng giá từ CartPage
-final Set<String> selectedProductIds;
+  final Set<String> selectedProductIds;
   const CartBottomNavBar({super.key, required this.totalAmount, required this.selectedProductIds});
 
   @override
@@ -56,7 +56,7 @@ final Set<String> selectedProductIds;
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => CheckOutPage(selectedProductIds: selectedProductIds),
+                  MaterialPageRoute(builder: (context) => CheckOutPage(selectedProductIds: selectedProductIds, totalAmount: totalAmount,),
             ),
                 );
               },
