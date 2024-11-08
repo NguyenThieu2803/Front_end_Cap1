@@ -40,61 +40,61 @@ class Product {
       int? sold,
       double? rating}) {
     if (id != null) {
-      this._id = id;
+      _id = id;
     }
     if (name != null) {
-      this._name = name;
+      _name = name;
     }
     if (description != null) {
-      this._description = description;
+      _description = description;
     }
     if (shortDescription != null) {
-      this._shortDescription = shortDescription;
+      _shortDescription = shortDescription;
     }
     if (price != null) {
-      this._price = price;
+      _price = price;
     }
     if (dimensions != null) {
-      this._dimensions = dimensions;
+      _dimensions = dimensions;
     }
     if (stockQuantity != null) {
-      this._stockQuantity = stockQuantity;
+      _stockQuantity = stockQuantity;
     }
     if (material != null) {
-      this._material = material;
+      _material = material;
     }
     if (color != null) {
-      this._color = color;
+      _color = color;
     }
     if (images != null) {
-      this._images = images;
+      _images = images;
     }
     if (category != null) {
-      this._category = category;
+      _category = category;
     }
     if (discount != null) {
-      this._discount = discount;
+      _discount = discount;
     }
     if (promotionId != null) {
-      this._promotionId = promotionId;
+      _promotionId = promotionId;
     }
     if (brand != null) {
-      this._brand = brand;
+      _brand = brand;
     }
     if (style != null) {
-      this._style = style;
+      _style = style;
     }
     if (assemblyRequired != null) {
-      this._assemblyRequired = assemblyRequired;
+      _assemblyRequired = assemblyRequired;
     }
     if (weight != null) {
-      this._weight = weight;
+      _weight = weight;
     }
     if (sold != null) {
-      this._sold = sold;
+      _sold = sold;
     }
     if (rating != null) {
-      this._rating = rating;
+      _rating = rating;
     }
   }
 
@@ -180,30 +180,30 @@ set material(String? material) => _material = material;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['_id'] = this._id; // Include id in JSON
-    data['name'] = this._name;
-    data['description'] = this._description;
-    data['shortDescription'] = this._shortDescription;
-    data['price'] = this._price;
-if (this._dimensions != null) {
-      data['dimensions'] = this._dimensions!.toJson();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['_id'] = _id; // Include id in JSON
+    data['name'] = _name;
+    data['description'] = _description;
+    data['shortDescription'] = _shortDescription;
+    data['price'] = _price;
+if (_dimensions != null) {
+      data['dimensions'] = _dimensions!.toJson();
     }
-    data['stockQuantity'] = this._stockQuantity;
-    data['material'] = this._material;
-    if (this._color != null) {
-      data['color'] = this._color!.toJson();
+    data['stockQuantity'] = _stockQuantity;
+    data['material'] = _material;
+    if (_color != null) {
+      data['color'] = _color!.toJson();
     }
-    data['images'] = this._images;
-    data['category'] = this._category;
-    data['discount'] = this._discount;
-    data['promotionId'] = this._promotionId;
-    data['brand'] = this._brand;
-    data['style'] = this._style;
-    data['assemblyRequired'] = this._assemblyRequired;
-    data['weight'] = this._weight;
-    data['sold'] = this._sold;
-    data['rating'] = this._rating;
+    data['images'] = _images;
+    data['category'] = _category;
+    data['discount'] = _discount;
+    data['promotionId'] = _promotionId;
+    data['brand'] = _brand;
+    data['style'] = _style;
+    data['assemblyRequired'] = _assemblyRequired;
+    data['weight'] = _weight;
+    data['sold'] = _sold;
+    data['rating'] = _rating;
     return data;
   }
 
@@ -221,16 +221,16 @@ class Dimensions {
 
   Dimensions({int? height, int? width, int? depth, String? unit}) {
     if (height != null) {
-      this._height = height;
+      _height = height;
     }
     if (width != null) {
-      this._width = width;
+      _width = width;
     }
     if (depth != null) {
-      this._depth = depth;
+      _depth = depth;
     }
     if (unit != null) {
-      this._unit = unit;
+      _unit = unit;
     }
   }
 
@@ -251,11 +251,11 @@ class Dimensions {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['height'] = this._height;
-    data['width'] = this._width;
-    data['depth'] = this._depth;
-    data['unit'] = this._unit;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['height'] = _height;
+    data['width'] = _width;
+    data['depth'] = _depth;
+    data['unit'] = _unit;
     return data;
   }
 }
@@ -266,10 +266,10 @@ class ProductColor {
 
   ProductColor({String? primary, String? secondary}) {
     if (primary != null) {
-      this._primary = primary;
+      _primary = primary;
     }
     if (secondary != null) {
-      this._secondary = secondary;
+      _secondary = secondary;
     }
   }
 
@@ -284,9 +284,9 @@ class ProductColor {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['primary'] = this._primary;
-    data['secondary'] = this._secondary;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['primary'] = _primary;
+    data['secondary'] = _secondary;
     return data;
   }
 }

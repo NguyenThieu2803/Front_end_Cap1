@@ -65,7 +65,7 @@ class HomeContent extends StatelessWidget {
   final String selectedCategory;
   final Function(String) onCategorySelected;
 
-  const HomeContent({Key? key, required this.selectedCategory, required this.onCategorySelected}) : super(key: key);
+  const HomeContent({super.key, required this.selectedCategory, required this.onCategorySelected});
 
   @override
   Widget build(BuildContext context) {

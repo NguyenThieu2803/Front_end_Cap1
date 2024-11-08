@@ -53,6 +53,7 @@ flutter:
     - assets/detail/AdminProduct.json
     - assets/detail/WaitingForDelivery.json
     - assets/detail/WaitForConfirmation.json
+    - assets/detail/WriteAReview.json
     - assets/detail/Evaluate.json
     - assets/detail/user.json
     - assets/detail/vn_only_simplified_json_generated_data_vn_units.json

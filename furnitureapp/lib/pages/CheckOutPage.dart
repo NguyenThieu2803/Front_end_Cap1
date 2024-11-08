@@ -6,7 +6,7 @@ import 'package:furnitureapp/model/address_model.dart';
 import 'package:furnitureapp/model/Cart_User_Model.dart';
 
 class CheckOutPage extends StatefulWidget {
-  const CheckOutPage({Key? key}) : super(key: key);
+  const CheckOutPage({super.key});
 
   @override
   _CheckOutPageState createState() => _CheckOutPageState();
@@ -196,7 +196,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          ..._cart!.items!.map((item) => _buildCartItem(item)).toList(),
+          ..._cart!.items!.map((item) => _buildCartItem(item)),
         ],
       ),
     );
@@ -381,13 +381,6 @@ class _CheckOutPageState extends State<CheckOutPage> {
           ),
           SizedBox(height: 16),
           ElevatedButton(
-            child: Text(
-              'BUY', 
-              style: TextStyle(
-                fontSize: 18, 
-                color: Colors.white
-              )
-            ),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.black,
               minimumSize: Size(double.infinity, 50),
@@ -395,7 +388,14 @@ class _CheckOutPageState extends State<CheckOutPage> {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            onPressed: _processCheckout, // Call _processCheckout
+            onPressed: _processCheckout,
+            child: Text(
+              'BUY', 
+              style: TextStyle(
+                fontSize: 18, 
+                color: Colors.white
+              )
+            ), // Call _processCheckout
           ),
         ],
       ),

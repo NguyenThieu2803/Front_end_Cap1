@@ -78,7 +78,7 @@ class MyApp extends StatelessWidget {
             "/notifications": (context) => NotificationPage(),
             "/register": (context) => SignUp()
           },
-          initialRoute: "/search", // Định nghĩa trang bắt đầu khi ứng dụng chạy
+          initialRoute: "/home", // Định nghĩa trang bắt đầu khi ứng dụng chạy
         );
       },
     );

@@ -11,7 +11,7 @@ class EditProductItemSamples extends StatefulWidget {
   final ValueChanged<bool> onFieldChanged;
 
   const EditProductItemSamples({
-    Key? key,
+    super.key,
     required this.onFieldChanged,
     this.productName = 'Ghế Công Thái Học',
     this.productDescription =
@@ -19,7 +19,7 @@ class EditProductItemSamples extends StatefulWidget {
     this.price = '\$100',
     this.image1 = 'assets/images/1.png',
     this.image2 = 'assets/images/2.png',
-  }) : super(key: key);
+  });
 
   @override
   _EditProductItemSamplesState createState() => _EditProductItemSamplesState();
