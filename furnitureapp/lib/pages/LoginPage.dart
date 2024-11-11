@@ -204,31 +204,28 @@ class _LoginPageState extends State<LoginPage> {
                       Expanded(child: Divider(color: Colors.grey)),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      IconButton(
-                        icon: const Icon(Icons.facebook),
-                        iconSize: 50, // Giảm kích thước icon
+                      _socialLoginButton(
+                        icon: Icons.facebook,
                         color: Colors.blue,
                         onPressed: () {},
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.g_mobiledata),
-                        iconSize: 50, // Giảm kích thước icon
+                      _socialLoginButton(
+                        icon: Icons.g_mobiledata,
                         color: Colors.red,
                         onPressed: () {},
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.apple),
-                        iconSize: 50, // Giảm kích thước icon
+                      _socialLoginButton(
+                        icon: Icons.apple,
                         color: Colors.black,
                         onPressed: () {},
                       ),
                     ],
                   ),
-                  const SizedBox(height: 25), // Giảm khoảng cách để thêm không gian
+                  const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -238,20 +235,18 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       TextButton(
                         onPressed: () {
-                          // Nếu muốn chuyển sang màn hình đăng ký
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
-                                builder: (context) => const SignUp()),
+                            MaterialPageRoute(builder: (context) => const SignUp()),
                           );
                         },
                         child: const Text(
                           "Sign up",
-                          style: TextStyle(color:Color(0xFF2B2321),
-                                fontWeight: FontWeight.bold,
-
+                          style: TextStyle(
+                            color: Color(0xFF2B2321),
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
                       ),
                     ],
                   ),
@@ -260,6 +255,25 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _socialLoginButton({
+    required IconData icon,
+    required Color color,
+    required VoidCallback onPressed,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: IconButton(
+        icon: Icon(icon),
+        iconSize: 30,
+        color: color,
+        onPressed: onPressed,
       ),
     );
   }

@@ -1,10 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:furnitureapp/widgets/Evaluate.dart';
-import 'package:furnitureapp/widgets/WaitForConfirmation.dart';
+import 'package:furnitureapp/services/data_service.dart';
+import 'package:furnitureapp/model/UserProfile_model.dart';
 import 'package:furnitureapp/widgets/WaitingForDelivery.dart';
+import 'package:furnitureapp/widgets/WaitForConfirmation.dart';
 
-class UserProfileItemSamples extends StatelessWidget {
+class UserProfileItemSamples extends StatefulWidget {
   const UserProfileItemSamples({super.key});
+
+  @override
+  _UserProfileItemSamplesState createState() => _UserProfileItemSamplesState();
+}
+
+class _UserProfileItemSamplesState extends State<UserProfileItemSamples> {
+  final DataService dataService = DataService();
+  UserProfile? _userProfileScreen;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
+
+  Future<void> _loadUserProfile() async {
+    UserProfile? userProfile = await dataService.loadUserProfile();
+    print("This is user profile: $userProfile"); // Debug thông tin user profile
+    if (userProfile != null) {
+      setState(() {
+        _userProfileScreen = userProfile;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,11 +50,16 @@ class UserProfileItemSamples extends StatelessWidget {
                   CircleAvatar(
                     radius: 30,
                     backgroundColor: Colors.white,
-                    child: Icon(Icons.person, size: 40, color: Colors.black),
+                    backgroundImage: _userProfileScreen?.profileImage.isNotEmpty == true
+                        ? NetworkImage(_userProfileScreen!.profileImage)
+                        : null,
+                    child: _userProfileScreen?.profileImage.isEmpty == true
+                        ? Icon(Icons.person, size: 40, color: Colors.black)
+                        : null,
                   ),
                   SizedBox(width: 16),
                   Text(
-                    'User',
+                    _userProfileScreen?.userName ?? 'User',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ],
@@ -73,7 +104,6 @@ class UserProfileItemSamples extends StatelessWidget {
     );
   }
 
-  // Updated: Change onTap's type to a function that accepts BuildContext
   Widget _buildOrderStatusButton(
       IconData icon, String label, Color color, BuildContext context, Function(BuildContext) onTap) {
     return InkWell(
@@ -88,7 +118,6 @@ class UserProfileItemSamples extends StatelessWidget {
     );
   }
 
-  // Event handlers for each button with navigation
   void _onWaitForConfirmation(BuildContext context) {
     Navigator.push(
       context,

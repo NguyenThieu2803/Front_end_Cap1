@@ -26,6 +26,10 @@ class _CartPageState extends State<CartPage> {
               child: Container(
                 decoration: BoxDecoration(
                   color: Color(0xFFEDECF2),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(30),
+                    topRight: Radius.circular(30),
+                  ),
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.only(

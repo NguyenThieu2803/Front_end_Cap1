@@ -3,13 +3,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:furnitureapp/model/product.dart';
 import 'package:furnitureapp/api/api.service.dart';
 import 'package:furnitureapp/widgets/ProductReviews.dart';
-import 'package:furnitureapp/config/config.dart';
-
+import 'package:furnitureapp/model/Review.dart';
 
 class ProductPage extends StatefulWidget {
   final Product product;
+  final Review review;
 
-  const ProductPage({super.key, required this.product});
+  const ProductPage({super.key, required this.product, required this.review});
 
   @override
   _ProductPageState createState() => _ProductPageState();
@@ -191,6 +191,7 @@ class _ProductPageState extends State<ProductPage>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Product Name
             Text(
               widget.product.name!,
               style: const TextStyle(
@@ -198,24 +199,120 @@ class _ProductPageState extends State<ProductPage>
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 5),
-            _buildRatingRow(),
-            const SizedBox(height: 10),
+            const SizedBox(
+                height: 2), // Reduced space between product name and brand
+
+            // Brand and Rating from Review model
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Color: ${selectedColor != null ? _getColorNameFromColor(selectedColor!) : "Please choose product color"}',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFF2B2321),
+                // Display brand
+                Expanded(
+                  child: Text(
+                    widget.product.brand ?? 'N/A',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2B2321),
+                    ),
                   ),
+                ),
+                const SizedBox(width: 8),
+                // Display Rating as Stars from the Review model
+                Row(
+                  children: [
+                    ..._buildStarRating(widget
+                        .review.rating), // Assuming you have a review instance
+                    const SizedBox(
+                        width: 4), // Space between stars and rating number
+                    Text(
+                      '(${widget.review.rating?.toStringAsFixed(1) ?? '0.0'})', // Show numeric rating in brackets
+                      style: const TextStyle(
+                          fontSize: 16, color: Color(0xFF2B2321)),
+                    ),
+                  ],
                 ),
               ],
             ),
+
+            // Sold information and Quantity controls
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Sold information displayed in a row
+                Row(
+                  children: [
+                    const Text(
+                      'Sold:',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(
+                        width: 5), // Space between 'Sold:' and quantity
+                    Text(
+                      '${widget.product.sold ?? 0} items',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ],
+                ),
+                // Quantity controls
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.remove),
+                      onPressed: decreaseQuantity,
+                      padding: EdgeInsets
+                          .zero, // Remove padding for better alignment
+                    ),
+                    SizedBox(
+                      width:
+                          40, // Fixed width for quantity display for better alignment
+                      child: Center(
+                        child: Text(
+                          '$quantity',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.add),
+                      onPressed: increaseQuantity,
+                      padding: EdgeInsets
+                          .zero, // Remove padding for better alignment
+                    ),
+                  ],
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 10), // Space after sold information
           ],
         ),
       ),
     );
+  }
+
+// Function to build star rating based on the rating value from Review model
+  List<Widget> _buildStarRating(int? rating) {
+    List<Widget> stars = [];
+    int starCount = rating != null
+        ? rating.clamp(0, 5)
+        : 0; // Ensure rating is between 0 and 5
+
+    for (int i = 0; i < 5; i++) {
+      stars.add(Icon(
+        i < starCount ? Icons.star : Icons.star_border,
+        color: Colors.black, // Color of the stars
+        size: 20, // Size of the stars
+      ));
+    }
+
+    return stars;
   }
 
   String _getColorNameFromColor(Color color) {
@@ -253,42 +350,6 @@ class _ProductPageState extends State<ProductPage>
     }
   }
 
-  Widget _buildRatingRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          'Brand: ${widget.product.brand ?? 'N/A'}',
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF2B2321),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Row(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.remove),
-              onPressed: decreaseQuantity,
-            ),
-            Text(
-              '$quantity',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: increaseQuantity,
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
   Widget _buildProductSpecs() {
     return Container(
       color: const Color(0xFFEDECF2),
@@ -305,14 +366,14 @@ class _ProductPageState extends State<ProductPage>
             ),
           ),
           const SizedBox(height: 10),
+          // Product Specifications
           _buildSpecItem('- Style:', widget.product.style ?? 'N/A'),
           _buildSpecItem('- Dimensions:',
               '${widget.product.dimensions!.width} x ${widget.product.dimensions!.depth} x ${widget.product.dimensions!.height} (L x W x H)'),
           _buildSpecItem('- Material:', widget.product.material ?? 'N/A'),
           _buildSpecItem('- Weight:', '${widget.product.weight ?? 0} kg'),
-          _buildSpecItem('- Stock Quantity:',
-              '${widget.product.stockQuantity ?? 0} items'),
-          _buildSpecItem('- Sold:', '${widget.product.sold ?? 0} items'),
+          _buildSpecItem(
+              '- Quantity:', '${widget.product.stockQuantity ?? 0} items'),
         ],
       ),
     );
@@ -352,58 +413,63 @@ class _ProductPageState extends State<ProductPage>
   }
 
   Widget _buildBottomBar() {
-    // Tính toán giá sau khi giảm giá
     double originalPrice = widget.product.price! * quantity;
     int discountPercentage = widget.product.discount ?? 0;
-    double discountAmount = originalPrice * (discountPercentage / 100);
-    double finalPrice = originalPrice - discountAmount;
+    double finalPrice = originalPrice * (1 - discountPercentage / 100);
 
     return Container(
-      height: 90,
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
-      color: Colors.white,
+      height: 100,
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: Offset(0, -2),
+          ),
+        ],
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Hiển thị giá đã giảm
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                '${finalPrice.toStringAsFixed(0)}\$',
+                '\$${finalPrice.toStringAsFixed(0)}',
                 style: const TextStyle(
-                  fontSize: 30,
+                  fontSize: 28,
                   fontWeight: FontWeight.bold,
+                  color: Colors.black87,
                 ),
               ),
+              if (discountPercentage > 0)
+                Row(
+                  children: [
+                    Text(
+                      '\$${originalPrice.toStringAsFixed(0)}',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                        decoration: TextDecoration.lineThrough,
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      '-$discountPercentage%',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
             ],
           ),
-          // Hiển thị giá gốc và tỷ lệ giảm bên phải
-          if (discountPercentage > 0)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  '${originalPrice.toStringAsFixed(0)}\$',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
-                    decoration: TextDecoration.lineThrough,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  '-$discountPercentage%',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.red,
-                  ),
-                ),
-              ],
-            ),
-          // Nút thêm vào giỏ hàng
           ElevatedButton.icon(
             onPressed: _addToCart,
             style: ElevatedButton.styleFrom(
@@ -412,6 +478,7 @@ class _ProductPageState extends State<ProductPage>
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30),
               ),
+              elevation: 5, // Added elevation for a raised button effect
             ),
             icon: const Icon(
               Icons.shopping_cart,
@@ -431,10 +498,9 @@ class _ProductPageState extends State<ProductPage>
   }
 
   Widget _buildColorOptions() {
-    // Lấy màu từ dữ liệu sản phẩm
     List<Color> productColors = [];
 
-    // Thêm màu chính nếu có
+    // Get colors from product data
     if (widget.product.color?.primary != null) {
       Color? primaryColor = _colorFromString(widget.product.color!.primary!);
       if (primaryColor != Colors.transparent) {
@@ -442,7 +508,6 @@ class _ProductPageState extends State<ProductPage>
       }
     }
 
-    // Thêm màu phụ nếu có và khác null và "None"
     if (widget.product.color?.secondary != null &&
         widget.product.color!.secondary!.toLowerCase() != "none") {
       Color? secondaryColor =
@@ -452,7 +517,7 @@ class _ProductPageState extends State<ProductPage>
       }
     }
 
-    // Nếu không có màu nào được tìm thấy, trả về thông báo
+    // If no colors found, return a message
     if (productColors.isEmpty) {
       return const Text(
         'Other colors have not been updated yet',
@@ -463,19 +528,50 @@ class _ProductPageState extends State<ProductPage>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Choose colors:',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Choose colors:',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              selectedColor != null
+                  ? _getColorNameFromColor(selectedColor!)
+                  : "Please choose product color",
+              style: const TextStyle(fontSize: 16, color: Color(0xFF2B2321)),
+            ),
+          ],
         ),
         const SizedBox(height: 10),
         Row(
-          mainAxisAlignment:
-              MainAxisAlignment.start, // Đổi từ spaceAround sang start
+          mainAxisAlignment: MainAxisAlignment.start,
           children: productColors.map((color) {
-            return Padding(
-              padding: const EdgeInsets.only(
-                  right: 16.0), // Thêm padding giữa các màu
-              child: _buildColorOption(color),
+            bool isSelected =
+                selectedColor == color; // Check if this color is selected
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  selectedColor = color; // Update selected color
+                });
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: isSelected
+                        ? Colors.blue
+                        : Colors.transparent, // Change border color if selected
+                    width: 2,
+                  ),
+                  shape: BoxShape.circle,
+                ),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.all(8.0), // Add padding for the color
+                  child: _buildColorOption(
+                      color), // Method to build the colored circle
+                ),
+              ),
             );
           }).toList(),
         ),
@@ -507,9 +603,16 @@ class _ProductPageState extends State<ProductPage>
   Widget _buildTabBar() {
     return TabBar(
       controller: _tabController,
+      labelColor: Colors.black, // Color for selected tab
+      unselectedLabelColor: Colors.grey, // Color for unselected tabs
+      indicatorColor: Colors.blue, // Color for the tab indicator
       tabs: const [
-        Tab(text: 'Description'),
-        Tab(text: 'Reviews'),
+        Tab(
+          text: 'Description',
+        ),
+        Tab(
+          text: 'Reviews',
+        ),
       ],
     );
   }
@@ -525,14 +628,19 @@ class _ProductPageState extends State<ProductPage>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Enhanced description styling
                 Text(
                   widget.product.description ?? 'No description available',
-                  style: const TextStyle(fontSize: 16),
+                  style: const TextStyle(
+                    fontSize: 18, // Increased font size for better readability
+                    fontWeight: FontWeight.bold, // Make description bold
+                    color: Color(0xFF2B2321), // Dark color for contrast
+                  ),
                 ),
                 const SizedBox(height: 20),
-                _buildColorOptions(), // Added color options here
+                _buildProductSpecs(), // Product specifications
                 const SizedBox(height: 20),
-                _buildProductSpecs(),
+                _buildColorOptions(), // Color options
               ],
             ),
           ),

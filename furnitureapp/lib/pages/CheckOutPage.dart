@@ -7,8 +7,14 @@ import 'package:furnitureapp/model/Cart_User_Model.dart';
 
 class CheckOutPage extends StatefulWidget {
   final Set<String> selectedProductIds;
+  final double totalAmount;
 
-  const CheckOutPage({super.key, required this.selectedProductIds});
+  const CheckOutPage({
+    super.key,
+    required this.selectedProductIds,
+    required this.totalAmount,
+  });
+
 
   @override
   _CheckOutPageState createState() => _CheckOutPageState();
@@ -52,8 +58,8 @@ final double shippingFee = 30.0;
       
       final cardsData = await APIService.getAllCards();
       _cards = cardsData.map((cardData) => CardModel.fromJson(cardData)).toList();
-      subTotal = _cart?.cartTotal ?? 0;
-      total=subTotal + shippingFee;
+      subTotal = widget.totalAmount;
+      total=widget.totalAmount + shippingFee;
       setState(() {
         _isLoading = false;
       });
@@ -116,101 +122,104 @@ final double shippingFee = 30.0;
   }
 
   Future<void> _processCheckout() async {
-    // print(widget.selectedProductIds);
-    
-    // Generate card token only if the selected payment method is 'Credit Card'
-    String? cardToken;
-    if (_selectedPaymentMethod == 'Credit Card') {
-      cardToken = await generateStripeToken();
-      if (cardToken == null) return; // Exit if token generation failed
-    }
-    
+  // Generate card token only if the selected payment method is 'Credit Card'
+  String? cardToken;
+  if (_selectedPaymentMethod == 'Credit Card') {
+    cardToken = await generateStripeToken();
+    if (cardToken == null) return; // Exit if token generation failed
+  }
 
-    try {
-      Map<String, dynamic> checkoutData = {
-        'paymentMethod': _selectedPaymentMethod,
-        'addressId': _defaultAddress?.id,
-        'totalPrices': total,
-        // Include cardToken only if it's not null (i.e., payment method is 'Credit Card')
-        if (cardToken != null) 'cardToken': cardToken,
-        'products': widget.selectedProductIds.map((id) => ({ 'productId': id })).toList(),
-      };
+  try {
+    Map<String, dynamic> checkoutData = {
+      'paymentMethod': _selectedPaymentMethod,
+      'addressId': _defaultAddress?.id,
+      'totalPrices': total,
+      if (cardToken != null) 'cardToken': cardToken,
+      'products': widget.selectedProductIds.map((id) => {'productId': id}).toList(),
+    };
 
-      final result = await APIService.checkout(checkoutData);
+    final result = await APIService.checkout(checkoutData);
 
-      // Show success dialog
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Thanh toán thành công'),
-            content: Text('Đơn hàng của quý khách đã thanh toán thành công. MISA sẽ sớm liên hệ với quý khách sớm để bàn giao sản phẩm, dịch vụ.'),
-            actions: <Widget>[
-              TextButton(
-                child: Text('Đóng'),
+    // Show success dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          contentPadding: EdgeInsets.all(16.0),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.check_circle,
+                color: Colors.green,
+                size: 80.0,
+              ),
+              SizedBox(height: 20),
+              Text(
+                'Thanh toán thành công',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 20),
+              Text(
+                'Đơn hàng của quý khách đã thanh toán thành công. '
+                'FurniFit AR sẽ sớm liên hệ với quý khách để bàn giao sản phẩm, dịch vụ.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16),
+              ),
+              SizedBox(height: 30),
+              ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).pop(); // Close the dialog
                   Navigator.of(context).pushReplacementNamed('/home'); // Navigate to home
                 },
+                child: Text('Đóng'),
               ),
             ],
-          );
-        },
-      );
-    } catch (e) {
-      print(e);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Checkout failed: $e')),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Checkout')),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : Stack(
-              children: [
-                Positioned.fill(
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.only(bottom: 100),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildAddressSection(),
-                        _buildCartItems(),
-                        _buildPaymentMethod(),
-                      ],
-                    ),
-                  ),
-                ),
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.3),
-                          spreadRadius: 1,
-                          blurRadius: 5,
-                          offset: Offset(0, -3),
-                        ),
-                      ],
-                    ),
-                    child: SafeArea(
-                      child: _buildTotalAndBuyButton(),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+          ),
+        );
+      },
+    );
+  } catch (e) {
+    print(e);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Checkout failed: $e')),
     );
   }
+}
+
+
+  @override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(title: Text('Checkout')),
+    body: _isLoading
+        ? Center(child: CircularProgressIndicator())
+        : Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.only(bottom: 50), // Adjust as needed
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildAddressSection(),
+                      _buildCartItems(),
+                      _buildPaymentMethod(),
+                    ],
+                  ),
+                ),
+              ),
+              SafeArea(
+                child: _buildTotalAndBuyButton(), // Moved outside of the Stack
+              ),
+            ],
+          ),
+  );
+}
 
   Widget _buildCartItems() {
     print(_cart);

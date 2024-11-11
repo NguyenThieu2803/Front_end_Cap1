@@ -34,7 +34,7 @@ class ProductReviews extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Đánh giá của khách hàng (${reviews.length})',
+                    'Customer reviews (${reviews.length})',
                     style: TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.bold,
@@ -53,7 +53,7 @@ class ProductReviews extends StatelessWidget {
                         );
                       },
                       child: Text(
-                        'Xem thêm',
+                        'See more',
                         style: TextStyle(
                           color: Colors.blue,
                           fontWeight: FontWeight.bold,
@@ -66,7 +66,7 @@ class ProductReviews extends StatelessWidget {
             if (reviews.isEmpty)
               Padding(
                 padding: const EdgeInsets.all(16),
-                child: Text('Chưa có đánh giá nào'),
+                child: Text('There are no reviews yet'),
               )
             else
               ...displayedReviews.map((review) => _buildReviewItem(review)).toList(),
@@ -77,8 +77,21 @@ class ProductReviews extends StatelessWidget {
   }
 
   Widget _buildReviewItem(Review review) {
-    return Padding(
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 3,
+            offset: Offset(0, 1),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -86,7 +99,7 @@ class ProductReviews extends StatelessWidget {
             children: [
               CircleAvatar(
                 child: Text(review.userName?[0] ?? 'U'),
-                backgroundColor: Colors.grey[300],
+                backgroundColor: Colors.grey[200],
               ),
               SizedBox(width: 12),
               Expanded(
@@ -95,7 +108,10 @@ class ProductReviews extends StatelessWidget {
                   children: [
                     Text(
                       review.userName ?? 'Unknown User',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
                     Row(
                       children: List.generate(
@@ -114,28 +130,46 @@ class ProductReviews extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 8),
-          Text(review.comment ?? ''),
+          SizedBox(height: 12),
+          Text(
+            review.comment ?? '',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.black87,
+            ),
+          ),
           if (review.images != null && review.images!.isNotEmpty) ...[
-            SizedBox(height: 8),
+            SizedBox(height: 12),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: review.images!
-                    .map((image) => Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: Image.network(
-                            image,
-                            width: 100,
-                            height: 100,
-                            fit: BoxFit.cover,
+                    .map((image) => Container(
+                          margin: EdgeInsets.only(right: 8),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.2),
+                                spreadRadius: 1,
+                                blurRadius: 2,
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.network(
+                              image,
+                              width: 100,
+                              height: 100,
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         ))
                     .toList(),
               ),
             ),
           ],
-          Divider(height: 32),
         ],
       ),
     );

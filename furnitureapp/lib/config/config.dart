@@ -1,9 +1,10 @@
 class Config {
   static const String appName = "Furniture APP";
   static const String apiURL = "10.0.2.2:3000";
-  //static const String apiURL = "172.16.20.33:3000";
+  //static const String apiURL = "172.16.20.238:3000";
   static const String registerAPI = "api/auth/register";
   static const String loginAPI = "api/auth/login";
+  static const String profileAPI = "/api/auth/users/profile";
   static const String CartAPI = "api/v1/cart";
   static const String listProductAPI = "api/v1/getallproduct";
   static const String listCategoryAPI = "api/v1/getAllCategories";
@@ -15,4 +16,5 @@ class Config {
   static const String checkoutAPI = "api/v1/checkout"; 
   static const String reviewByProductAPI = "api/v1/getReviewByProduct";
   static const String searchProductAPI = "api/v1/products/search";
+  static const String userOrderAPI = "api/v1/checkout";
 }
