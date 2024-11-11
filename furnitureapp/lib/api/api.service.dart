@@ -245,7 +245,7 @@ static Future<Map<String, dynamic>> checkout(Map<String, dynamic> checkoutData) 
 
       List<Map<String, dynamic>> productList = products.map((product) {
         return {
-          'id': product['_id'],
+          '_id': product['_id'],
           'name': product['name'],
           'description': product['description'],
           'price': product['price'] is String 

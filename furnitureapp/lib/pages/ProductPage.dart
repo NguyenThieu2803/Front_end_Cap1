@@ -27,6 +27,9 @@ class _ProductPageState extends State<ProductPage>
   @override
   void initState() {
     super.initState();
+    if (widget.product.id == null) {
+      throw ArgumentError('Product ID không được để trống');
+    }
     _tabController = TabController(
         length: 2, vsync: this); // Two tabs for Details and Reviews
   }
@@ -533,7 +536,9 @@ class _ProductPageState extends State<ProductPage>
               ],
             ),
           ),
-          ProductReviews(productId: widget.product.id!),
+          widget.product.id != null 
+              ? ProductReviews(productId: widget.product.id!)
+              : Center(child: Text('Product ID not available')),
         ],
       ),
     );
