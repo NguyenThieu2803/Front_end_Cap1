@@ -9,7 +9,7 @@ class HomeItemsWidget extends StatefulWidget {
   final double? maxPrice;
 
   const HomeItemsWidget({
-    Key? key, 
+    Key? key,
     required this.selectedCategory,
     this.minPrice,
     this.maxPrice,
@@ -57,8 +57,8 @@ class _HomeItemsWidgetState extends State<HomeItemsWidget> {
           alignment: Alignment.centerLeft,
           margin: EdgeInsets.only(top: 10, bottom: 10, left: 10, right: 10), // Điều chỉnh margin trên xuống 10
           child: Text(
-            widget.selectedCategory == "All Product" 
-                ? "All Products" 
+            widget.selectedCategory == "All Product"
+                ? "All Products"
                 : "Products in ${widget.selectedCategory}",
             style: TextStyle(
               fontSize: 25,
@@ -104,11 +104,17 @@ class _HomeItemsWidgetState extends State<HomeItemsWidget> {
   }
 }
 
-class ProductTile extends StatelessWidget {
+class ProductTile extends StatefulWidget {  // Changed to StatefulWidget
   final Product product;
 
   const ProductTile({super.key, required this.product});
 
+  @override
+  State<ProductTile> createState() => _ProductTileState();
+}
+
+class _ProductTileState extends State<ProductTile> {
+  bool isFavorite = false;  
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -131,7 +137,7 @@ class ProductTile extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  "${product.discount ?? 0}%", // Thêm giá trị mặc định cho discount nếu null
+                  "${widget.product.discount ?? 0}%", // Thêm giá trị mặc định cho discount nếu null
                   style: TextStyle(
                     fontSize: 14,
                     color: const Color.fromARGB(255, 168, 149, 149),
@@ -139,27 +145,34 @@ class ProductTile extends StatelessWidget {
                   ),
                 ),
               ),
-              Icon(
-                Icons.favorite_border,
-                color: Colors.red,
+              IconButton(
+                icon: Icon(
+                  isFavorite ? Icons.favorite : Icons.favorite_border,
+                  color: Colors.red,
+                ),
+                onPressed: () {
+                  setState(() {
+                    isFavorite = !isFavorite;
+                  });
+                },
               ),
             ],
           ),
           InkWell(
             onTap: () {
-              print("Product Details: $product"); // Print product details
+              print("Product Details: $widget.product"); // Print product details
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ProductPage(product: product),
+                  builder: (context) => ProductPage(product: widget.product),
                 ),
               );
             },
             child: Container(
               margin: EdgeInsets.all(5),
               child: Image.network(
-                product.images?.isNotEmpty == true
-                    ? product.images!.first
+                widget.product.images?.isNotEmpty == true
+                    ? widget.product.images!.first
                     : 'https://example.com/default_image.png', // URL mặc định nếu không có hình ảnh
                 height: 110,
                 width: 110,
@@ -170,7 +183,7 @@ class ProductTile extends StatelessWidget {
             padding: EdgeInsets.only(bottom: 5),
             alignment: Alignment.centerLeft,
             child: Text(
-              product.name ?? 'Unknown Product', // Thêm giá trị mặc định cho name nếu null
+              widget.product.name ?? 'Unknown Product', // Thêm giá trị mặc định cho name nếu null
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
@@ -189,7 +202,7 @@ class ProductTile extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "\$${product.price?.toStringAsFixed(0) ?? 'N/A'}", // Thêm giá trị mặc định cho price nếu null
+                      "\$${widget.product.price?.toStringAsFixed(0) ?? 'N/A'}", // Thêm giá trị mặc định cho price nếu null
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -205,7 +218,7 @@ class ProductTile extends StatelessWidget {
                         ),
                         SizedBox(width: 2),
                         Text(
-                          product.rating?.toStringAsFixed(1) ?? '0.0', // Hiển thị rating
+                          widget.product.rating?.toStringAsFixed(1) ?? '0.0', // Hiển thị rating
                           style: TextStyle(
                             fontSize: 15,
                             color: Colors.grey[600],
@@ -217,7 +230,7 @@ class ProductTile extends StatelessWidget {
                 ),
                 SizedBox(height: 2),
                 Text(
-                  "${product.sold ?? 0} sold", // Thêm giá trị mặc định cho sold nếu null
+                  "${widget.product.sold ?? 0} sold", // Thêm giá trị mặc định cho sold nếu null
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.grey[600],
