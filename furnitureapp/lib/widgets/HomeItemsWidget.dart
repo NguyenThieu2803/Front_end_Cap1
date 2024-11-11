@@ -1,7 +1,10 @@
 import '../model/product.dart';
 import 'package:flutter/material.dart';
-import '../services/data_service.dart';
+import 'package:furnitureapp/model/Review.dart';
+import 'package:furnitureapp/api/api.service.dart';
 import 'package:furnitureapp/pages/ProductPage.dart';
+import 'package:furnitureapp/model/wishlist_model.dart';
+import 'package:furnitureapp/services/data_service.dart';
 
 class HomeItemsWidget extends StatefulWidget {
   final String selectedCategory;
@@ -9,11 +12,11 @@ class HomeItemsWidget extends StatefulWidget {
   final double? maxPrice;
 
   const HomeItemsWidget({
-    Key? key,
+    super.key,
     required this.selectedCategory,
     this.minPrice,
     this.maxPrice,
-  }) : super(key: key);
+  });
 
   @override
   _HomeItemsWidgetState createState() => _HomeItemsWidgetState();
@@ -21,11 +24,13 @@ class HomeItemsWidget extends StatefulWidget {
 
 class _HomeItemsWidgetState extends State<HomeItemsWidget> {
   late Future<List<Product>> _productsFuture;
+  Future<Set<String>>? _wishlistProductIdsFuture;
 
   @override
   void initState() {
     super.initState();
     _loadProducts();
+    _wishlistProductIdsFuture = _loadWishlistProductIds();
   }
 
   @override
@@ -47,56 +52,94 @@ class _HomeItemsWidgetState extends State<HomeItemsWidget> {
     );
   }
 
+  Future<Set<String>> _loadWishlistProductIds() async {
+    try {
+      Wishlist? wishlist = await DataService().getWishlistByUserId();
+      if (wishlist != null && wishlist.product != null) {
+        return wishlist.product.map((item) => item.product?.id ?? '').toSet();
+      }
+    } catch (e) {
+      print("Error loading wishlist IDs: $e");
+    }
+    return {}; // Return an empty set if there's an error or no wishlist.
+  }
+
+  List<Review> getReviewsForProducts(List<Product> products) {
+    return products.map((product) {
+      return Review(
+        id: product.id,
+        rating: (product.rating ?? 0).toInt(),
+        comment: "This is a review for ${product.name}",
+        reviewDate: DateTime.now().toString(),
+      );
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Hiển thị tiêu đề dựa trên category được chọn
         Container(
           alignment: Alignment.centerLeft,
-          margin: EdgeInsets.only(top: 10, bottom: 10, left: 10, right: 10), // Điều chỉnh margin trên xuống 10
+          margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
           child: Text(
             widget.selectedCategory == "All Product"
                 ? "All Products"
                 : "Products in ${widget.selectedCategory}",
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 25,
               fontWeight: FontWeight.bold,
               color: Color(0xFF2B2321),
             ),
           ),
         ),
-        FutureBuilder<List<Product>>(
-          future: _productsFuture,
+        FutureBuilder<Set<String>>(
+          future: _wishlistProductIdsFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
+              return const Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Text(
-                    'No products found in this category',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ),
-              );
-            } else {
-              final products = snapshot.data!;
-              return GridView.count(
-                childAspectRatio: 0.85,
-                physics: NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                shrinkWrap: true,
-                padding: EdgeInsets.only(top: 10),
-                children: products
-                    .map((product) => ProductTile(product: product))
-                    .toList(),
-              );
+              return Center(child: Text('Error loading wishlist: ${snapshot.error}'));
             }
+
+            final wishlistProductIds = snapshot.data ?? {};
+
+            return FutureBuilder<List<Product>>(
+              future: _productsFuture,
+              builder: (context, productSnapshot) {
+                if (productSnapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (productSnapshot.hasError) {
+                  return Center(child: Text('Error: ${productSnapshot.error}'));
+                } else if (!productSnapshot.hasData || productSnapshot.data!.isEmpty) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: Text('No products found in this category', style: TextStyle(fontSize: 16)),
+                    ),
+                  );
+                } else {
+                  final products = productSnapshot.data!;
+                  List<Review> reviews = getReviewsForProducts(products);
+
+                  return GridView.count(
+                    childAspectRatio: 0.85,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    padding: const EdgeInsets.only(top: 10),
+                    children: List.generate(products.length, (index) {
+                      return ProductTile(
+                        product: products[index],
+                        review: reviews[index],
+                        isFavorite: wishlistProductIds.contains(products[index].id),
+                      );
+                    }),
+                  );
+                }
+              },
+            );
           },
         ),
       ],
@@ -104,22 +147,67 @@ class _HomeItemsWidgetState extends State<HomeItemsWidget> {
   }
 }
 
-class ProductTile extends StatefulWidget {  // Changed to StatefulWidget
+class ProductTile extends StatefulWidget {
   final Product product;
+  final Review review;
+  final bool isFavorite;
 
-  const ProductTile({super.key, required this.product});
+  const ProductTile({super.key, required this.product, required this.review, required this.isFavorite});
 
   @override
   State<ProductTile> createState() => _ProductTileState();
 }
 
 class _ProductTileState extends State<ProductTile> {
-  bool isFavorite = false;  
+  late bool isFavorite;
+
+  @override
+  void initState() {
+    super.initState();
+    isFavorite = widget.isFavorite;
+  }
+
+  Future<void> _toggleFavorite(Product product) async {
+    setState(() {
+      isFavorite = !isFavorite;
+    });
+
+    try {
+      if (isFavorite) {
+        bool success = await APIService.addWishlist(product.id!);
+        if (!success) {
+          setState(() {
+            isFavorite = !isFavorite;
+          });
+          _showErrorSnackBar('Failed to add to wishlist');
+        }
+      } else {
+        bool success = await APIService.deleteWishlist(product.id!);
+        if (!success) {
+          setState(() {
+            isFavorite = !isFavorite;
+          });
+          _showErrorSnackBar('Failed to remove from wishlist');
+        }
+      }
+    } catch (e) {
+      setState(() {
+        isFavorite = !isFavorite;
+      });
+      _showErrorSnackBar('An error occurred');
+      print("Error toggling favorite: $e");
+    }
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(left: 15, right: 15, top: 10),
-      margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+      padding: const EdgeInsets.only(left: 15, right: 15, top: 10),
+      margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -131,62 +219,57 @@ class _ProductTileState extends State<ProductTile> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: EdgeInsets.all(5),
+                padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
-                  color: Color(0xFF2B2321),
+                  color: const Color(0xFF2B2321),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  "${widget.product.discount ?? 0}%", // Thêm giá trị mặc định cho discount nếu null
-                  style: TextStyle(
+                  "${widget.product.discount ?? 0}%",
+                  style: const TextStyle(
                     fontSize: 14,
-                    color: const Color.fromARGB(255, 168, 149, 149),
+                    color: Color.fromARGB(255, 168, 149, 149),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
               IconButton(
+                onPressed: () => _toggleFavorite(widget.product),
                 icon: Icon(
                   isFavorite ? Icons.favorite : Icons.favorite_border,
-                  color: Colors.red,
+                  color: isFavorite ? Colors.red : null,
                 ),
-                onPressed: () {
-                  setState(() {
-                    isFavorite = !isFavorite;
-                  });
-                },
               ),
             ],
           ),
           InkWell(
             onTap: () {
-              print("Product Details: $widget.product"); // Print product details
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ProductPage(product: widget.product),
+                  builder: (context) => ProductPage(product: widget.product, review: widget.review),
                 ),
               );
             },
             child: Container(
-              margin: EdgeInsets.all(5),
+              margin: const EdgeInsets.all(5),
               child: Image.network(
                 widget.product.images?.isNotEmpty == true
                     ? widget.product.images!.first
-                    : 'https://example.com/default_image.png', // URL mặc định nếu không có hình ảnh
+                    : 'https://example.com/default_image.png',
                 height: 110,
                 width: 110,
               ),
             ),
           ),
           Container(
-            padding: EdgeInsets.only(bottom: 5),
+            padding: const EdgeInsets.only(bottom: 5),
             alignment: Alignment.centerLeft,
             child: Text(
-              widget.product.name ?? 'Unknown Product', // Thêm giá trị mặc định cho name nếu null
+              widget.product.name ?? 'Unknown Product',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 16,
                 color: Color(0xFF2B2321),
                 fontWeight: FontWeight.bold,
@@ -194,7 +277,7 @@ class _ProductTileState extends State<ProductTile> {
             ),
           ),
           Padding(
-            padding: EdgeInsets.only(top: 5),
+            padding: const EdgeInsets.only(top: 5),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -202,8 +285,8 @@ class _ProductTileState extends State<ProductTile> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "\$${widget.product.price?.toStringAsFixed(0) ?? 'N/A'}", // Thêm giá trị mặc định cho price nếu null
-                      style: TextStyle(
+                      "\$${widget.product.price?.toStringAsFixed(0) ?? 'N/A'}",
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF2B2321),
@@ -211,14 +294,14 @@ class _ProductTileState extends State<ProductTile> {
                     ),
                     Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.star,
                           color: Colors.amber,
                           size: 16,
                         ),
-                        SizedBox(width: 2),
+                        const SizedBox(width: 2),
                         Text(
-                          widget.product.rating?.toStringAsFixed(1) ?? '0.0', // Hiển thị rating
+                          widget.product.rating?.toStringAsFixed(1) ?? '0.0',
                           style: TextStyle(
                             fontSize: 15,
                             color: Colors.grey[600],
@@ -228,9 +311,9 @@ class _ProductTileState extends State<ProductTile> {
                     ),
                   ],
                 ),
-                SizedBox(height: 2),
+                const SizedBox(height: 2),
                 Text(
-                  "${widget.product.sold ?? 0} sold", // Thêm giá trị mặc định cho sold nếu null
+                  "${widget.product.sold ?? 0} sold",
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.grey[600],
