@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:flutter/services.dart';
+import 'package:furnitureapp/model/Order_model.dart';
+import 'package:furnitureapp/services/data_service.dart';
+import 'package:intl/intl.dart'; // Import for date formatting
 
-class WaitingForDelivery extends StatelessWidget {
+class WaitingForDelivery extends StatefulWidget {
   const WaitingForDelivery({Key? key}) : super(key: key);
+
+  @override
+  _WaitingForDeliveryState createState() => _WaitingForDeliveryState();
+}
+
+class _WaitingForDeliveryState extends State<WaitingForDelivery> {
+  final Map<String, bool> _expandedStates = {};
 
   @override
   Widget build(BuildContext context) {
@@ -38,33 +46,22 @@ class WaitingForDelivery extends StatelessWidget {
           centerTitle: true,
         ),
       ),
-      body: FutureBuilder<List<Product>>(
-        future: loadProducts(),
+      body: FutureBuilder<List<OrderData>>(
+        future: _loadOrders(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text('No orders available.'));
           } else {
-            final products = snapshot.data!;
             return Container(
               color: const Color(0xFFEDECF2),
               child: ListView.builder(
-                itemCount: products.length,
+                itemCount: snapshot.data!.length,
                 itemBuilder: (context, index) {
-                  final product = products[index];
-                  return _buildProductSection(
-                    headerText: product.headerText,
-                    imageUrl: product.imageUrl,
-                    productName: product.productName,
-                    productDetail: product.productDetail,
-                    totalAmountLabel: product.totalAmountLabel,
-                    totalAmount: product.totalAmount,
-                    estimatedDeliveryDate: product.estimatedDeliveryDate,
-                    returnButtonText: product.returnButtonText,
-                    cancelButtonText: product.cancelButtonText,
-                    tags: product.tags,
-                  );
+                  return _buildOrderSection(snapshot.data![index]);
                 },
               ),
             );
@@ -74,113 +71,184 @@ class WaitingForDelivery extends StatelessWidget {
     );
   }
 
-  Future<List<Product>> loadProducts() async {
-    String jsonString = await rootBundle.loadString('assets/detail/WaitingForDelivery.json');
-    final jsonResponse = json.decode(jsonString);
-    return (jsonResponse['products'] as List)
-        .map((product) => Product.fromJson(product))
-        .toList();
+  Future<List<OrderData>> _loadOrders() async {
+    List<OrderData> orders = await DataService().getOrdersByUserId();
+    return orders.where((order) => order.deliveryStatus == 'Shipping').toList();
   }
 
-  Widget _buildProductSection({
-    required String headerText,
+  Widget _buildOrderSection(OrderData orderData) {
+    bool isExpanded = _expandedStates[orderData.id] ?? false;
+    final DateTime estimatedDeliveryDate =
+        orderData.orderDate.add(Duration(days: 3));
+    final String formattedOrderDate =
+        DateFormat('yyyy-MM-dd').format(orderData.orderDate);
+    final String formattedEstimatedDate =
+        DateFormat('yyyy-MM-dd').format(estimatedDeliveryDate);
+
+    return Padding(
+      padding: const EdgeInsets.all(15.0),
+      child: Card(
+        color: Colors.white,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Order ID: ${orderData.id}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Payment Status: ${orderData.paymentStatus}',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Order Date: $formattedOrderDate',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Estimated Delivery Date: $formattedEstimatedDate',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  _buildProductImages(orderData),
+                ],
+              ),
+            ),
+            if (isExpanded)
+              Column(
+                children: orderData.products.map((productOrder) {
+                  return _buildProductContent(
+                    imageUrl: productOrder.product.images?.first ?? '',
+                    productName: productOrder.product.name ?? '',
+                    productDetail: productOrder.product.shortDescription ?? '',
+                    totalAmountLabel: 'Total Amount:',
+                    totalAmount: '\$${productOrder.amount.toString()}',
+                    estimatedDeliveryDate:
+                        'Estimated Delivery: $formattedEstimatedDate',
+                    tags: ['Pending', 'Confirmation'],
+                  );
+                }).toList(),
+              ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () {
+                  setState(() {
+                    _expandedStates[orderData.id] = !isExpanded;
+                  });
+                },
+                child: Text(isExpanded ? 'See Less' : 'See More'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProductImages(OrderData orderData) {
+    // Get the first three products or fewer if not available
+    final products = orderData.products.take(3).toList();
+
+    return Row(
+      children: products.map((productOrder) {
+        return Padding(
+          padding: const EdgeInsets.only(right: 8.0),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.network(
+              productOrder.product.images?.first ?? '',
+              width: 80,
+              height: 80,
+              fit: BoxFit.cover,
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildProductContent({
     required String imageUrl,
     required String productName,
     required String productDetail,
     required String totalAmountLabel,
     required String totalAmount,
     required String estimatedDeliveryDate,
-    required String returnButtonText,
-    required String cancelButtonText,
     required List<String> tags,
   }) {
     return Padding(
-      padding: const EdgeInsets.all(15.0),
-      child: Card(
-        color: Colors.white,
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildProductHeader(headerText),
-              const SizedBox(height: 10),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      imageUrl,
-                      width: 100,
-                      height: 100,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          productName,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          productDetail,
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  imageUrl,
+                  width: 100,
+                  height: 100,
+                  fit: BoxFit.cover,
+                ),
               ),
-              _buildTags(tags),
-              const SizedBox(height: 10),
-              _buildTotalAmountSection(totalAmountLabel, totalAmount),
-              const SizedBox(height: 10),
-              Text(
-                estimatedDeliveryDate,
-                style: const TextStyle(fontSize: 16, color: Colors.grey),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      productName,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      productDetail,
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 10),
-              _buildActionButtons(returnButtonText, cancelButtonText),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProductHeader(String headerText) {
-    // Kiểm tra giá trị của headerText để thay đổi màu sắc
-    Color textColor;
-    if (headerText == 'Delivered') {
-      textColor = Colors.red; // Màu đỏ cho "Delivered"
-    } else if (headerText == 'Are Delivering') {
-      textColor = Colors.green; // Màu xanh cho "Are Delivering"
-    } else {
-      textColor = Colors.deepOrange; // Màu mặc định
-    }
-
-    return Row(
-      children: [
-        const Spacer(),
-        Text(
-          headerText,
-          style: TextStyle(
-            color: textColor,
-            fontSize: 16,
+          _buildTags(tags),
+          const SizedBox(height: 10),
+          _buildTotalAmountSection(totalAmountLabel, totalAmount),
+          const SizedBox(height: 10),
+          Text(
+            estimatedDeliveryDate,
+            style: const TextStyle(fontSize: 16, color: Colors.grey),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -229,82 +297,6 @@ class WaitingForDelivery extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildActionButtons(String returnButtonText, String cancelButtonText) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Expanded(
-          child: OutlinedButton(
-            onPressed: () {},
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: Colors.grey),
-              padding: const EdgeInsets.symmetric(vertical: 10),
-            ),
-            child: Text(
-              cancelButtonText,
-              style: const TextStyle(color: Colors.black, fontSize: 14),
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: OutlinedButton(
-            onPressed: () {},
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: Colors.red),
-              padding: const EdgeInsets.symmetric(vertical: 10),
-            ),
-            child: Text(
-              returnButtonText,
-              style: const TextStyle(color: Colors.black, fontSize: 14),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class Product {
-  String headerText;
-  String imageUrl;
-  String productName;
-  String productDetail;
-  String totalAmountLabel;
-  String totalAmount;
-  String estimatedDeliveryDate;
-  String returnButtonText;
-  String cancelButtonText;
-  List<String> tags;
-
-  Product({
-    required this.headerText,
-    required this.imageUrl,
-    required this.productName,
-    required this.productDetail,
-    required this.totalAmountLabel,
-    required this.totalAmount,
-    required this.estimatedDeliveryDate,
-    required this.returnButtonText,
-    required this.cancelButtonText,
-    required this.tags,
-  });
-
-  factory Product.fromJson(Map<String, dynamic> json) {
-    return Product(
-      headerText: json['headerText'],
-      imageUrl: json['imageUrl'],
-      productName: json['productName'],
-      productDetail: json['productDetail'],
-      totalAmountLabel: json['totalAmountLabel'],
-      totalAmount: json['totalAmount'],
-      estimatedDeliveryDate: json['estimatedDeliveryDate'],
-      returnButtonText: json['returnButtonText'],
-      cancelButtonText: json['cancelButtonText'],
-      tags: List<String>.from(json['tags']),
     );
   }
 }

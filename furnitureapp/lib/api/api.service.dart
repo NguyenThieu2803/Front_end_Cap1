@@ -164,8 +164,8 @@ class APIService {
           '_id': product['_id'],
           'name': product['name'],
           'description': product['description'],
-          'price': product['price'] is String 
-              ? double.tryParse(product['price']) 
+          'price': product['price'] is String
+              ? double.tryParse(product['price'])
               : product['price']?.toDouble(),
           'stockQuantity': product['stockQuantity'],
           'material': product['material'],
@@ -202,41 +202,48 @@ class APIService {
       var jsonResponse = jsonDecode(response.body);
       List<dynamic> categoriesJson = jsonResponse['categories'];
 
-      return categoriesJson.map((categoryJson) => categoryJson as Map<String, dynamic>).toList();
+      return categoriesJson
+          .map((categoryJson) => categoryJson as Map<String, dynamic>)
+          .toList();
     } else {
       throw Exception('Failed to fetch categories');
     }
   }
 
-static Future<Map<String, dynamic>> checkout(Map<String, dynamic> checkoutData) async {
-  String? token = await ShareService.getToken();
-  if (token == null) {
-    throw Exception('User not logged in');
-  }
+  static Future<Map<String, dynamic>> checkout(
+      Map<String, dynamic> checkoutData) async {
+    String? token = await ShareService.getToken();
+    if (token == null) {
+      throw Exception('User not logged in');
+    }
 
-  Map<String, String> requestHeaders = {
-    'Content-Type': 'application/json',
-    'Authorization': 'Bearer $token',
-  };
+    Map<String, String> requestHeaders = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
 
-  var url = Uri.http(Config.apiURL, Config.checkoutAPI);
-  var response = await client.post(
-    url,
-    headers: requestHeaders,
-    body: jsonEncode(checkoutData),
-  );
+    var url = Uri.http(Config.apiURL, Config.checkoutAPI);
+    var response = await client.post(
+      url,
+      headers: requestHeaders,
+      body: jsonEncode(checkoutData),
+    );
 
-  if (response.statusCode == 200) {
-    return jsonDecode(response.body);
-  } else {
-    throw Exception('Checkout failed: ${response.statusCode} - ${response.body}');
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception(
+          'Checkout failed: ${response.statusCode} - ${response.body}');
     }
   }
-  static Future<List<Map<String, dynamic>>> fetchProductsByCategory(String categoryId) async {
+
+  static Future<List<Map<String, dynamic>>> fetchProductsByCategory(
+      String categoryId) async {
     Map<String, String> requestHeaders = {'Content-Type': 'application/json'};
 
     // Sửa cách gửi categoryId trong URL
-    var url = Uri.http(Config.apiURL, '${Config.listProductByCategoryAPI}/$categoryId');
+    var url = Uri.http(
+        Config.apiURL, '${Config.listProductByCategoryAPI}/$categoryId');
 
     var response = await http.get(url, headers: requestHeaders);
     print('Fetching products for category: $categoryId');
@@ -252,14 +259,15 @@ static Future<Map<String, dynamic>> checkout(Map<String, dynamic> checkoutData) 
           '_id': product['_id'],
           'name': product['name'],
           'description': product['description'],
-          'price': product['price'] is String 
-              ? double.tryParse(product['price']) 
+          'price': product['price'] is String
+              ? double.tryParse(product['price'])
               : product['price']?.toDouble(),
           'stockQuantity': product['stockQuantity'],
           'material': product['material'],
           'color': product['color'],
           'images': product['images'],
-          'discount': product['discount'] != 0 ? product['discount'].toString() : '',
+          'discount':
+              product['discount'] != 0 ? product['discount'].toString() : '',
           'category': product['category'],
           'brand': product['brand'],
           'style': product['style'],
@@ -288,7 +296,8 @@ static Future<Map<String, dynamic>> checkout(Map<String, dynamic> checkoutData) 
       'Authorization': 'Bearer $token',
     };
 
-    var url = Uri.http(Config.apiURL, Config.updateCartAPI); // Ensure the correct API endpoint
+    var url = Uri.http(
+        Config.apiURL, Config.updateCartAPI); // Ensure the correct API endpoint
     var repository = await client.put(
       url,
       headers: requestHeaders,
@@ -303,7 +312,8 @@ static Future<Map<String, dynamic>> checkout(Map<String, dynamic> checkoutData) 
     if (repository.statusCode == 200) {
       return true;
     } else {
-      throw Exception('Failed to update cart item: ${repository.statusCode} - ${repository.body}');
+      throw Exception(
+          'Failed to update cart item: ${repository.statusCode} - ${repository.body}');
     }
   }
 
@@ -317,7 +327,8 @@ static Future<Map<String, dynamic>> checkout(Map<String, dynamic> checkoutData) 
       'Authorization': 'Bearer $token',
     };
 
-    var url = Uri.http(Config.apiURL, Config.deleteCartAPI); // Ensure the correct API endpoint
+    var url = Uri.http(
+        Config.apiURL, Config.deleteCartAPI); // Ensure the correct API endpoint
     var repository = await client.delete(
       url,
       headers: requestHeaders,
@@ -331,7 +342,8 @@ static Future<Map<String, dynamic>> checkout(Map<String, dynamic> checkoutData) 
     if (repository.statusCode == 200) {
       return true;
     } else {
-      throw Exception('Failed to delete cart item: ${repository.statusCode} - ${repository.body}');
+      throw Exception(
+          'Failed to delete cart item: ${repository.statusCode} - ${repository.body}');
     }
   }
 
@@ -353,11 +365,13 @@ static Future<Map<String, dynamic>> checkout(Map<String, dynamic> checkoutData) 
     if (response.statusCode == 201) {
       return true;
     } else {
-      throw Exception('Failed to add address: ${response.statusCode} - ${response.body}');
+      throw Exception(
+          'Failed to add address: ${response.statusCode} - ${response.body}');
     }
   }
 
-  static Future<bool> updateAddress(String addressId, String name, String phone, String street, String city, String province, bool isDefault) async {
+  static Future<bool> updateAddress(String addressId, String name, String phone,
+      String street, String city, String province, bool isDefault) async {
     String? token = await ShareService.getToken();
     if (token == null) {
       throw Exception('User not logged in');
@@ -383,7 +397,8 @@ static Future<Map<String, dynamic>> checkout(Map<String, dynamic> checkoutData) 
     if (repository.statusCode == 200) {
       return true;
     } else {
-      throw Exception('Failed to update address: ${repository.statusCode} - ${repository.body}');
+      throw Exception(
+          'Failed to update address: ${repository.statusCode} - ${repository.body}');
     }
   }
 
@@ -407,7 +422,8 @@ static Future<Map<String, dynamic>> checkout(Map<String, dynamic> checkoutData) 
     if (repository.statusCode == 200) {
       return true;
     } else {
-      throw Exception('Failed to delete address: ${repository.statusCode} - ${repository.body}');
+      throw Exception(
+          'Failed to delete address: ${repository.statusCode} - ${repository.body}');
     }
   }
 
@@ -436,7 +452,8 @@ static Future<Map<String, dynamic>> checkout(Map<String, dynamic> checkoutData) 
         throw Exception('Unexpected JSON format');
       }
     } else {
-      throw Exception('Failed to fetch addresses: ${repository.statusCode} - ${repository.body}');
+      throw Exception(
+          'Failed to fetch addresses: ${repository.statusCode} - ${repository.body}');
     }
   }
 
@@ -458,11 +475,13 @@ static Future<Map<String, dynamic>> checkout(Map<String, dynamic> checkoutData) 
     if (response.statusCode == 201) {
       return true;
     } else {
-      throw Exception('Failed to add card: ${response.statusCode} - ${response.body}');
+      throw Exception(
+          'Failed to add card: ${response.statusCode} - ${response.body}');
     }
   }
 
-  static Future<bool> updateCard(String cardId, Map<String, dynamic> cardData) async {
+  static Future<bool> updateCard(
+      String cardId, Map<String, dynamic> cardData) async {
     String? token = await ShareService.getToken();
     if (token == null) {
       throw Exception('User not logged in');
@@ -480,7 +499,8 @@ static Future<Map<String, dynamic>> checkout(Map<String, dynamic> checkoutData) 
     if (response.statusCode == 200) {
       return true;
     } else {
-      throw Exception('Failed to update card: ${response.statusCode} - ${response.body}');
+      throw Exception(
+          'Failed to update card: ${response.statusCode} - ${response.body}');
     }
   }
 
@@ -501,7 +521,8 @@ static Future<Map<String, dynamic>> checkout(Map<String, dynamic> checkoutData) 
     if (response.statusCode == 200) {
       return true;
     } else {
-      throw Exception('Failed to delete card: ${response.statusCode} - ${response.body}');
+      throw Exception(
+          'Failed to delete card: ${response.statusCode} - ${response.body}');
     }
   }
 
@@ -530,19 +551,22 @@ static Future<Map<String, dynamic>> checkout(Map<String, dynamic> checkoutData) 
         throw Exception('Unexpected JSON format');
       }
     } else {
-      throw Exception('Failed to fetch cards: ${response.statusCode} - ${response.body}');
+      throw Exception(
+          'Failed to fetch cards: ${response.statusCode} - ${response.body}');
     }
   }
 
-  static Future<Map<String, dynamic>> getReviewsByProduct(String productId) async {
+  static Future<Map<String, dynamic>> getReviewsByProduct(
+      String productId) async {
     try {
       Map<String, String> requestHeaders = {
         'Content-Type': 'application/json',
       };
-      
-      var url = Uri.http(Config.apiURL, '${Config.reviewByProductAPI}/$productId');
+
+      var url =
+          Uri.http(Config.apiURL, '${Config.reviewByProductAPI}/$productId');
       var response = await client.get(url, headers: requestHeaders);
-      
+
       print('Fetching reviews for product: $productId');
       print('Response status: ${response.statusCode}');
       print('Response body: ${response.body}');
@@ -567,37 +591,41 @@ static Future<Map<String, dynamic>> checkout(Map<String, dynamic> checkoutData) 
 
   static Future<List<Map<String, dynamic>>> searchProducts(String query) async {
     Map<String, String> requestHeaders = {'Content-Type': 'application/json'};
-    
+
     // Tạo URL với tham số tìm kiếm
     var url = Uri.http(Config.apiURL, Config.listProductAPI, {'search': query});
-    
+
     var response = await http.get(url, headers: requestHeaders);
-    
+
     if (response.statusCode == 200) {
       var jsonResponse = jsonDecode(response.body);
       List<dynamic> products = jsonResponse['products'];
-      
-      return products.map((product) => {
-        'id': product['_id'],
-        'name': product['name'],
-        'description': product['description'],
-        'price': product['price'] is String 
-            ? double.tryParse(product['price']) 
-            : product['price']?.toDouble(),
-        'stockQuantity': product['stockQuantity'],
-        'material': product['material'],
-        'color': product['color'],
-        'images': product['images'],
-        'discount': product['discount'] != 0 ? product['discount'].toString() : '',
-        'category': product['category'],
-        'brand': product['brand'],
-        'style': product['style'],
-        'assemblyRequired': product['assemblyRequired'],
-        'dimensions': product['dimensions'],
-        'weight': product['weight'],
-        'sold': product['sold'],
-        'rating': product['rating'],
-      }).toList();
+
+      return products
+          .map((product) => {
+                'id': product['_id'],
+                'name': product['name'],
+                'description': product['description'],
+                'price': product['price'] is String
+                    ? double.tryParse(product['price'])
+                    : product['price']?.toDouble(),
+                'stockQuantity': product['stockQuantity'],
+                'material': product['material'],
+                'color': product['color'],
+                'images': product['images'],
+                'discount': product['discount'] != 0
+                    ? product['discount'].toString()
+                    : '',
+                'category': product['category'],
+                'brand': product['brand'],
+                'style': product['style'],
+                'assemblyRequired': product['assemblyRequired'],
+                'dimensions': product['dimensions'],
+                'weight': product['weight'],
+                'sold': product['sold'],
+                'rating': product['rating'],
+              })
+          .toList();
     } else {
       throw Exception('Failed to search products');
     }
@@ -621,10 +649,10 @@ static Future<Map<String, dynamic>> checkout(Map<String, dynamic> checkoutData) 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
-      throw Exception('Failed to fetch profile: ${response.statusCode} - ${response.body}');
+      throw Exception(
+          'Failed to fetch profile: ${response.statusCode} - ${response.body}');
     }
   }
-
 
   // get API order đơn hàng của user
   static Future<Map<String, dynamic>> getOrders() async {
@@ -641,7 +669,69 @@ static Future<Map<String, dynamic>> checkout(Map<String, dynamic> checkoutData) 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
-      throw Exception('Failed to fetch orders: ${response.statusCode} - ${response.body}');
+      throw Exception(
+          'Failed to fetch orders: ${response.statusCode} - ${response.body}');
+    }
+  }
+
+// get API wishlist of user
+  static Future<Map<String, dynamic>> getWishlist() async {
+    String? token = await ShareService.getToken();
+    if (token == null) {
+      throw Exception('User not logged in');
+    }
+    Map<String, String> requestHeaders = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+    var url = Uri.http(Config.apiURL, Config.wishlistAPI);
+    var response = await http.get(url, headers: requestHeaders);
+    print("favorite List : ${response.body}");
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception(
+          'Failed to fetch wishlist: ${response.statusCode} - ${response.body}');
+    }
+  }
+
+  // delete API wishlist of user
+  static Future<bool> deleteWishlist(String productId) async {
+    String? token = await ShareService.getToken();
+    if (token == null) {
+      throw Exception('User not logged in');
+    }
+    Map<String, String> requestHeaders = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+    var url = Uri.http(Config.apiURL, '${Config.wishlistAPI}/$productId');
+    var response = await http.delete(url, headers: requestHeaders);
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      throw Exception(
+          'Failed to delete wishlist: ${response.statusCode} - ${response.body}');
+    }
+  }
+
+  // add API wishlist of user
+  static Future<bool> addWishlist(String productId) async {
+    String? token = await ShareService.getToken();
+    if (token == null) {
+      throw Exception('User not logged in');
+    }
+    Map<String, String> requestHeaders = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+    var url = Uri.http(Config.apiURL, '${Config.wishlistAPI}/$productId');
+    var response = await http.post(url, headers: requestHeaders);
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      throw Exception(
+          'Failed to add wishlist: ${response.statusCode} - ${response.body}');
     }
   }
 }

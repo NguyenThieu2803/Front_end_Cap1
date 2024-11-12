@@ -6,8 +6,10 @@ import 'package:furnitureapp/model/Review.dart';
 import 'package:furnitureapp/api/api.service.dart';
 import 'package:furnitureapp/model/Categories.dart';
 import 'package:furnitureapp/model/Order_model.dart';
+import 'package:furnitureapp/model/wishlist_model.dart';
 import 'package:furnitureapp/model/Cart_User_Model.dart';
 import 'package:furnitureapp/model/UserProfile_model.dart';
+
 
 
 class DataService {
@@ -185,6 +187,43 @@ class DataService {
     } catch (error) {
       print('Failed to load orders: $error');
       return [];
+    }
+  }
+
+   // get wishlist by userid
+   Future<Wishlist?> getWishlistByUserId() async {
+    try {
+      final response = await APIService.getWishlist();
+
+      //  Extract the nested "wishlist" object
+      if (response.containsKey('wishlist')) {
+        final wishlistData = response['wishlist'] as Map<String, dynamic>;
+        return Wishlist.fromJson(wishlistData);
+      } else {
+        print('Invalid wishlist data format: $response');
+        return null; // Or throw an error if you prefer
+      }
+    } catch (error) {
+      print('Failed to load wishlist: $error');
+      return null;
+    }
+  }
+  
+  Future<bool> removeFromWishlist(String productId) async {
+    try {
+      return await APIService.deleteWishlist(productId);
+    } catch (e) {
+      print('Error removing from wishlist: $e');
+      return false;
+    }
+  }
+
+  Future<bool> addToWishlist(String productId) async {
+    try {
+      return await APIService.addWishlist(productId);
+    } catch (e) {
+      print('Error adding to wishlist: $e');
+      return false;
     }
   }
 }
