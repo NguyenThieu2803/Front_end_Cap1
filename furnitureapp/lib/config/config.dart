@@ -15,7 +15,7 @@ class Config {
   static const String cardAPI = "api/v1/card"; 
   static const String checkoutAPI = "api/v1/checkout"; 
   static const String reviewByProductAPI = "api/v1/getReviewByProduct";
-  static const String searchProductAPI = "api/v1/products/search";
+  static const String searchProductAPI = "api/v1/search";
   static const String userOrderAPI = "api/v1/checkout";
   static const String wishlistAPI="api/v1/wishlist";
 }

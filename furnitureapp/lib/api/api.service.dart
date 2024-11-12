@@ -590,44 +590,54 @@ class APIService {
   }
 
   static Future<List<Map<String, dynamic>>> searchProducts(String query) async {
-    Map<String, String> requestHeaders = {'Content-Type': 'application/json'};
+    try {
+      Map<String, String> requestHeaders = {'Content-Type': 'application/json'};
+      var queryParams = {'query': query};
+      
+      var url = Uri.http(Config.apiURL, Config.searchProductAPI, queryParams);
+      print('Search URL: $url'); // Debug log
+      
+      var response = await http.get(url, headers: requestHeaders);
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
 
-    // Tạo URL với tham số tìm kiếm
-    var url = Uri.http(Config.apiURL, Config.listProductAPI, {'search': query});
-
-    var response = await http.get(url, headers: requestHeaders);
-
-    if (response.statusCode == 200) {
-      var jsonResponse = jsonDecode(response.body);
-      List<dynamic> products = jsonResponse['products'];
-
-      return products
-          .map((product) => {
-                'id': product['_id'],
-                'name': product['name'],
-                'description': product['description'],
-                'price': product['price'] is String
-                    ? double.tryParse(product['price'])
-                    : product['price']?.toDouble(),
-                'stockQuantity': product['stockQuantity'],
-                'material': product['material'],
-                'color': product['color'],
-                'images': product['images'],
-                'discount': product['discount'] != 0
-                    ? product['discount'].toString()
-                    : '',
-                'category': product['category'],
-                'brand': product['brand'],
-                'style': product['style'],
-                'assemblyRequired': product['assemblyRequired'],
-                'dimensions': product['dimensions'],
-                'weight': product['weight'],
-                'sold': product['sold'],
-                'rating': product['rating'],
-              })
-          .toList();
-    } else {
-      throw Exception('Failed to search products');
+      if (response.statusCode == 200) {
+        var jsonResponse = jsonDecode(response.body);
+        
+        if (jsonResponse['success'] == true && 
+            jsonResponse['data'] != null && 
+            jsonResponse['data']['products'] != null) {
+          
+          List<dynamic> products = jsonResponse['data']['products'];
+          return products.map((product) => {
+            '_id': product['_id'] ?? '',
+            'name': product['name'] ?? '',
+            'description': product['description'] ?? '',
+            'shortDescription': product['shortDescription'] ?? '',
+            'price': product['price'] ?? 0,
+            'dimensions': product['dimensions'] ?? null,
+            'stockQuantity': product['stockQuantity'] ?? 0,
+            'material': product['material'] ?? '',
+            'color': product['color'] ?? null,
+            'images': List<String>.from(product['images'] ?? []),
+            'category': product['category'] ?? '',
+            'discount': product['discount'] ?? 0,
+            'promotionId': product['promotionId'],
+            'brand': product['brand'] ?? '',
+            'style': product['style'] ?? '',
+            'assemblyRequired': product['assemblyRequired'] ?? false,
+            'weight': product['weight'] ?? 0,
+            'sold': product['sold'] ?? 0,
+            'rating': product['rating'] ?? 0,
+          }).toList();
+        }
+        return [];
+      } else {
+        throw Exception('Failed to search products: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error in searchProducts: $e');
+      throw e;
     }
   }
 
