@@ -155,7 +155,6 @@ class _ProductPageState extends State<ProductPage>
   }
 
   Widget _buildProductImage(double screenWidth, double screenHeight) {
-    final imageUrl = widget.product.images?.first ?? 'default_image.png';
     return Stack(
       children: [
         Center(
@@ -168,11 +167,29 @@ class _ProductPageState extends State<ProductPage>
                 bottomLeft: Radius.elliptical(250, 70),
                 bottomRight: Radius.elliptical(250, 70),
               ),
-              image: DecorationImage(
-                image: NetworkImage(imageUrl),
-                fit: BoxFit.cover,
-              ),
             ),
+            child: widget.product.images != null && widget.product.images!.isNotEmpty
+                ? Image.network(
+                    widget.product.images![0],
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      print('Error loading image: $error');
+                      return const Center(
+                        child: Icon(
+                          Icons.image_not_supported,
+                          size: 50,
+                          color: Colors.grey,
+                        ),
+                      );
+                    },
+                  )
+                : const Center(
+                    child: Icon(
+                      Icons.image_not_supported,
+                      size: 50,
+                      color: Colors.grey,
+                    ),
+                  ),
           ),
         ),
       ],
@@ -187,22 +204,18 @@ class _ProductPageState extends State<ProductPage>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Product Name
             Text(
-              widget.product.name!,
+              widget.product.name ?? 'No Name',
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(
-                height: 2), // Reduced space between product name and brand
+            const SizedBox(height: 2),
 
-            // Brand and Rating from Review model
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Display brand
                 Expanded(
                   child: Text(
                     widget.product.brand ?? 'N/A',
@@ -214,17 +227,13 @@ class _ProductPageState extends State<ProductPage>
                   ),
                 ),
                 const SizedBox(width: 8),
-                // Display Rating as Stars from the Review model
                 Row(
                   children: [
-                    ..._buildStarRating(widget
-                        .review.rating), // Assuming you have a review instance
-                    const SizedBox(
-                        width: 4), // Space between stars and rating number
+                    ..._buildStarRating(widget.review.rating ?? 0),
+                    const SizedBox(width: 4),
                     Text(
-                      '(${widget.review.rating?.toStringAsFixed(1) ?? '0.0'})', // Show numeric rating in brackets
-                      style: const TextStyle(
-                          fontSize: 16, color: Color(0xFF2B2321)),
+                      '(${widget.review.rating?.toStringAsFixed(1) ?? '0.0'})',
+                      style: const TextStyle(fontSize: 16, color: Color(0xFF2B2321)),
                     ),
                   ],
                 ),
@@ -235,7 +244,6 @@ class _ProductPageState extends State<ProductPage>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Sold information displayed in a row
                 Row(
                   children: [
                     const Text(
@@ -245,60 +253,55 @@ class _ProductPageState extends State<ProductPage>
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(
-                        width: 5), // Space between 'Sold:' and quantity
+                    const SizedBox(width: 5),
                     Text(
                       '${widget.product.sold ?? 0} items',
                       style: const TextStyle(fontSize: 16),
                     ),
                   ],
                 ),
-                // Quantity controls
-                Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.remove),
-                      onPressed: decreaseQuantity,
-                      padding: EdgeInsets
-                          .zero, // Remove padding for better alignment
-                    ),
-                    SizedBox(
-                      width:
-                          40, // Fixed width for quantity display for better alignment
-                      child: Center(
-                        child: Text(
-                          '$quantity',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.add),
-                      onPressed: increaseQuantity,
-                      padding: EdgeInsets
-                          .zero, // Remove padding for better alignment
-                    ),
-                  ],
-                ),
+                _buildQuantityControls(),
               ],
             ),
-
-            const SizedBox(height: 10), // Space after sold information
           ],
         ),
       ),
     );
   }
 
-// Function to build star rating based on the rating value from Review model
-  List<Widget> _buildStarRating(int? rating) {
+  Widget _buildQuantityControls() {
+    return Row(
+      children: [
+        IconButton(
+          icon: const Icon(Icons.remove),
+          onPressed: decreaseQuantity,
+          padding: EdgeInsets.zero,
+        ),
+        SizedBox(
+          width: 40,
+          child: Center(
+            child: Text(
+              '$quantity',
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.add),
+          onPressed: increaseQuantity,
+          padding: EdgeInsets.zero,
+        ),
+      ],
+    );
+  }
+
+  // Function to build star rating based on the rating value from Review model
+  List<Widget> _buildStarRating(int rating) {
     List<Widget> stars = [];
-    int starCount = rating != null
-        ? rating.clamp(0, 5)
-        : 0; // Ensure rating is between 0 and 5
+    int starCount = rating.clamp(0, 5); // Ensure rating is between 0 and 5
 
     for (int i = 0; i < 5; i++) {
       stars.add(Icon(
@@ -362,14 +365,16 @@ class _ProductPageState extends State<ProductPage>
             ),
           ),
           const SizedBox(height: 10),
-          // Product Specifications
           _buildSpecItem('- Style:', widget.product.style ?? 'N/A'),
-          _buildSpecItem('- Dimensions:',
-              '${widget.product.dimensions!.width} x ${widget.product.dimensions!.depth} x ${widget.product.dimensions!.height} (L x W x H)'),
+          _buildSpecItem(
+            '- Dimensions:',
+            widget.product.dimensions != null
+                ? '${widget.product.dimensions!.width ?? 0} x ${widget.product.dimensions!.depth ?? 0} x ${widget.product.dimensions!.height ?? 0} (L x W x H)'
+                : 'N/A',
+          ),
           _buildSpecItem('- Material:', widget.product.material ?? 'N/A'),
           _buildSpecItem('- Weight:', '${widget.product.weight ?? 0} kg'),
-          _buildSpecItem(
-              '- Quantity:', '${widget.product.stockQuantity ?? 0} items'),
+          _buildSpecItem('- Quantity:', '${widget.product.stockQuantity ?? 0} items'),
         ],
       ),
     );
@@ -409,14 +414,12 @@ class _ProductPageState extends State<ProductPage>
   }
 
   Widget _buildBottomBar() {
-    // Calculate the price after discount
     double originalPrice = widget.product.price! * quantity;
     int discountPercentage = widget.product.discount ?? 0;
-    double discountAmount = originalPrice * (discountPercentage / 100);
-    double finalPrice = originalPrice - discountAmount;
+    double finalPrice = originalPrice * (1 - discountPercentage / 100);
 
     return Container(
-      height: 100, // Increased height for better spacing
+      height: 100,
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -425,41 +428,38 @@ class _ProductPageState extends State<ProductPage>
             color: Colors.grey.withOpacity(0.2),
             spreadRadius: 2,
             blurRadius: 5,
-            offset: Offset(0, -2), // Changes position of shadow
+            offset: Offset(0, -2),
           ),
         ],
-        borderRadius:
-            BorderRadius.vertical(top: Radius.circular(20)), // Rounded corners
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Display discounted price
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                '${finalPrice.toStringAsFixed(0)}\$',
+                '\$${finalPrice.toStringAsFixed(0)}',
                 style: const TextStyle(
-                  fontSize: 28, // Slightly larger font size
+                  fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87, // Darker text for better readability
+                  color: Colors.black87,
                 ),
               ),
               if (discountPercentage > 0)
                 Row(
                   children: [
                     Text(
-                      '${originalPrice.toStringAsFixed(0)}\$',
+                      '\$${originalPrice.toStringAsFixed(0)}',
                       style: const TextStyle(
                         fontSize: 16,
                         color: Colors.grey,
                         decoration: TextDecoration.lineThrough,
                       ),
                     ),
-                    const SizedBox(
-                        width: 5), // Space between original price and discount
+                    const SizedBox(width: 5),
                     Text(
                       '-$discountPercentage%',
                       style: const TextStyle(
@@ -471,8 +471,6 @@ class _ProductPageState extends State<ProductPage>
                 ),
             ],
           ),
-
-          // Add to cart button
           ElevatedButton.icon(
             onPressed: _addToCart,
             style: ElevatedButton.styleFrom(
@@ -647,7 +645,9 @@ class _ProductPageState extends State<ProductPage>
               ],
             ),
           ),
-          ProductReviews(productId: widget.product.id!),
+          widget.product.id != null 
+              ? ProductReviews(productId: widget.product.id!)
+              : Center(child: Text('Product ID not available')),
         ],
       ),
     );

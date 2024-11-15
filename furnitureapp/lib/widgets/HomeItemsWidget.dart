@@ -1,8 +1,10 @@
-import 'package:flutter/material.dart';
-import 'package:furnitureapp/services/data_service.dart';
 import '../model/product.dart';
-import '../model/Review.dart';
-import '../pages/ProductPage.dart';
+import 'package:flutter/material.dart';
+import 'package:furnitureapp/model/Review.dart';
+import 'package:furnitureapp/api/api.service.dart';
+import 'package:furnitureapp/pages/ProductPage.dart';
+import 'package:furnitureapp/model/wishlist_model.dart';
+import 'package:furnitureapp/services/data_service.dart';
 
 class HomeItemsWidget extends StatefulWidget {
   final String selectedCategory;
@@ -22,11 +24,13 @@ class HomeItemsWidget extends StatefulWidget {
 
 class _HomeItemsWidgetState extends State<HomeItemsWidget> {
   late Future<List<Product>> _productsFuture;
+  Future<Set<String>>? _wishlistProductIdsFuture;
 
   @override
   void initState() {
     super.initState();
     _loadProducts();
+    _wishlistProductIdsFuture = _loadWishlistProductIds();
   }
 
   @override
@@ -48,6 +52,18 @@ class _HomeItemsWidgetState extends State<HomeItemsWidget> {
     );
   }
 
+  Future<Set<String>> _loadWishlistProductIds() async {
+    try {
+      Wishlist? wishlist = await DataService().getWishlistByUserId();
+      if (wishlist != null && wishlist.product != null) {
+        return wishlist.product.map((item) => item.product?.id ?? '').toSet();
+      }
+    } catch (e) {
+      print("Error loading wishlist IDs: $e");
+    }
+    return {}; // Return an empty set if there's an error or no wishlist.
+  }
+
   List<Review> getReviewsForProducts(List<Product> products) {
     return products.map((product) {
       return Review(
@@ -66,52 +82,64 @@ class _HomeItemsWidgetState extends State<HomeItemsWidget> {
       children: [
         Container(
           alignment: Alignment.centerLeft,
-          margin: EdgeInsets.only(top: 10, bottom: 10, left: 10, right: 10),
+          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
           child: Text(
             widget.selectedCategory == "All Product"
                 ? "All Products"
                 : "Products in ${widget.selectedCategory}",
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 25,
               fontWeight: FontWeight.bold,
               color: Color(0xFF2B2321),
             ),
           ),
         ),
-        FutureBuilder<List<Product>>(
-          future: _productsFuture,
+        FutureBuilder<Set<String>>(
+          future: _wishlistProductIdsFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
+              return const Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Text(
-                    'No products found in this category',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ),
-              );
-            } else {
-              final products = snapshot.data!;
-              List<Review> reviews = getReviewsForProducts(products);
-              return GridView.count(
-                childAspectRatio: 0.78,
-                physics: NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                shrinkWrap: true,
-                padding: EdgeInsets.only(top: 10),
-                children: List.generate(products.length, (index) {
-                  return ProductTile(
-                    product: products[index],
-                    review: reviews[index],
-                  );
-                }),
-              );
+              return Center(child: Text('Error loading wishlist: ${snapshot.error}'));
             }
+
+            final wishlistProductIds = snapshot.data ?? {};
+
+            return FutureBuilder<List<Product>>(
+              future: _productsFuture,
+              builder: (context, productSnapshot) {
+                if (productSnapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (productSnapshot.hasError) {
+                  return Center(child: Text('Error: ${productSnapshot.error}'));
+                } else if (!productSnapshot.hasData || productSnapshot.data!.isEmpty) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: Text('No products found in this category', style: TextStyle(fontSize: 16)),
+                    ),
+                  );
+                } else {
+                  final products = productSnapshot.data!;
+                  List<Review> reviews = getReviewsForProducts(products);
+
+                  return GridView.count(
+                    childAspectRatio: 0.85,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    padding: const EdgeInsets.only(top: 8),
+                    children: List.generate(products.length, (index) {
+                      return ProductTile(
+                        product: products[index],
+                        review: reviews[index],
+                        isFavorite: wishlistProductIds.contains(products[index].id),
+                      );
+                    }),
+                  );
+                }
+              },
+            );
           },
         ),
       ],
@@ -122,155 +150,192 @@ class _HomeItemsWidgetState extends State<HomeItemsWidget> {
 class ProductTile extends StatefulWidget {
   final Product product;
   final Review review;
+  final bool isFavorite;
 
-  const ProductTile({super.key, required this.product, required this.review});
+  const ProductTile({super.key, required this.product, required this.review, required this.isFavorite});
 
   @override
-  _ProductTileState createState() => _ProductTileState();
+  State<ProductTile> createState() => _ProductTileState();
 }
 
 class _ProductTileState extends State<ProductTile> {
-  bool isFavorite = false;
+  late bool isFavorite;
 
-  void toggleFavorite() {
+  @override
+  void initState() {
+    super.initState();
+    isFavorite = widget.isFavorite;
+  }
+
+  Future<void> _toggleFavorite() async {
     setState(() {
       isFavorite = !isFavorite;
     });
+
+    try {
+      bool success;
+      if (isFavorite) {
+        success = await APIService.addWishlist(widget.product.id!);
+      } else {
+        success = await APIService.deleteWishlist(widget.product.id!);
+      }
+
+      if (!success) {
+        setState(() {
+          isFavorite = !isFavorite; // Revert the state if API call fails
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(isFavorite ? 'Failed to add to wishlist' : 'Failed to remove from wishlist')),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        isFavorite = !isFavorite; // Revert the state if there's an error
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('An error occurred')),
+      );
+      print("Error toggling favorite: $e");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(left: 10,),
-      margin: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+      padding: EdgeInsets.only(left: 12, right: 12, top: 8, bottom: 8),
+      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if ((widget.product.discount ?? 0) > 0)
                 Container(
-                  width: 40,
-                  height: 30,
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: Colors.red,
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Center(
-                    child: Text(
-                      "${widget.product.discount}%",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  child: Text(
+                    "-${widget.product.discount}%",
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-
-              Spacer(), // Thêm Spacer để đẩy icon về bên phải
-              IconButton(
-                icon: Icon(
-                  isFavorite ? Icons.favorite : Icons.favorite_border,
-                  size: 30,
-                  color: Colors.red,
+              Expanded(
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ProductPage(
+                          product: widget.product,
+                          review: widget.review
+                        ),
+                      ),
+                    );
+                  },
+                  child: Center(
+                    child: Image.network(
+                      widget.product.images?.isNotEmpty == true
+                          ? widget.product.images!.first
+                          : 'https://example.com/default_image.png',
+                      fit: BoxFit.contain,
+                      height: 100,
+                    ),
+                  ),
                 ),
-                onPressed: toggleFavorite,
+              ),
+              Text(
+                widget.product.name ?? 'Unknown Product',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF2B2321),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "\$${calculateDiscountedPrice(widget.product.price ?? 0, widget.product.discount ?? 0).toStringAsFixed(0)}",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF2B2321),
+                        ),
+                      ),
+                      if (widget.product.discount != null && widget.product.discount! > 0)
+                        Text(
+                          "\$${widget.product.price?.toStringAsFixed(0)}",
+                          style: TextStyle(
+                            fontSize: 12,
+                            decoration: TextDecoration.lineThrough,
+                            color: Colors.grey,
+                          ),
+                        ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.star,
+                        color: Colors.amber,
+                        size: 16,
+                      ),
+                      SizedBox(width: 2),
+                      Text(
+                        "${widget.product.rating?.toStringAsFixed(1) ?? '0.0'}",
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              Text(
+                "${widget.product.sold ?? 0} sold",
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey[600],
+                ),
               ),
             ],
           ),
-          InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ProductPage(
-                      product: widget.product, review: widget.review),
-                ),
-              );
-            },
-            child: Container(
-              margin: EdgeInsets.all(5),
-              alignment: Alignment.center, // Căn giữa hình ảnh trong Container
-              height: 100, // Chiều cao của container (sửa tùy ý)
-              width: 160, // Chiều rộng của container (sửa tùy ý)
-              child: Image.network(
-                widget.product.images?.isNotEmpty == true
-                    ? widget.product.images!.first
-                    : 'https://example.com/default_image.png',
-                fit: BoxFit
-                    .cover, // Điều chỉnh cách hình ảnh vừa vặn trong Container
+          Positioned(
+            top: 0,
+            right: 0,
+            child: InkWell(
+              onTap: _toggleFavorite,
+              child: Icon(
+                isFavorite ? Icons.favorite : Icons.favorite_border,
+                color: Colors.red,
+                size: 20,
               ),
-            ),
-          ),
-          Container(
-            padding: EdgeInsets.symmetric(
-                horizontal: 2, vertical: 3), // Thêm khoảng cách 2 bên
-            alignment: Alignment.centerLeft,
-            child: Text(
-              widget.product.name ?? 'Unknown Product',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 16,
-                color: Color(0xFF2B2321),
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.only(top: 5, right: 10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "\$${widget.product.price?.toStringAsFixed(0) ?? 'N/A'}",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF2B2321),
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.star,
-                          color: Colors.amber,
-                          size: 16,
-                        ),
-                        SizedBox(width: 2),
-                        Text(
-                          widget.product.rating?.toStringAsFixed(1) ?? '0.0',
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                SizedBox(height: 2),
-                Text(
-                  "${widget.product.sold ?? 0} sold",
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ],
             ),
           ),
         ],
       ),
     );
+  }
+
+  // Thêm hàm tính giá sau khi giảm
+  double calculateDiscountedPrice(double originalPrice, int discount) {
+    return originalPrice * (1 - discount / 100);
   }
 }
