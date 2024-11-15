@@ -17,12 +17,12 @@ class _WaitingForDeliveryState extends State<WaitingForDelivery> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(82.0),
+        preferredSize: const Size.fromHeight(58.0),
         child: AppBar(
           backgroundColor: Colors.white,
           elevation: 0,
           leading: Padding(
-            padding: const EdgeInsets.only(top: 18.0),
+            padding: const EdgeInsets.only(top: 5.0),
             child: IconButton(
               icon: const Icon(
                 Icons.arrow_back,
@@ -33,7 +33,7 @@ class _WaitingForDeliveryState extends State<WaitingForDelivery> {
             ),
           ),
           title: Container(
-            margin: const EdgeInsets.only(top: 25.0),
+            margin: const EdgeInsets.only(top: 5.0),
             child: const Text(
               'Waiting For Delivery',
               style: TextStyle(
@@ -143,9 +143,9 @@ class _WaitingForDeliveryState extends State<WaitingForDelivery> {
                     productDetail: productOrder.product.shortDescription ?? '',
                     totalAmountLabel: 'Total Amount:',
                     totalAmount: '\$${productOrder.amount.toString()}',
-                    estimatedDeliveryDate:
-                        'Estimated Delivery: $formattedEstimatedDate',
-                    tags: ['Pending', 'Confirmation'],
+                    // estimatedDeliveryDate:
+                        // 'Estimated Delivery: $formattedEstimatedDate',
+                    tags: ['Confirmation'],
                   );
                 }).toList(),
               ),
@@ -194,7 +194,7 @@ class _WaitingForDeliveryState extends State<WaitingForDelivery> {
     required String productDetail,
     required String totalAmountLabel,
     required String totalAmount,
-    required String estimatedDeliveryDate,
+    // required String estimatedDeliveryDate,
     required List<String> tags,
   }) {
     return Padding(
@@ -243,10 +243,10 @@ class _WaitingForDeliveryState extends State<WaitingForDelivery> {
           const SizedBox(height: 10),
           _buildTotalAmountSection(totalAmountLabel, totalAmount),
           const SizedBox(height: 10),
-          Text(
-            estimatedDeliveryDate,
-            style: const TextStyle(fontSize: 16, color: Colors.grey),
-          ),
+          // Text(
+          //   estimatedDeliveryDate,
+          //   style: const TextStyle(fontSize: 16, color: Colors.grey),
+          // ),
         ],
       ),
     );
@@ -257,7 +257,7 @@ class _WaitingForDeliveryState extends State<WaitingForDelivery> {
       mainAxisAlignment: MainAxisAlignment.end,
       children: tags.map((tag) {
         return Padding(
-          padding: const EdgeInsets.only(right: 8.0),
+          padding: const EdgeInsets.only(right: 1.0),
           child: _buildTag(tag),
         );
       }).toList(),

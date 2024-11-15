@@ -12,9 +12,48 @@ class WaitForConfirmation extends StatefulWidget {
 
 class _WaitForConfirmationState extends State<WaitForConfirmation> {
   final Map<String, bool> _expandedOrders = {};
+  List<OrderData> _orders = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOrders();
+  }
+
+  Future<void> _loadOrders() async {
+    List<OrderData> orders = await DataService().getOrdersByUserId();
+    setState(() {
+      _orders = orders.where((order) => !order.waitingConfirmation).toList();
+    });
+  }
 
   String _formatPrice(double price) {
-    return '\$${price.toStringAsFixed(0)}';
+    return '\$${price.toStringAsFixed(2)}';
+  }
+
+  double _calculateTotalAmount(OrderData orderData) {
+    return orderData.totalAmount;
+  }
+
+  void _removeOrder(String orderId) {
+    setState(() {
+      _orders.removeWhere((order) => order.id == orderId);
+    });
+  }
+
+  // This function navigates to the OrderInformation screen and listens for results
+  Future<void> _navigateToOrderInformation(OrderData orderData) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => OrderInformation(orderData: orderData),
+      ),
+    );
+
+    if (result == true) {
+      // Update the orders list if an order was canceled
+      _loadOrders();
+    }
   }
 
   @override
@@ -50,38 +89,17 @@ class _WaitForConfirmationState extends State<WaitForConfirmation> {
           centerTitle: true,
         ),
       ),
-      body: FutureBuilder<List<OrderData>>(
-        future: _loadOrders(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No orders available.'));
-          } else {
-            return Container(
-              color: const Color(0xFFEDECF2),
-              child: ListView.builder(
-                itemCount: snapshot.data!.length,
-                itemBuilder: (context, index) {
-                  return _buildOrderSection(snapshot.data![index]);
-                },
-              ),
-            );
-          }
-        },
+      body: Container(
+        color: const Color(0xFFEDECF2),
+        child: ListView.builder(
+          itemCount: _orders.length,
+          itemBuilder: (context, index) {
+            final orderData = _orders[index];
+            return _buildOrderSection(orderData);
+          },
+        ),
       ),
     );
-  }
-
-  Future<List<OrderData>> _loadOrders() async {
-    List<OrderData> orders = await DataService().getOrdersByUserId();
-    return orders.where((order) => !order.waitingConfirmation).toList();
-  }
-
-  double _calculateTotalAmount(OrderData orderData) {
-    return orderData.totalAmount;
   }
 
   Widget _buildOrderSection(OrderData orderData) {
@@ -92,12 +110,7 @@ class _WaitForConfirmationState extends State<WaitForConfirmation> {
       padding: const EdgeInsets.only(top: 15, right: 10, left: 10),
       child: InkWell(
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => OrderInformation(orderData: orderData),
-            ),
-          );
+          _navigateToOrderInformation(orderData); // Call the new method
         },
         child: Card(
           color: Colors.white,
@@ -108,19 +121,18 @@ class _WaitForConfirmationState extends State<WaitForConfirmation> {
                 imageUrl: orderData.products.first.product.images?.first ?? '',
                 productName: orderData.products.first.product.name ?? '',
                 productDetail: orderData.products.first.product.shortDescription ?? '',
-                totalAmountLabel: hasMultipleProducts && !isExpanded 
-                    ? 'Total Amount (${orderData.products.length} items):' 
+                totalAmountLabel: hasMultipleProducts && !isExpanded
+                    ? 'Total Amount (${orderData.products.length} items):'
                     : 'Amount:',
-                totalAmount: hasMultipleProducts && !isExpanded 
+                totalAmount: hasMultipleProducts && !isExpanded
                     ? _formatPrice(_calculateTotalAmount(orderData))
                     : _formatPrice(orderData.products.first.amount),
                 quantity: orderData.products.first.quantity.toString(),
-                tags: ['Pending', 'Confirmation'],
+                tags: ['Pending'],
                 showExpandButton: false,
                 isExpanded: isExpanded,
                 onExpandPressed: null,
               ),
-              
               if (hasMultipleProducts && isExpanded)
                 ...orderData.products.skip(1).map((productOrder) {
                   return Padding(
@@ -133,14 +145,13 @@ class _WaitForConfirmationState extends State<WaitForConfirmation> {
                       totalAmountLabel: 'Amount:',
                       totalAmount: _formatPrice(productOrder.amount),
                       quantity: productOrder.quantity.toString(),
-                      tags: ['Pending', 'Confirmation'],
+                      tags: ['Pending'],
                       showExpandButton: false,
                       isExpanded: false,
                       onExpandPressed: null,
                     ),
                   );
                 }).toList(),
-
               if (hasMultipleProducts)
                 Column(
                   children: [
@@ -260,7 +271,7 @@ class _WaitForConfirmationState extends State<WaitForConfirmation> {
       mainAxisAlignment: MainAxisAlignment.end,
       children: tags.map((tag) {
         return Padding(
-          padding: const EdgeInsets.only(right: 8.0),
+          padding: const EdgeInsets.only(right: 1.0),
           child: _buildTag(tag),
         );
       }).toList(),

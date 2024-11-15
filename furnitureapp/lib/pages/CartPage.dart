@@ -32,10 +32,6 @@ class _CartPageState extends State<CartPage> {
                   ),
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    topRight: Radius.circular(30),
-                  ),
                   child: ListView(
                     padding: EdgeInsets.only(top: 10),
                     children: [

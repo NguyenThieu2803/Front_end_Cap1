@@ -216,7 +216,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
   leading: IconButton(
     icon: Icon(
       Icons.arrow_back,
-      size: 25, // Thêm dòng này để chỉnh kích thước icon
+      size: 30, // Thêm dòng này để chỉnh kích thước icon
     ),
     onPressed: () {
       Navigator.of(context).pop(); // Quay lại trang trước
@@ -324,7 +324,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF3E3364),
+                  color: Color(0xFF2B2321),
                 ),
               ),
               SizedBox(height: 4),
@@ -359,7 +359,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
         ],
       ),
       child: IconButton(
-        icon: Icon(icon, color: Color(0xFF3E3364)),
+        icon: Icon(icon, color: Color(0xFF2B2321)),
         onPressed: () {
           // Handle quantity change
         },
@@ -378,7 +378,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF3E3364),
+              color: Color(0xFF2B2321),
             ),
           ),
           SizedBox(height: 8),
@@ -400,7 +400,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
                 children: [
                   Icon(
                     Icons.radio_button_checked,
-                    color: const Color(0xFF3E3364),
+                    color: const Color(0xFF2B2321),
                   ),
                   SizedBox(width: 16),
                   Expanded(
@@ -412,7 +412,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                            color: const Color(0xFF2B2321),
                           ),
                         ),
                         SizedBox(height: 4),
@@ -460,6 +460,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
             title: Text('Payment Upon Receipt'),
             value: 'Payment Upon Receipt',
             groupValue: _selectedPaymentMethod,
+            activeColor: Color(0xFF2B2321),
             onChanged: (value) =>
                 setState(() => _selectedPaymentMethod = value.toString()),
           ),
@@ -467,6 +468,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
             title: Text('Credit Card'),
             value: 'Credit Card',
             groupValue: _selectedPaymentMethod,
+            activeColor: Color(0xFF2B2321),
             onChanged: (value) =>
                 setState(() => _selectedPaymentMethod = value.toString()),
           ),
@@ -579,7 +581,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
           style: TextStyle(
             fontSize: 16,
             fontWeight: isBold ? FontWeight.w600 : FontWeight.w400,
-            color: Colors.black87,
+            color: const Color(0xFF2B2321),
           ),
         ),
         Text(
@@ -587,7 +589,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
           style: TextStyle(
             fontSize: 16,
             fontWeight: isBold ? FontWeight.w600 : FontWeight.w400,
-            color: isBold ? Colors.black : Colors.grey[600],
+            color: isBold ? const Color(0xFF2B2321) : Colors.grey[600],
           ),
         ),
       ],

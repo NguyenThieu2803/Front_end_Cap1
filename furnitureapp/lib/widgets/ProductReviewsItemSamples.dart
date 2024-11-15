@@ -14,7 +14,7 @@ class ProductReviewsItemSamples extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 80,
+        toolbarHeight: 52,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           iconSize: 30,
@@ -61,7 +61,7 @@ class ProductReviewsItemSamples extends StatelessWidget {
 
   Widget _buildReviewItem(Review review) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      margin: const EdgeInsets.only(right: 15, left: 15, top: 15),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -137,7 +137,6 @@ class ProductReviewsItemSamples extends StatelessWidget {
               ),
             ),
           ],
-          const Divider(thickness: 1),
         ],
       ),
     );

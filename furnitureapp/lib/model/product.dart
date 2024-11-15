@@ -18,6 +18,7 @@ class Product {
   int? _weight;
   int? _sold;
   double? _rating;
+  
 
   Product(
       {String? id, // Add id to the constructor

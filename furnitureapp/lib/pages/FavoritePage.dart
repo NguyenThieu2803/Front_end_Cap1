@@ -22,20 +22,18 @@ class _FavoritePageState extends State<FavoritePage> {
               child: Container(
                 decoration: const BoxDecoration(
                   color: Color(0xFFEDECF2),
-                ),
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.only(
+                  borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(30),
                     topRight: Radius.circular(30),
                   ),
-                  child: ListView(
-                    padding: EdgeInsets.only(top: 10),
-                    children: [
-                      FavoriteItemSamples(),
-                      // Thêm SizedBox để tạo khoảng trống ở cuối danh sách
-                      SizedBox(height: 20),
-                    ],
-                  ),
+                ),
+                child: ListView(
+                  padding: const EdgeInsets.only(top: 10),
+                  children: const [
+                    FavoriteItemSamples(),
+                    // Thêm SizedBox để tạo khoảng trống ở cuối danh sách
+                    SizedBox(height: 20),
+                  ],
                 ),
               ),
             ),

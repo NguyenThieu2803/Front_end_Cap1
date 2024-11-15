@@ -1,14 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:furnitureapp/model/Order_model.dart';
 
-class OrderInformation extends StatelessWidget {
-  
+class OrderInformation extends StatefulWidget {
   final OrderData orderData;
 
   const OrderInformation({
     Key? key,
     required this.orderData,
   }) : super(key: key);
+
+  @override
+  _OrderInformationState createState() => _OrderInformationState();
+}
+
+class _OrderInformationState extends State<OrderInformation> {
+  bool _isCancelling = false;
+
+  void _cancelOrder() async {
+    setState(() {
+      _isCancelling = true;
+    });
+
+    // Add your order cancellation logic here
+    await Future.delayed(const Duration(seconds: 2)); // Simulating cancellation process
+
+    // Navigate back to the previous screen after successful cancellation
+    Navigator.of(context).pop();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +67,7 @@ class OrderInformation extends StatelessWidget {
             child: Container(
               color: const Color(0xFFEDECF2),
               child: Padding(
-                padding: const EdgeInsets.all(12.0),
+                padding: const EdgeInsets.all(15.0),
                 child: Column(
                   children: [
                     _buildStatusSection(),
@@ -69,7 +87,7 @@ class OrderInformation extends StatelessWidget {
 
   Widget _buildStatusSection() {
     return Container(
-      padding: const EdgeInsets.all(12.0),
+      padding: const EdgeInsets.all(15.0),
       decoration: BoxDecoration(
         color: Colors.teal,
         borderRadius: BorderRadius.circular(12.0),
@@ -87,7 +105,7 @@ class OrderInformation extends StatelessWidget {
               const Icon(Icons.payment, color: Colors.white),
               const SizedBox(width: 5),
               Text(
-                'Payment by ${orderData.paymentMethod}',
+                'Payment by ${widget.orderData.paymentMethod}',
                 style: const TextStyle(color: Colors.white),
               ),
             ],
@@ -97,58 +115,57 @@ class OrderInformation extends StatelessWidget {
     );
   }
 
-Widget _buildAddressSection() {
-  return Container(
-    padding: const EdgeInsets.all(8.0),
-    margin: const EdgeInsets.symmetric(vertical: 8.0),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12.0),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Delivery Address',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 5),
-        Row(
-          children: [
-            const Icon(Icons.location_on),
-            const SizedBox(width: 5),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                      '${orderData.shippingAddress.fullName} - ${orderData.shippingAddress.phoneNumber}'),
-                  Text(orderData.shippingAddress.fullAddress),
-                ],
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                // Thêm chức năng sửa ở đây
-              },
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.black,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+  Widget _buildAddressSection() {
+    return Container(
+      padding: const EdgeInsets.all(10.0),
+      margin: const EdgeInsets.symmetric(vertical: 10.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Delivery Address',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 5),
+          Row(
+            children: [
+              const Icon(Icons.location_on),
+              const SizedBox(width: 5),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                        '${widget.orderData.shippingAddress.fullName} - ${widget.orderData.shippingAddress.phoneNumber}'),
+                    Text(widget.orderData.shippingAddress.fullAddress),
+                  ],
                 ),
               ),
-              child: Transform.translate(
-                offset: const Offset(20, -45), // Dịch chuyển lên trên
-                child: const Icon(Icons.edit),
+              TextButton(
+                onPressed: () {
+                  // Add edit address functionality
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: Transform.translate(
+                  offset: const Offset(20, -45), // Shift the icon up
+                  child: const Icon(Icons.edit),
+                ),
               ),
-            ),
-          ],
-        ),
-      ],
-    ),
-  );
-}
-
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildShopSection() {
     return Container(
@@ -162,18 +179,18 @@ Widget _buildAddressSection() {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 15),
-          ...orderData.products.map((product) {
+          ...widget.orderData.products.map((product) {
             return Column(
               children: [
                 _buildProductItem(
                   product.product.name ?? '',
                   product.product.shortDescription ?? '',
                   '\$${product.amount.toStringAsFixed(0)}',
-                  '\$${(product.amount * 1.5).toStringAsFixed(0)}', // Giả sử giá gốc cao hơn 50%
+                  '\$${(product.amount * 1.5).toStringAsFixed(0)}', // Assuming original price is 50% higher
                   product.quantity,
                   product.product.images?.first ?? '',
                 ),
-                if (product != orderData.products.last) const Divider(),
+                if (product != widget.orderData.products.last) const Divider(),
               ],
             );
           }).toList(),
@@ -188,7 +205,7 @@ Widget _buildAddressSection() {
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  '\$${orderData.totalAmount.toStringAsFixed(0)}',
+                  '\$${widget.orderData.totalAmount.toStringAsFixed(0)}',
                   style: const TextStyle(color: Colors.red),
                 ),
               ],
@@ -265,16 +282,24 @@ Widget _buildAddressSection() {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 15),
-              textStyle: const TextStyle(fontSize: 18),
+          if (_isCancelling)
+            const Center(
+              child: CircularProgressIndicator(),
+            )
+          else
+            ElevatedButton(
+              onPressed: _cancelOrder,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 15),
+                textStyle: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              child: const Text('Cancel Order'),
             ),
-            child: const Text('Cancel Order'),
-          ),
         ],
       ),
     );
