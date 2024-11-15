@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:furnitureapp/pages/CartPage.dart';
 import 'package:furnitureapp/pages/FavoritePage.dart';
 import 'package:furnitureapp/pages/UserProfilePage.dart';
+import 'package:furnitureapp/pages/SearchPage.dart';
 import 'package:furnitureapp/widgets/CategoriesWidget.dart';
 import 'package:furnitureapp/widgets/HomeAppBar.dart';
 import 'package:furnitureapp/widgets/HomeItemsWidget.dart';
 import 'package:furnitureapp/widgets/HomeNavigationBar.dart';
+import 'package:furnitureapp/model/Categories.dart';
 import 'package:furnitureapp/translate/localization.dart';
+import 'package:furnitureapp/config/config.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -17,7 +21,9 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
-  String _selectedCategory = 'All Product'; // Giữ nguyên giá trị mặc định
+  String _selectedCategory = 'All Product';
+  double? _minPrice;
+  double? _maxPrice;
 
   // Không nên bao gồm HomePage trong danh sách các trang
   final List<Widget> _pages = [
@@ -38,6 +44,14 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void _onFiltersApplied(String? category, double? minPrice, double? maxPrice) {
+    setState(() {
+      if (category != null) _selectedCategory = category;
+      _minPrice = minPrice;
+      _maxPrice = maxPrice;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -51,7 +65,9 @@ class _HomePageState extends State<HomePage> {
       body: _selectedIndex == 0
           ? HomeContent(
               selectedCategory: _selectedCategory,
-              onCategorySelected: _onCategorySelected,
+              minPrice: _minPrice,
+              maxPrice: _maxPrice,
+              onFiltersApplied: _onFiltersApplied,
             )
           : _pages[_selectedIndex - 1], // Giảm chỉ số để truy cập đúng trang
       bottomNavigationBar: HomeNavigationBar(
@@ -64,9 +80,11 @@ class _HomePageState extends State<HomePage> {
 
 class HomeContent extends StatelessWidget {
   final String selectedCategory;
-  final Function(String) onCategorySelected;
+  final double? minPrice;
+  final double? maxPrice;
+  final Function(String?, double?, double?) onFiltersApplied;
 
-  const HomeContent({super.key, required this.selectedCategory, required this.onCategorySelected});
+  const HomeContent({Key? key, required this.selectedCategory, this.minPrice, this.maxPrice, required this.onFiltersApplied}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +96,9 @@ class HomeContent extends StatelessWidget {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                HomeAppBar(),
+                HomeAppBar(
+                  onFiltersApplied: onFiltersApplied,
+                ),
                 Container(
                   padding: EdgeInsets.only(top: 15),
                   decoration: BoxDecoration(
@@ -93,29 +113,43 @@ class HomeContent extends StatelessWidget {
                       // Search bar
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
-                        child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 15),
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: TextFormField(
-                                  decoration: InputDecoration(
-                                    border: InputBorder.none,
-                                    hintText: l10n.searchHint,
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => SearchPage(),
+                                fullscreenDialog: true,
+                              ),
+                            );
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 15),
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: AbsorbPointer(
+                                    child: TextFormField(
+                                      decoration: InputDecoration(
+                                        border: InputBorder.none,
+                                        hintText: l10n.searchHint,
+                                        enabled: false,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                              Icon(
-                                Icons.search,
-                                size: 27,
-                                color: Color(0xFF2B2321),
-                              ),
-                            ],
+                                Icon(
+                                  Icons.search,
+                                  size: 27,
+                                  color: Color(0xFF2B2321),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -135,10 +169,10 @@ class HomeContent extends StatelessWidget {
                       // Categories widget
                       CategoriesWidget(
                         selectedCategory: selectedCategory,
-                        onCategorySelected: onCategorySelected,
+                        onCategorySelected: (category) => onFiltersApplied(category, null, null),
                       ),
                       SizedBox(height: 20),
-                      HomeItemsWidget(selectedCategory: selectedCategory),
+                      HomeItemsWidget(selectedCategory: selectedCategory, minPrice: minPrice, maxPrice: maxPrice),
                     ],
                   ),
                 ),

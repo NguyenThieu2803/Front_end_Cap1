@@ -6,6 +6,9 @@ import 'package:furnitureapp/translate/localization.dart';
 import 'package:furnitureapp/widgets/HomeAppBar.dart';
 import 'package:furnitureapp/widgets/HomeItemsWidget.dart';
 import 'package:furnitureapp/widgets/HomeNavigationBar.dart';
+import 'package:furnitureapp/services/data_service.dart';
+import 'package:furnitureapp/model/product.dart';
+import 'package:furnitureapp/config/config.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -16,13 +19,15 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   int _selectedIndex = 0;
-  String _selectedCategory = 'All Product'; // Giữ nguyên giá trị mặc định
+  String _selectedCategory = 'All Product';
+  List<Product> _searchResults = [];
+  final DataService _dataService = DataService();
+  final TextEditingController _searchController = TextEditingController();
 
-  // Không nên bao gồm HomePage trong danh sách các trang
   final List<Widget> _pages = [
-    CartPage(),
-    FavoritePage(),
-    UserProfilePage(),
+    const CartPage(),
+    const FavoritePage(),
+    const UserProfilePage(),
   ];
 
   void _onItemTapped(int index) {
@@ -37,6 +42,25 @@ class _SearchPageState extends State<SearchPage> {
     });
   }
 
+  void _performSearch(String query) async {
+    if (query.isEmpty) {
+      setState(() {
+        _searchResults = [];
+      });
+      return;
+    }
+
+    try {
+      final results = await _dataService.searchProducts(query);
+      setState(() {
+        _searchResults = results;
+      });
+    } catch (e) {
+      print('Error searching products: $e');
+      // Có thể thêm thông báo lỗi cho người dùng ở đây
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -45,14 +69,73 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: _selectedIndex == 0
-          ? HomeContent(
-              selectedCategory: _selectedCategory,
-              onCategorySelected: _onCategorySelected,
+          ? Column(
+              children: [
+                HomeAppBar(
+                  onFiltersApplied: (category, minPrice, maxPrice) {}, // Add empty callback
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 15),
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _searchController,
+                            onChanged: _performSearch,
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              hintText: 'Search products...',
+                            ),
+                          ),
+                        ),
+                        Icon(
+                          Icons.search,
+                          size: 27,
+                          color: Color(0xFF2B2321),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: _searchResults.isEmpty
+                      ? Center(
+                          child: Text(_searchController.text.isEmpty 
+                              ? 'Enter a search term' 
+                              : 'No results found'),
+                        )
+                      : GridView.builder(
+                          padding: EdgeInsets.all(10),
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            childAspectRatio: 0.68,
+                          ),
+                          itemCount: _searchResults.length,
+                          itemBuilder: (context, index) {
+                            final product = _searchResults[index];
+                            return ItemCard(product: product);
+                          },
+                        ),
+                ),
+              ],
             )
-          : _pages[_selectedIndex - 1], // Giảm chỉ số để truy cập đúng trang
+          : _pages[_selectedIndex - 1],
       bottomNavigationBar: HomeNavigationBar(
         selectedIndex: _selectedIndex,
         onTap: _onItemTapped,
@@ -61,73 +144,45 @@ class _SearchPageState extends State<SearchPage> {
   }
 }
 
-class HomeContent extends StatelessWidget {
-  final String selectedCategory;
-  final Function(String) onCategorySelected;
+class ItemCard extends StatelessWidget {
+  final Product product;
 
-  const HomeContent({super.key, required this.selectedCategory, required this.onCategorySelected});
+  const ItemCard({Key? key, required this.product}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    
-    return Column(
-      children: [
-        Expanded(
-          child: SingleChildScrollView(
+    return Card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: product.images != null && product.images!.isNotEmpty
+                ? Image.network(
+                    product.images![0],
+                    fit: BoxFit.cover,
+                  )
+                : Icon(Icons.image_not_supported),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                HomeAppBar(),
-                Container(
-                  padding: EdgeInsets.only(top: 15),
-                  decoration: BoxDecoration(
-                    color: Color(0xFFEDECF2),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(35),
-                      topRight: Radius.circular(35),
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      // Search bar
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 15),
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: TextFormField(
-                                  decoration: InputDecoration(
-                                    border: InputBorder.none,
-                                    hintText: l10n.searchHint,
-                                  ),
-                                ),
-                              ),
-                              Icon(
-                                Icons.search,
-                                size: 27,
-                                color: Color(0xFF2B2321),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 20),
-                      HomeItemsWidget(selectedCategory: selectedCategory),
-                    ],
-                  ),
+                Text(
+                  product.name ?? 'No name',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  '\$${product.price?.toString() ?? 'N/A'}',
+                  style: TextStyle(color: Colors.green),
                 ),
               ],
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

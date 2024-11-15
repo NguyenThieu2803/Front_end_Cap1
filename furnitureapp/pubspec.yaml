@@ -47,7 +47,6 @@ flutter:
   assets:
     - assets/
     - assets/images/
-    - assets/detail/product.json
     - assets/detail/Review.json
     - assets/detail/ReviewAndFeedback.json
     - assets/detail/AdminProduct.json
@@ -55,6 +54,7 @@ flutter:
     - assets/detail/WaitForConfirmation.json
     - assets/detail/WriteAReview.json
     - assets/detail/Evaluate.json
+    - assets/detail/OrderInformation.json
     - assets/detail/user.json
     - assets/detail/vn_only_simplified_json_generated_data_vn_units.json
 

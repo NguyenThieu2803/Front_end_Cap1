@@ -7,6 +7,7 @@ import 'package:furnitureapp/widgets/CategoriesWidget.dart';
 import 'package:furnitureapp/widgets/HomeAdminNavigationBar.dart';
 import 'package:furnitureapp/widgets/HomeAppBar.dart';
 import 'package:furnitureapp/widgets/HomeItemsWidget.dart';
+import 'package:furnitureapp/model/Categories.dart';
 
 class HomePageAdmin extends StatefulWidget {
   const HomePageAdmin({super.key});
@@ -71,7 +72,13 @@ class HomeContent extends StatelessWidget {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                HomeAppBar(),
+                HomeAppBar(
+                  onFiltersApplied: (String? category, double? minPrice, double? maxPrice) {
+                    if (category != null) {
+                      onCategorySelected(category);
+                    }
+                  },
+                ),
                 Container(
                   padding: EdgeInsets.only(top: 15),
                   decoration: BoxDecoration(

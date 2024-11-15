@@ -140,7 +140,7 @@ set material(String? material) => _material = material;
   set rating(double? rating) => _rating = rating;
 
   Product.fromJson(Map<String, dynamic> json) {
-    _id = json['id']; // Ensure this matches the key in your JSON response
+    _id = json['_id']; // Ensure this matches the key in your JSON response
     _name = json['name'];
     _description = json['description'];
     _shortDescription = json['shortDescription'];

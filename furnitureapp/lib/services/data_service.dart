@@ -2,34 +2,57 @@ import 'dart:convert';
 import '../model/product.dart';
 import '../model/card_model.dart';
 import '../model/address_model.dart';
+import 'package:furnitureapp/model/Review.dart';
 import 'package:furnitureapp/api/api.service.dart';
-import 'package:furnitureapp/model/Cart_User_Model.dart';
 import 'package:furnitureapp/model/Categories.dart';
+import 'package:furnitureapp/model/Order_model.dart';
+import 'package:furnitureapp/model/Cart_User_Model.dart';
+import 'package:furnitureapp/model/UserProfile_model.dart';
+
+
 class DataService {
-  Future<List<Product>> loadProducts({required String category}) async {
+  Future<List<Product>> loadProducts({
+    String? category,
+    double? minPrice,
+    double? maxPrice,
+  }) async {
     try {
       List<Map<String, dynamic>> productList;
-      
-      if (category == 'All Product') {
+
+      if (category == null || category == 'All Product') {
         productList = await APIService.fetchAllProducts();
       } else {
-        // Lấy danh sách categories để tìm categoryId
         List<Categories> categories = await loadCategories();
         Categories? selectedCategory = categories.firstWhere(
           (cat) => cat.name == category,
           orElse: () => Categories(),
         );
-        
+
         if (selectedCategory.id != null) {
           print('Loading products for category: ${selectedCategory.id}');
-          productList = await APIService.fetchProductsByCategory(selectedCategory.id!);
+          productList =
+              await APIService.fetchProductsByCategory(selectedCategory.id!);
         } else {
-          print('Category ID not found for: $category');
           productList = await APIService.fetchAllProducts();
         }
       }
-      
-      return productList.map((productJson) => Product.fromJson(productJson)).toList();
+
+      List<Product> products = productList
+          .map((productJson) => Product.fromJson(productJson))
+          .where((product) {
+        if (product.price == null) return false;
+
+        bool meetsMinPrice = minPrice == null || product.price! >= minPrice;
+        bool meetsMaxPrice = maxPrice == null || product.price! <= maxPrice;
+
+        print('Product: ${product.name}, Price: ${product.price}, '
+            'Meets min: $meetsMinPrice, Meets max: $meetsMaxPrice');
+
+        return meetsMinPrice && meetsMaxPrice;
+      }).toList();
+
+      print('Filtered products count: ${products.length}');
+      return products;
     } catch (error) {
       print('Failed to load products: $error');
       return [];
@@ -40,7 +63,7 @@ class DataService {
     try {
       dynamic cartData = await APIService.getCart();
       print("Cart data received: $cartData");
-      
+
       Map<String, dynamic> parsedData;
       if (cartData is String) {
         print("Parsing String to JSON");
@@ -49,12 +72,13 @@ class DataService {
         print("Data is already a Map");
         parsedData = cartData;
       } else {
-        throw FormatException('Unexpected format of cart data: ${cartData.runtimeType}');
+        throw FormatException(
+            'Unexpected format of cart data: ${cartData.runtimeType}');
       }
-      
+
       print("Parsed data type: ${parsedData.runtimeType}");
       print("Parsed data: $parsedData");
-      
+
       Cart cart = Cart.fromJson(parsedData);
       return cart;
     } catch (error) {
@@ -65,11 +89,13 @@ class DataService {
       return null;
     }
   }
-  
+
   Future<List<Categories>> loadCategories() async {
     try {
       final categoriesData = await APIService.fetchAllCategories();
-      return categoriesData.map((data) => Categories.fromJson(data)).toList();
+      return categoriesData
+          .map<Categories>((data) => Categories.fromJson(data))
+          .toList();
     } catch (e) {
       print('Lỗi khi tải danh mục: $e');
       return []; // Trả về list rỗng thay vì null
@@ -78,9 +104,12 @@ class DataService {
 
   Future<List<AddressUser>> loadAddresses() async {
     try {
-      List<Map<String, dynamic>> addressData = await APIService.getAllAddresses();
+      List<Map<String, dynamic>> addressData =
+          await APIService.getAllAddresses();
       print("Address data received: $addressData");
-      return addressData.map((data) => AddressUser.fromJson(data)).toList();
+      return addressData
+          .map<AddressUser>((data) => AddressUser.fromJson(data))
+          .toList();
     } catch (error) {
       print('Failed to load addresses: $error');
       return [];
@@ -90,9 +119,71 @@ class DataService {
   Future<List<CardModel>> loadCards() async {
     try {
       List<Map<String, dynamic>> cardData = await APIService.getAllCards();
-      return cardData.map((data) => CardModel.fromJson(data)).toList();
+      return cardData
+          .map<CardModel>((data) => CardModel.fromJson(data))
+          .toList();
     } catch (error) {
       print('Failed to load cards: $error');
+      return [];
+    }
+  }
+
+  Future<List<Review>> loadReviews(String productId) async {
+    try {
+      final response = await APIService.getReviewsByProduct(productId);
+
+      if (response['success'] == true && response['data'] != null) {
+        List<dynamic> reviewsData = response['data']['reviews'];
+        return reviewsData
+            .map<Review>((reviewJson) => Review.fromJson(reviewJson))
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      print('Error loading reviews: $e');
+      return [];
+    }
+  }
+
+  Future<List<Product>> searchProducts(String query) async {
+    try {
+      List<Map<String, dynamic>> productList =
+          await APIService.searchProducts(query);
+      List<Product> products = productList
+          .map<Product>((productJson) => Product.fromJson(productJson))
+          .where((product) =>
+              product.name?.toLowerCase().contains(query.toLowerCase()) ??
+              false)
+          .toList();
+
+      print('Search results count: ${products.length}');
+      return products;
+    } catch (error) {
+      print('Failed to search products: $error');
+      return [];
+    }
+  }
+
+  // Method to fetch user profile
+  Future<UserProfile?> loadUserProfile() async {
+    try {
+      final Map<String, dynamic> userData = await APIService.getUserProfile();
+      print("This is user profile: $userData");
+      return UserProfile.fromJson(userData);
+    } catch (error) {
+      print('Failed to load user profile: $error');
+      return null;
+    }
+  }
+
+  // Get Order By UserId
+    Future<List<OrderData>> getOrdersByUserId() async {
+    try {
+      final response = await APIService.getOrders();
+      Order order = Order.fromJson(response);
+      return order.data;
+    } catch (error) {
+      print('Failed to load orders: $error');
       return [];
     }
   }

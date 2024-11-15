@@ -1,20 +1,32 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:furnitureapp/services/data_service.dart';
+import 'package:furnitureapp/model/Order_model.dart';
+import 'package:furnitureapp/widgets/OrderInformation.dart';
 
-class WaitForConfirmation extends StatelessWidget {
+class WaitForConfirmation extends StatefulWidget {
   const WaitForConfirmation({Key? key}) : super(key: key);
+
+  @override
+  State<WaitForConfirmation> createState() => _WaitForConfirmationState();
+}
+
+class _WaitForConfirmationState extends State<WaitForConfirmation> {
+  final Map<String, bool> _expandedOrders = {};
+
+  String _formatPrice(double price) {
+    return '\$${price.toStringAsFixed(0)}';
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(82.0),
+        preferredSize: const Size.fromHeight(58.0),
         child: AppBar(
           backgroundColor: Colors.white,
           elevation: 0,
           leading: Padding(
-            padding: const EdgeInsets.only(top: 18.0),
+            padding: const EdgeInsets.only(top: 5.0),
             child: IconButton(
               icon: const Icon(
                 Icons.arrow_back,
@@ -25,7 +37,7 @@ class WaitForConfirmation extends StatelessWidget {
             ),
           ),
           title: Container(
-            margin: const EdgeInsets.only(top: 25.0),
+            margin: const EdgeInsets.only(top: 5.0),
             child: const Text(
               'Wait For Confirmation',
               style: TextStyle(
@@ -38,22 +50,22 @@ class WaitForConfirmation extends StatelessWidget {
           centerTitle: true,
         ),
       ),
-      body: FutureBuilder<List<Product>>(
-        future: _loadProducts(),
+      body: FutureBuilder<List<OrderData>>(
+        future: _loadOrders(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No products available.'));
+            return const Center(child: Text('No orders available.'));
           } else {
             return Container(
               color: const Color(0xFFEDECF2),
               child: ListView.builder(
                 itemCount: snapshot.data!.length,
                 itemBuilder: (context, index) {
-                  return _buildProductSection(snapshot.data![index]);
+                  return _buildOrderSection(snapshot.data![index]);
                 },
               ),
             );
@@ -63,29 +75,93 @@ class WaitForConfirmation extends StatelessWidget {
     );
   }
 
-  Future<List<Product>> _loadProducts() async {
-    final String response = await rootBundle.loadString('assets/detail/WaitForConfirmation.json');
-    final data = json.decode(response);
-    List<Product> products = (data['products'] as List)
-        .map((product) => Product.fromJson(product))
-        .toList();
-    return products;
+  Future<List<OrderData>> _loadOrders() async {
+    List<OrderData> orders = await DataService().getOrdersByUserId();
+    return orders.where((order) => !order.waitingConfirmation).toList();
   }
 
-  Widget _buildProductSection(Product product) {
+  double _calculateTotalAmount(OrderData orderData) {
+    return orderData.totalAmount;
+  }
+
+  Widget _buildOrderSection(OrderData orderData) {
+    bool isExpanded = _expandedOrders[orderData.id] ?? false;
+    bool hasMultipleProducts = orderData.products.length > 1;
+
     return Padding(
-      padding: const EdgeInsets.all(15.0),
-      child: Card(
-        color: Colors.white,
-        child: _buildProductContent(
-          headerText: product.headerText,
-          imageUrl: product.imageUrl,
-          productName: product.productName,
-          productDetail: product.productDetail,
-          totalAmountLabel: product.totalAmountLabel,
-          totalAmount: product.totalAmount,
-          cancelButtonText: product.cancelButtonText,
-          tags: product.tags,
+      padding: const EdgeInsets.only(top: 15, right: 10, left: 10),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => OrderInformation(orderData: orderData),
+            ),
+          );
+        },
+        child: Card(
+          color: Colors.white,
+          child: Column(
+            children: [
+              _buildProductContent(
+                headerText: 'Order ID: ${orderData.id}',
+                imageUrl: orderData.products.first.product.images?.first ?? '',
+                productName: orderData.products.first.product.name ?? '',
+                productDetail: orderData.products.first.product.shortDescription ?? '',
+                totalAmountLabel: hasMultipleProducts && !isExpanded 
+                    ? 'Total Amount (${orderData.products.length} items):' 
+                    : 'Amount:',
+                totalAmount: hasMultipleProducts && !isExpanded 
+                    ? _formatPrice(_calculateTotalAmount(orderData))
+                    : _formatPrice(orderData.products.first.amount),
+                quantity: orderData.products.first.quantity.toString(),
+                tags: ['Pending', 'Confirmation'],
+                showExpandButton: false,
+                isExpanded: isExpanded,
+                onExpandPressed: null,
+              ),
+              
+              if (hasMultipleProducts && isExpanded)
+                ...orderData.products.skip(1).map((productOrder) {
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 1.0),
+                    child: _buildProductContent(
+                      headerText: '',
+                      imageUrl: productOrder.product.images?.first ?? '',
+                      productName: productOrder.product.name ?? '',
+                      productDetail: productOrder.product.shortDescription ?? '',
+                      totalAmountLabel: 'Amount:',
+                      totalAmount: _formatPrice(productOrder.amount),
+                      quantity: productOrder.quantity.toString(),
+                      tags: ['Pending', 'Confirmation'],
+                      showExpandButton: false,
+                      isExpanded: false,
+                      onExpandPressed: null,
+                    ),
+                  );
+                }).toList(),
+
+              if (hasMultipleProducts)
+                Column(
+                  children: [
+                    Center(
+                      child: IconButton(
+                        icon: Icon(
+                          isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                          color: Colors.deepOrange,
+                          size: 30,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _expandedOrders[orderData.id] = !isExpanded;
+                          });
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -98,15 +174,18 @@ class WaitForConfirmation extends StatelessWidget {
     required String productDetail,
     required String totalAmountLabel,
     required String totalAmount,
-    required String cancelButtonText,
+    required String quantity,
     required List<String> tags,
+    required bool showExpandButton,
+    required bool isExpanded,
+    required Function()? onExpandPressed,
   }) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildProductHeader(headerText),
+          if (headerText.isNotEmpty) _buildProductHeader(headerText),
           const SizedBox(height: 10),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -140,6 +219,14 @@ class WaitForConfirmation extends StatelessWidget {
                         fontSize: 14,
                       ),
                     ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Quantity: $quantity',
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 14,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -148,8 +235,6 @@ class WaitForConfirmation extends StatelessWidget {
           _buildTags(tags),
           const SizedBox(height: 10),
           _buildTotalAmountSection(totalAmountLabel, totalAmount),
-          const SizedBox(height: 10),
-          _buildActionButtons(cancelButtonText),
         ],
       ),
     );
@@ -212,64 +297,10 @@ class WaitForConfirmation extends StatelessWidget {
           style: const TextStyle(
             fontSize: 16,
             color: Colors.black,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildActionButtons(String cancelButtonText) {
-    return Row(
-      children: [
-        Expanded(
-          child: OutlinedButton(
-            onPressed: () {},
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: Colors.red),
-              padding: const EdgeInsets.symmetric(vertical: 10),
-            ),
-            child: Text(
-              cancelButtonText,
-              style: const TextStyle(color: Colors.black, fontSize: 14),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class Product {
-  final String headerText;
-  final String imageUrl;
-  final String productName;
-  final String productDetail;
-  final String totalAmountLabel;
-  final String totalAmount;
-  final String cancelButtonText;
-  final List<String> tags;
-
-  Product({
-    required this.headerText,
-    required this.imageUrl,
-    required this.productName,
-    required this.productDetail,
-    required this.totalAmountLabel,
-    required this.totalAmount,
-    required this.cancelButtonText,
-    required this.tags,
-  });
-
-  factory Product.fromJson(Map<String, dynamic> json) {
-    return Product(
-      headerText: json['headerText'],
-      imageUrl: json['imageUrl'],
-      productName: json['productName'],
-      productDetail: json['productDetail'],
-      totalAmountLabel: json['totalAmountLabel'],
-      totalAmount: json['totalAmount'],
-      cancelButtonText: json['cancelButtonText'],
-      tags: List<String>.from(json['tags']),
     );
   }
 }

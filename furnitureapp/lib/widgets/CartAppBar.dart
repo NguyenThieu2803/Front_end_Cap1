@@ -13,7 +13,8 @@ class _CartAppBarState extends State<CartAppBar> {
   Widget build(BuildContext context) {
     return Container(
       color: Colors.white,
-      padding: EdgeInsets.all(25),
+      
+      padding: EdgeInsets.all(12),
       child: Row(
         children: [
           InkWell(
@@ -26,7 +27,7 @@ class _CartAppBarState extends State<CartAppBar> {
             },
             child: Icon(
               Icons.arrow_back,
-              size: 30,
+              size: 25,
               color: Color(0xFF2B2321),
             ),
           ),

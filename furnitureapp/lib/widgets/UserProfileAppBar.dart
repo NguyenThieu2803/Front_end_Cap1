@@ -9,7 +9,7 @@ class UserProfileAppBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: Colors.white,
-      padding: EdgeInsets.all(25),
+      padding: EdgeInsets.all(12),
       child: Row(
         children: [
           InkWell(

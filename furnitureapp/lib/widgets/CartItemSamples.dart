@@ -6,8 +6,9 @@ import 'package:furnitureapp/services/data_service.dart';
 
 class CartItemSamples extends StatefulWidget {
   final Function(double) onTotalPriceChanged;
+  final Function(Set<String>) onSelectedItemsChanged;
 
-  const CartItemSamples({super.key, required this.onTotalPriceChanged});
+  const CartItemSamples({super.key, required this.onTotalPriceChanged, required this.onSelectedItemsChanged});
 
   @override
   _CartItemSamplesState createState() => _CartItemSamplesState();
@@ -38,6 +39,7 @@ class _CartItemSamplesState extends State<CartItemSamples> {
   void _updateTotalPrice() {
     double totalPrice = calculateTotalPrice();
     widget.onTotalPriceChanged(totalPrice);
+    widget.onSelectedItemsChanged(selectedProductIds);
   }
 
   @override
@@ -53,33 +55,41 @@ class _CartItemSamplesState extends State<CartItemSamples> {
     return Column(
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Checkbox(
-              value: isAllSelected,
-              activeColor: Color(0xFF2B2321),
-              onChanged: (bool? value) {
-                setState(() {
-                  isAllSelected = value ?? false;
-                  if (isAllSelected) {
-                    selectedProductIds = cart!.items!.map((item) => item.id!).toSet();
-                  } else {
-                    selectedProductIds.clear();
-                  }
-                  _updateTotalPrice();
-                });
-              },
-            ),
-            Text(
-              "Select All",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF2B2321),
-              ),
-            ),
-          ],
+  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  children: [
+    Padding(
+      padding: const EdgeInsets.only(left: 25), // Đẩy checkbox sang phải
+      child: Checkbox(
+        value: isAllSelected,
+        activeColor: Color(0xFF2B2321),
+        onChanged: (bool? value) {
+          setState(() {
+            isAllSelected = value ?? false;
+            if (isAllSelected) {
+              selectedProductIds = cart!.items!.map((item) => item.product!.id!).toSet();
+            } else {
+              selectedProductIds.clear();
+            }
+            _updateTotalPrice();
+          });
+        },
+      ),
+    ),
+    Padding(
+      padding: const EdgeInsets.only(right: 15),
+      child: Text(
+        "Select All",
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: Color(0xFF2B2321),
         ),
+      ),
+    ),
+  ],
+),
+
+
         Column(
           children: cart!.items!.map((item) => buildCartItem(item)).toList(),
         ),
@@ -88,10 +98,14 @@ class _CartItemSamplesState extends State<CartItemSamples> {
   }
 
   Widget buildCartItem(CartItem item) {
+    double originalPrice = item.price ?? 0;
+  int discountPercentage = item.discount ?? 0;
+  double discountAmount = originalPrice * (discountPercentage / 100);
+  double finalPrice = originalPrice - discountAmount;
     return LayoutBuilder(
       builder: (context, constraints) {
         return Container(
-          height: 110,
+          height: 120,
           margin: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
           padding: EdgeInsets.all(10),
           decoration: BoxDecoration(
@@ -101,14 +115,14 @@ class _CartItemSamplesState extends State<CartItemSamples> {
           child: Row(
             children: [
               Checkbox(
-                value: selectedProductIds.contains(item.id),
+                value: selectedProductIds.contains(item.product?.id),
                 activeColor: Color(0xFF2B2321),
                 onChanged: (bool? value) {
                   setState(() {
                     if (value == true) {
-                      selectedProductIds.add(item.id!);
+                      selectedProductIds.add(item.product!.id!);
                     } else {
-                      selectedProductIds.remove(item.id);
+                      selectedProductIds.remove(item.product?.id);
                     }
                     _updateTotalPrice();
                   });
@@ -143,11 +157,12 @@ class _CartItemSamplesState extends State<CartItemSamples> {
                         ),
                       ),
                       Text(
-                        "\$${item.price?.toStringAsFixed(2) ?? '0.00'}",
+                        "\$${finalPrice.toStringAsFixed(2) ?? '0.00'}",
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF2B2321),
+                          // decoration: TextDecoration.lineThrough, // Gạch ngang giá gốc
                         ),
                       ),
                     ],
@@ -264,10 +279,13 @@ class _CartItemSamplesState extends State<CartItemSamples> {
   }
 
   double calculateTotalPrice() {
+    
     if (cart == null || cart!.items == null) return 0.0;
     return cart!.items!.fold(0.0, (sum, item) {
-      if (selectedProductIds.contains(item.id)) {
-        return sum + (item.price ?? 0) * (item.quantity ?? 0);
+
+      if (selectedProductIds.contains(item.product?.id)) {
+        double discountAmount = item.price! * (item.product!.discount! / 100);
+        return sum + (item.price ?? 0)*(item.quantity ?? 0) - discountAmount;
       }
       return sum;
     });

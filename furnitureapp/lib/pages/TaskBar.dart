@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:furnitureapp/model/Categories.dart';
+import 'package:furnitureapp/services/data_service.dart';
+
 
 class TaskBar extends StatefulWidget {
   final VoidCallback onClose;
+  final Function(String?, double?, double?) onFiltersApplied;
 
-  const TaskBar({super.key, required this.onClose});
+  const TaskBar({
+    super.key,
+    required this.onClose,
+    required this.onFiltersApplied,
+  });
 
   @override
   _TaskBarState createState() => _TaskBarState();
@@ -11,15 +19,33 @@ class TaskBar extends StatefulWidget {
 
 class _TaskBarState extends State<TaskBar> {
   final _formKey = GlobalKey<FormState>();
-  String selectedProduct = 'Table';
-  final addressController = TextEditingController();
+  String? selectedCategory;
+  List<Categories> categories = [];
   final minPriceController = TextEditingController();
   final maxPriceController = TextEditingController();
-  bool _isDropdownOpen = false; // Biến boolean để kiểm soát trạng thái menu
+  bool _isDropdownOpen = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    try {
+      final dataService = DataService();
+      final loadedCategories = await dataService.loadCategories();
+      setState(() {
+        categories = loadedCategories;
+        selectedCategory = categories.isNotEmpty ? categories[0].name : null;
+      });
+    } catch (e) {
+      print('Error loading categories: $e');
+    }
+  }
 
   @override
   void dispose() {
-    addressController.dispose();
     minPriceController.dispose();
     maxPriceController.dispose();
     super.dispose();
@@ -36,7 +62,7 @@ class _TaskBarState extends State<TaskBar> {
           child: Align(
             alignment: Alignment.bottomCenter,
             child: GestureDetector(
-              onTap: () {}, // Ngăn chặn sự kiện tap truyền xuống
+              onTap: () {},
               child: Container(
                 width: double.infinity,
                 constraints: BoxConstraints(maxHeight: 500),
@@ -94,103 +120,101 @@ class _TaskBarState extends State<TaskBar> {
     );
   }
 
- Widget _buildProductRow() {
-  return Column(
-    children: [
-      GestureDetector(
-        onTap: () {
-          setState(() {
-            _isDropdownOpen = !_isDropdownOpen; // Thay đổi trạng thái của menu
-          });
-        },
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: _isDropdownOpen
-                ? BorderRadius.only(
-                    topLeft: Radius.circular(25),
-                    topRight: Radius.circular(25),
-                  ) // Khi mở: chỉ bo góc phía trên
-                : BorderRadius.circular(25), // Khi đóng: bo góc toàn bộ
-          ),
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                selectedProduct,
-                style: TextStyle(color: Colors.black, fontSize: 16),
-              ),
-              Icon(
-                _isDropdownOpen
-                    ? Icons.arrow_drop_up // Nếu mở thì hiển thị mũi tên lên
-                    : Icons.arrow_drop_down, // Nếu đóng thì hiển thị mũi tên xuống
-                color: Colors.black,
-              ),
-            ],
-          ),
-        ),
-      ),
-      if (_isDropdownOpen)
-        _buildDropdownMenu(), // Hiển thị menu nếu _isDropdownOpen = true
-    ],
-  );
-}
-
-
-  Widget _buildDropdownMenu() {
+  Widget _buildProductRow() {
     return Column(
       children: [
-        _buildDropdownItem('Table'),
-        _buildDropdownItem('Chair'),
-        _buildDropdownItem('Sofa'),
-        _buildDropdownItem('Lamp'),
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              _isDropdownOpen = !_isDropdownOpen;
+            });
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: _isDropdownOpen
+                  ? BorderRadius.only(
+                      topLeft: Radius.circular(25),
+                      topRight: Radius.circular(25),
+                    )
+                  : BorderRadius.circular(25),
+            ),
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  selectedCategory ?? 'Select Category',
+                  style: TextStyle(color: Colors.black, fontSize: 16),
+                ),
+                Icon(
+                  _isDropdownOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down,
+                  color: Colors.black,
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (_isDropdownOpen) _buildDropdownMenu(),
       ],
     );
   }
 
-  Widget _buildDropdownItem(String product) {
-  return GestureDetector(
-    onTap: () {
-      setState(() {
-        selectedProduct = product; // Cập nhật sản phẩm được chọn
-        _isDropdownOpen = false;   // Đóng menu sau khi chọn
-      });
-    },
-    child: Container(
-      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+  Widget _buildDropdownMenu() {
+    return Container(
       decoration: BoxDecoration(
-        color: selectedProduct == product ? Colors.grey[300] : Colors.white,
-        border: Border(
-          bottom: BorderSide(
-            color: Colors.grey, // Màu sắc của đường viền dưới
-            width: 1.0,        // Độ dày của đường viền dưới
-          ),
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(25),
+          bottomRight: Radius.circular(25),
         ),
-        borderRadius: product == 'Lamp'
-            ? BorderRadius.only(
-                bottomLeft: Radius.circular(25),
-                bottomRight: Radius.circular(25),
-              )
-            : BorderRadius.zero, // Không có bo góc cho các mục khác
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Text(
-            product,
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 16,
+      child: Column(
+        children: categories.map((category) => _buildDropdownItem(category.name ?? '')).toList(),
+      ),
+    );
+  }
+
+  Widget _buildDropdownItem(String product) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedCategory = product;
+          _isDropdownOpen = false;
+        });
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+        decoration: BoxDecoration(
+          color: selectedCategory == product ? Colors.grey[300] : Colors.white,
+          border: Border(
+            bottom: BorderSide(
+              color: Colors.grey,
+              width: 1.0,
             ),
           ),
-        ],
+          borderRadius: product == 'Lamp'
+              ? BorderRadius.only(
+                  bottomLeft: Radius.circular(25),
+                  bottomRight: Radius.circular(25),
+                )
+              : BorderRadius.zero,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Text(
+              product,
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
       ),
-    ),
-  );
-}
-
-
+    );
+  }
 
   Widget _buildPriceRangeRow() {
     return Row(
@@ -223,7 +247,7 @@ class _TaskBarState extends State<TaskBar> {
   }) {
     return TextFormField(
       controller: controller,
-      keyboardType: keyboardType,
+      keyboardType: TextInputType.number,
       decoration: InputDecoration(
         hintText: hintText,
         filled: true,
@@ -234,6 +258,17 @@ class _TaskBarState extends State<TaskBar> {
         ),
         contentPadding: EdgeInsets.symmetric(horizontal: 15),
       ),
+      validator: (value) {
+        if (value != null && value.isNotEmpty) {
+          if (double.tryParse(value) == null) {
+            return 'Please enter a valid number';
+          }
+          if (double.parse(value) < 0) {
+            return 'Price cannot be negative';
+          }
+        }
+        return null;
+      },
     );
   }
 
@@ -241,7 +276,25 @@ class _TaskBarState extends State<TaskBar> {
     return ElevatedButton(
       onPressed: () {
         if (_formKey.currentState!.validate()) {
-          // Xử lý khi form hợp lệ
+          double? minPrice = minPriceController.text.isEmpty 
+              ? null 
+              : double.tryParse(minPriceController.text);
+          double? maxPrice = maxPriceController.text.isEmpty 
+              ? null 
+              : double.tryParse(maxPriceController.text);
+
+          if (minPrice != null && maxPrice != null && minPrice > maxPrice) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Min price cannot be greater than max price')),
+            );
+            return;
+          }
+
+          print('Applying filters - Category: $selectedCategory, '
+                'Min: $minPrice, Max: $maxPrice');
+                
+          widget.onFiltersApplied(selectedCategory, minPrice, maxPrice);
+          widget.onClose();
         }
       },
       style: ElevatedButton.styleFrom(
@@ -252,7 +305,7 @@ class _TaskBarState extends State<TaskBar> {
         ),
       ),
       child: Text(
-        'Check',
+        'Apply Filters',
         style: TextStyle(
           color: Colors.white,
           fontSize: 16,
