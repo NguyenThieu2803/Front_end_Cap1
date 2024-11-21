@@ -39,7 +39,6 @@ class _HomeAppBarState extends State<HomeAppBar> with SingleTickerProviderStateM
   @override
   void dispose() {
     _animationController.dispose();
-    _hideTaskbarOverlay();
     super.dispose();
   }
 
@@ -82,10 +81,9 @@ class _HomeAppBarState extends State<HomeAppBar> with SingleTickerProviderStateM
   }
 
   void _hideTaskbarOverlay() {
-    _animationController.reverse().then((_) {
-      _overlayEntry?.remove();
-      _overlayEntry = null;
-    });
+    if (_animationController.isAnimating) {
+      _animationController.reverse();
+    }
   }
 
   @override

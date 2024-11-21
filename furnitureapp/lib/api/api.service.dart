@@ -1,14 +1,9 @@
 import 'dart:convert';
-import 'dart:convert';
-import 'dart:convert';
 import 'package:http/http.dart' as http; //+
-import 'package:furnitureapp/model/Review.dart';
 import 'package:furnitureapp/model/Review.dart';
 import 'package:furnitureapp/config/config.dart';
 import 'package:furnitureapp/model/Categories.dart';
-import 'package:furnitureapp/model/Categories.dart';
 import 'package:furnitureapp/utils/share_service.dart';
-import 'package:furnitureapp/services/data_service.dart';
 import 'package:furnitureapp/services/data_service.dart';
 import 'package:furnitureapp/model/login_response_model.dart';
 
@@ -742,6 +737,31 @@ class APIService {
     } else {
       throw Exception(
           'Failed to add wishlist: ${response.statusCode} - ${response.body}');
+    }
+  }
+
+  static Future<Map<String, dynamic>> getDeliveredOrders() async {
+    String? token = await ShareService.getToken();
+    if (token == null) {
+      throw Exception('User not logged in');
+    }
+    
+    Map<String, String> requestHeaders = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+    
+    var url = Uri.http(Config.apiURL, Config.deliveredOrdersAPI);
+    print("Request URL: $url"); // Debug URL
+    
+    var response = await client.get(url, headers: requestHeaders);
+    print("Response status: ${response.statusCode}"); // Debug status
+    print("Response body: ${response.body}"); // Debug response
+    
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } else {
+      throw Exception('Failed to fetch delivered orders: ${response.statusCode} - ${response.body}');
     }
   }
 }

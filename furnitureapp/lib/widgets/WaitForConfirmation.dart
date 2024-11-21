@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:furnitureapp/services/data_service.dart';
-import 'package:furnitureapp/model/Order_model.dart'; // Import the Order model
+import 'package:furnitureapp/model/order_model.dart'; // Import the Order model
 
 class WaitForConfirmation extends StatelessWidget {
   const WaitForConfirmation({Key? key}) : super(key: key);
