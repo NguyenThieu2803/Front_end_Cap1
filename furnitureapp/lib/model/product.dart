@@ -18,6 +18,7 @@ class Product {
   int? _weight;
   int? _sold;
   double? _rating;
+  String? _model3d;
 
   Product(
       {String? id, // Add id to the constructor
@@ -38,7 +39,8 @@ class Product {
       bool? assemblyRequired,
       int? weight,
       int? sold,
-      double? rating}) {
+      double? rating,
+      String? model3d}) {
     if (id != null) {
       _id = id;
     }
@@ -96,6 +98,9 @@ class Product {
     if (rating != null) {
       _rating = rating;
     }
+    if (model3d != null) {
+      _model3d = model3d;
+    }
   }
 
   String? get id => _id; // Add getter for id
@@ -138,6 +143,8 @@ set material(String? material) => _material = material;
   set sold(int? sold) => _sold = sold;
   double? get rating => _rating;
   set rating(double? rating) => _rating = rating;
+  String? get model3d => _model3d;
+  set model3d(String? value) => _model3d = value;
 
   Product.fromJson(Map<String, dynamic> json) {
     _id = json['_id']; // Ensure this matches the key in your JSON response
@@ -177,6 +184,7 @@ set material(String? material) => _material = material;
         : (json['rating'] is int) 
             ? (json['rating'] as int).toDouble() 
             : json['rating']?.toDouble();
+    _model3d = json['model3d'];
   }
 
   Map<String, dynamic> toJson() {
@@ -204,12 +212,13 @@ if (_dimensions != null) {
     data['weight'] = _weight;
     data['sold'] = _sold;
     data['rating'] = _rating;
+    data['model3d'] = _model3d;
     return data;
   }
 
   @override
   String toString() {
-    return 'Product{id: $_id, name: $_name, price: $_price, images: $_images, rating: $_rating, sold: $_sold}';
+    return 'Product{id: $_id, name: $_name, price: $_price, images: $_images, rating: $_rating, sold: $_sold, model3d: $_model3d}';
   }
 }
 

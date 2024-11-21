@@ -8,16 +8,19 @@ environment:
   sdk: ">=3.5.3 <4.0.0"
 
 dependencies:
-  curved_navigation_bar: ^1.0.6 # Latest version
+  curved_navigation_bar: ^1.0.6
   path_provider: ^2.0.11
   image_picker: ^0.8.5+3
   
-
+  # Thêm các dependencies cho model 3D
+  webview_flutter: ^4.4.4  # Để hiển thị model Sketchfab
+  model_viewer_plus: ^1.7.0  # Hỗ trợ xem model 3D
+  url_launcher: ^6.2.5  # Để mở URL ngoài
+  
   flutter:
     sdk: flutter
 
-  # Các dependencies khác nằm ngoài phần flutter
-
+  # Các dependencies hiện có
   http: ^1.2.2
   cupertino_icons: ^1.0.8
   api_cache_manager: ^1.0.2
@@ -28,9 +31,6 @@ dependencies:
   provider: ^6.0.0
   intl: ^0.19.0
   shared_preferences: ^2.0.15
-
-  #sdk unity
-  # flutter_unity_widget: ^2022.2.1
 
   sqflite_common_ffi: ^2.3.3+1
   flutter_stripe: ^11.2.0

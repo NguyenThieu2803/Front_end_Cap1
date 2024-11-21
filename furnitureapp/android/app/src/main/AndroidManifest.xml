@@ -2,14 +2,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.furnitureapp">
 
-    <!-- Thêm quyền sử dụng internet -->
+    <!-- Thêm các quyền cần thiết -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-feature android:glEsVersion="0x00020000" android:required="true" />
 
     <application
         android:label="furnitureapp"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:theme="@style/NormalTheme">
+        android:theme="@style/NormalTheme"
+        android:usesCleartextTraffic="true"
+        android:hardwareAccelerated="true">
         
         <activity
             android:name=".MainActivity"
@@ -30,14 +34,17 @@
             </intent-filter>
         </activity>
 
-        <!-- Đừng xóa meta-data dưới đây -->
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
 
-    <!-- Cần thiết để query các activities có thể xử lý văn bản -->
     <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" />
+        </intent>
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT" />
             <data android:mimeType="text/plain" />
