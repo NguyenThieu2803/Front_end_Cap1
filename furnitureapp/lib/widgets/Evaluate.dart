@@ -190,6 +190,28 @@ class _EvaluateState extends State<Evaluate> {
                               ],
                             ),
                           ),
+                          OutlinedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => EvaluateFeedBack(
+                                    productId: product.product.id ?? '',
+                                    productName: product.product.name ?? 'Unnamed Product',
+                                    productImage: product.product.images?.first,
+                                  ),
+                                ),
+                              );
+                            },
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              backgroundColor: Colors.red,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: const Text('Review'),
+                          ),
                         ],
                       ),
                     );
@@ -212,30 +234,6 @@ class _EvaluateState extends State<Evaluate> {
                         fontWeight: FontWeight.bold,
                         color: Colors.red,
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    OutlinedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const EvaluateFeedBack(),
-                          ),
-                        );
-                      },
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        backgroundColor: Colors.red,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Text('Review'),
                     ),
                   ],
                 ),

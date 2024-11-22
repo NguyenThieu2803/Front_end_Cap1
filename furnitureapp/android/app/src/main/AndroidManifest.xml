@@ -2,10 +2,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.furnitureapp">
 
-    <!-- Thêm các quyền cần thiết -->
+    <!-- Permissions for internet, camera and AR -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    
+    <!-- Features for 3D and AR -->
     <uses-feature android:glEsVersion="0x00020000" android:required="true" />
+    <uses-feature android:name="android.hardware.camera.ar" android:required="false" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
 
     <application
         android:label="furnitureapp"
@@ -14,6 +19,9 @@
         android:theme="@style/NormalTheme"
         android:usesCleartextTraffic="true"
         android:hardwareAccelerated="true">
+        
+        <!-- Add Google AR Core meta-data -->
+        <meta-data android:name="com.google.ar.core" android:value="optional" />
         
         <activity
             android:name=".MainActivity"
@@ -49,5 +57,7 @@
             <action android:name="android.intent.action.PROCESS_TEXT" />
             <data android:mimeType="text/plain" />
         </intent>
+        <!-- Add query for AR -->
+        <package android:name="com.google.ar.core" />
     </queries>
 </manifest>

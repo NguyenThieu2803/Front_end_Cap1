@@ -6,6 +6,7 @@ import 'package:furnitureapp/model/Categories.dart';
 import 'package:furnitureapp/utils/share_service.dart';
 import 'package:furnitureapp/services/data_service.dart';
 import 'package:furnitureapp/model/login_response_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class APIService {
   static var client = http.Client();
@@ -176,6 +177,7 @@ class APIService {
           'weight': product['weight'],
           'sold': product['sold'], // Thêm trường sold
           'rating': product['rating'], // Thêm trường rating
+          'model3d': product['model3d'],
         };
       }).toList();
 
@@ -271,6 +273,7 @@ class APIService {
           'weight': product['weight'],
           'sold': product['sold'],
           'rating': product['rating'],
+          'model3d': product['model3d'],
         };
       }).toList();
 
@@ -763,5 +766,72 @@ class APIService {
     } else {
       throw Exception('Failed to fetch delivered orders: ${response.statusCode} - ${response.body}');
     }
+  }
+
+  static Future<bool> createReview(
+      String productId,
+      double rating,
+      String comment,
+      List<String> images,
+  ) async {
+    try {
+      String? token = await ShareService.getToken();
+      if (token == null) {
+        throw Exception('User not logged in');
+      }
+
+      var userProfile = await getUserProfile();
+      String userId = userProfile['_id'];
+
+      // Log để debug
+      print('Creating review with:');
+      print('userId: $userId');
+      print('productId: $productId');
+      print('rating: $rating');
+      print('comment: $comment');
+      print('images: $images');
+
+      var url = Uri.http(Config.apiURL, Config.createReviewAPI);
+      
+      // Tạo request body với images là mảng rỗng mặc định
+      var requestBody = {
+        'userId': userId,
+        'productId': productId,
+        'rating': rating,
+        'comment': comment,
+        'isVerifiedPurchase': true,
+        'images': [], // Luôn gửi mảng rỗng nếu không có ảnh
+      };
+
+      print('Request body: ${jsonEncode(requestBody)}');
+
+      var response = await client.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(requestBody),
+      );
+
+      print('Response status code: ${response.statusCode}');
+      print('Review creation response: ${response.body}');
+      
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        return true;
+      } else {
+        throw Exception('Failed to create review: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      print('Error creating review: $e');
+      throw e;
+    }
+  }
+
+  static Future<String?> getUserId() async {
+    // Implement logic để lấy userId từ local storage hoặc state management
+    // Ví dụ:
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('userId');
   }
 }

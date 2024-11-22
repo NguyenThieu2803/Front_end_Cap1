@@ -19,4 +19,5 @@ class Config {
   static const String userOrderAPI = "api/v1/checkout";
   static const String wishlistAPI="api/v1/wishlist";
   static const String deliveredOrdersAPI = "api/v1/orders/delivered";
+  static const String createReviewAPI = "api/v1/createReview";
 }

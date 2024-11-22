@@ -1,8 +1,29 @@
-import 'dart:ui';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:furnitureapp/api/api.service.dart';
+import 'package:furnitureapp/services/data_service.dart';
+class EvaluateFeedBack extends StatefulWidget {
+  final String productId;
+  final String productName;
+  final String? productImage;
 
-class EvaluateFeedBack extends StatelessWidget {
-  const EvaluateFeedBack({Key? key}) : super(key: key);
+  const EvaluateFeedBack({
+    Key? key, 
+    required this.productId,
+    required this.productName,
+    this.productImage,
+  }) : super(key: key);
+
+  @override
+  State<EvaluateFeedBack> createState() => _EvaluateFeedBackState();
+}
+
+class _EvaluateFeedBackState extends State<EvaluateFeedBack> {
+  final TextEditingController _commentController = TextEditingController();
+  double _rating = 0;
+  List<String> _selectedImages = [];
+  final DataService _dataService = DataService();
 
   @override
   Widget build(BuildContext context) {
@@ -37,167 +58,136 @@ class EvaluateFeedBack extends StatelessWidget {
           centerTitle: true,
         ),
       ),
-      body: Stack(
-        children: [
-          // Làm mờ nền
-          Positioned.fill(
-            child: ImageFiltered(
-              imageFilter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: ListView(
-              children: [
-                const SizedBox(height: 10),
-                _buildFeedbackCard(),
-                _buildFeedbackCard(),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFeedbackCard() {
-    return Card(
-      color: Colors.white,
-      margin: const EdgeInsets.symmetric(vertical: 10.0), // Khoảng cách giữa các thẻ
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 20,
-                  backgroundColor: const Color(0xFFE0E0E0),
-                  child: const Icon(Icons.person, color: Colors.grey),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Hiển thị thông tin sản phẩm
+              Card(
+                child: ListTile(
+                  leading: widget.productImage != null 
+                    ? Image.network(widget.productImage!, width: 50, height: 50)
+                    : const Icon(Icons.image_not_supported),
+                  title: Text(widget.productName),
                 ),
-                const SizedBox(width: 8),
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Nguyễn Văn Thiều',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: Colors.black,
-                      ),
-                    ),
-                    Text(
-                      '20/09/2024',
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-                const Spacer(),
-                Row(
-                  children: List.generate(
-                    5,
-                    (index) => const Icon(
-                      Icons.star,
+              ),
+              const SizedBox(height: 16),
+              
+              // Rating stars
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(5, (index) {
+                  return IconButton(
+                    icon: Icon(
+                      index < _rating ? Icons.star : Icons.star_border,
                       color: Colors.amber,
-                      size: 20,
                     ),
+                    onPressed: () {
+                      setState(() {
+                        _rating = index + 1;
+                      });
+                    },
+                  );
+                }),
+              ),
+
+              // Comment field
+              TextField(
+                controller: _commentController,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  hintText: 'Write your review here...',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+
+              // Image picker
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _pickImages,
+                child: const Text('Add Photos'),
+              ),
+
+              // Selected images preview
+              if (_selectedImages.isNotEmpty)
+                SizedBox(
+                  height: 100,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _selectedImages.length,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Image.file(
+                          File(_selectedImages[index]),
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.cover,
+                        ),
+                      );
+                    },
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              'Product: Ghế Công Thái Học',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-                color: Colors.black,
-              ),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'Material: Lưng da pu + nệm, chân thép mạ crom, ngã lưng duỗi chân\n'
-              'Color: Đen, xám, trắng\n'
-              'Origin: Nhập khẩu',
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              decoration: InputDecoration(
-                hintText: 'Write your review and feedback here...',
-                hintStyle: TextStyle(color: Colors.grey[400]),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.grey[300]!),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  vertical: 12.0,
-                  horizontal: 10.0,
+
+              // Submit button
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _submitReview,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: const Text('Submit Review'),
                 ),
               ),
-              maxLines: 3,
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                _buildImagePlaceholder(),
-                const SizedBox(width: 8),
-                _buildImagePlaceholder(),
-                const SizedBox(width: 8),
-                Stack(
-                  children: [
-                    _buildImagePlaceholder(),
-                    Positioned.fill(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.5),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Center(
-                          child: Text(
-                            'Upload photo',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildImagePlaceholder() {
-    return Container(
-      width: 80,
-      height: 80,
-      decoration: BoxDecoration(
-        color: Colors.grey[300],
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: const Icon(
-        Icons.image,
-        color: Colors.grey,
-        size: 30,
-      ),
-    );
+  Future<void> _pickImages() async {
+    final picker = ImagePicker();
+    final pickedFiles = await picker.pickMultiImage();
+    
+    if (pickedFiles != null) {
+      setState(() {
+        _selectedImages.addAll(pickedFiles.map((file) => file.path));
+      });
+    }
+  }
+
+  Future<void> _submitReview() async {
+    if (_rating == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a rating')),
+      );
+      return;
+    }
+
+    try {
+      final success = await APIService.createReview(
+        widget.productId,
+        _rating,
+        _commentController.text,
+        _selectedImages,
+      );
+
+      if (success) {
+        Navigator.pop(context, true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Review submitted successfully')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error submitting review: $e')),
+      );
+    }
   }
 }
