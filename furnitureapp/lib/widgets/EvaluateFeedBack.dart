@@ -1,8 +1,67 @@
 import 'dart:ui';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:furnitureapp/model/ReviewModel.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
-class EvaluateFeedBack extends StatelessWidget {
+
+class EvaluateFeedBack extends StatefulWidget {
   const EvaluateFeedBack({super.key});
+
+  @override
+  State<EvaluateFeedBack> createState() => _EvaluateFeedBackState();
+}
+
+class _EvaluateFeedBackState extends State<EvaluateFeedBack> {
+  final List<TextEditingController> _reviewControllers = [];
+  bool isFormComplete = false;
+  final List<int> _ratings = [0, 0];
+  List<ReviewData> reviews = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _reviewControllers.add(TextEditingController());
+    _reviewControllers.add(TextEditingController());
+    
+    for (var controller in _reviewControllers) {
+      controller.addListener(_checkFormCompletion);
+    }
+    _loadReviewData();
+  }
+
+  Future<void> _loadReviewData() async {
+    try {
+      // Đọc file JSON từ assets
+      final String response = await rootBundle.loadString('assets/detail/WriteAReview.json');
+      final data = await json.decode(response);
+      
+      setState(() {
+        reviews = (data['reviews'] as List)
+            .map((reviewJson) => ReviewData.fromJson(reviewJson))
+            .toList();
+      });
+    } catch (e) {
+      print('Error loading review data: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    for (var controller in _reviewControllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  void _checkFormCompletion() {
+    setState(() {
+      bool hasReview = _reviewControllers.any(
+        (controller) => controller.text.trim().isNotEmpty
+      );
+      isFormComplete = hasReview && _ratings.any((rating) => rating > 0);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,12 +93,33 @@ class EvaluateFeedBack extends StatelessWidget {
               ),
             ),
           ),
+          actions: [
+            Container(
+              alignment: Alignment.center,
+              margin: const EdgeInsets.only(top: 25.0, right: 30.0),
+              child: TextButton(
+                onPressed: isFormComplete ? () {} : null,
+                style: TextButton.styleFrom(
+                  minimumSize: Size.zero,
+                  padding: EdgeInsets.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: Text(
+                  'Up',
+                  style: TextStyle(
+                    fontSize: 23,
+                    fontWeight: FontWeight.bold,
+                    color: isFormComplete ? Colors.red : Colors.red[200],
+                  ),
+                ),
+              ),
+            ),
+          ],
           centerTitle: true,
         ),
       ),
       body: Stack(
         children: [
-          // Làm mờ nền
           Positioned.fill(
             child: ImageFiltered(
               imageFilter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
@@ -47,23 +127,28 @@ class EvaluateFeedBack extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: ListView(
-              children: [
-                const SizedBox(height: 10),
-                _buildFeedbackCard(),
-                _buildFeedbackCard(),
-              ],
-            ),
+            child: reviews.isEmpty
+                ? const Center(child: CircularProgressIndicator())
+                : ListView(
+                    children: [
+                      const SizedBox(height: 10),
+                      ...List.generate(
+                        reviews.length,
+                        (index) => _buildFeedbackCard(index),
+                      ),
+                    ],
+                  ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildFeedbackCard() {
+  Widget _buildFeedbackCard(int index) {
+    final review = reviews[index];
     return Card(
       color: Colors.white,
-      margin: const EdgeInsets.symmetric(vertical: 10.0), // Khoảng cách giữa các thẻ
+      margin: const EdgeInsets.symmetric(vertical: 10.0),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
@@ -73,27 +158,30 @@ class EvaluateFeedBack extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 CircleAvatar(
                   radius: 20,
                   backgroundColor: const Color(0xFFE0E0E0),
-                  child: const Icon(Icons.person, color: Colors.grey),
+                  child: review.user.avatar != null
+                      ? Image.network(review.user.avatar!)
+                      : const Icon(Icons.person, color: Colors.grey),
                 ),
                 const SizedBox(width: 8),
-                const Column(
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Nguyễn Văn Thiều',
-                      style: TextStyle(
+                      review.user.username,
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                         color: Colors.black,
                       ),
                     ),
                     Text(
-                      '20/09/2024',
-                      style: TextStyle(
+                      review.user.reviewDate,
+                      style: const TextStyle(
                         color: Colors.grey,
                         fontSize: 14,
                       ),
@@ -104,36 +192,48 @@ class EvaluateFeedBack extends StatelessWidget {
                 Row(
                   children: List.generate(
                     5,
-                    (index) => const Icon(
-                      Icons.star,
-                      color: Colors.amber,
-                      size: 20,
+                    (starIndex) => GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _ratings[index] = starIndex + 1;
+                          _checkFormCompletion();
+                        });
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 2),
+                        child: Icon(
+                          Icons.star,
+                          color: starIndex < _ratings[index] ? Colors.amber : Colors.grey[300],
+                          size: 23,
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 10),
-            const Text(
-              'Product: Ghế Công Thái Học',
-              style: TextStyle(
+            Text(
+              'Product: ${review.product.name}',
+              style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
                 color: Colors.black,
               ),
             ),
             const SizedBox(height: 4),
-            const Text(
-              'Material: Lưng da pu + nệm, chân thép mạ crom, ngã lưng duỗi chân\n'
-              'Color: Đen, xám, trắng\n'
-              'Origin: Nhập khẩu',
-              style: TextStyle(
+            Text(
+              'Material: ${review.product.specs.material}\n'
+              'Color: ${review.product.specs.colors.join(", ")}\n'
+              'Origin: ${review.product.specs.origin}',
+              style: const TextStyle(
                 color: Colors.grey,
                 fontSize: 14,
               ),
             ),
             const SizedBox(height: 8),
             TextField(
+              controller: _reviewControllers[index],
               decoration: InputDecoration(
                 hintText: 'Write your review and feedback here...',
                 hintStyle: TextStyle(color: Colors.grey[400]),

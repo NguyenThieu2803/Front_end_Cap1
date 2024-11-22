@@ -1,5 +1,5 @@
-import 'product.dart'; // Import the Product model
-import 'address_model.dart'; // Import the AddressUser model
+import 'product.dart';
+import 'address_model.dart';
 
 class Order {
   final bool success;

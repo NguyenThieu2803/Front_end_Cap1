@@ -6,10 +6,10 @@ class AddressUser {
   final String streetAddress;
   final String district;
   final String ward;
-  final String commune; // Add commune field
+  final String commune;
   final String city;
   final String province;
-  bool isDefault; // Change from final to mutable
+  bool isDefault;
 
   AddressUser({
     required this.id,
@@ -19,25 +19,27 @@ class AddressUser {
     required this.streetAddress,
     required this.district,
     required this.ward,
-    required this.commune, // Add commune field
+    required this.commune,
     required this.city,
     required this.province,
-    this.isDefault = false, // Provide a default value
+    this.isDefault = false,
   });
 
   factory AddressUser.fromJson(Map<String, dynamic> json) {
     return AddressUser(
-      id: json['_id'] ?? '', // Provide a default value
-      userId: json['user_id'] ?? '', // Provide a default value
-      fullName: json['name'] ?? '', // Provide a default value
-      phoneNumber: json['phone'] ?? '', // Provide a default value
-      streetAddress: json['street'] ?? '', // Provide a default value
-      district: json['district'] ?? '', // Provide a default value
-      ward: json['ward'] ?? '', // Provide a default value
-      commune: json['commune'] ?? '', // Provide a default value
-      city: json['city'] ?? '', // Provide a default value
-      province: json['province'] ?? '', // Provide a default value
+      id: json['_id'] ?? '',
+      userId: json['user_id'] ?? '',
+      fullName: json['name'] ?? '',
+      phoneNumber: json['phone'] ?? '',
+      streetAddress: json['street'] ?? '',
+      district: json['district'] ?? '',
+      ward: json['ward'] ?? '',
+      commune: json['commune'] ?? '',
+      city: json['city'] ?? '',
+      province: json['province'] ?? '',
       isDefault: json['isDefault'] ?? false,
     );
   }
+
+  String get fullAddress => '$streetAddress, $ward, $district, $city, $province';
 }

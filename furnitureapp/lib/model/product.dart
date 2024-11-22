@@ -19,6 +19,7 @@ class Product {
   int? _sold;
   double? _rating;
   String? _model3dUrl;
+  
 
   Product(
       {String? id, // Add id to the constructor

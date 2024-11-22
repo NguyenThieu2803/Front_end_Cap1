@@ -11,8 +11,8 @@ class NotificationAppBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.only(
-        top: 80,
-        bottom: 20,
+        top: 56,
+        bottom: 12,
       ),
       color: Colors.white,
       child: Row(

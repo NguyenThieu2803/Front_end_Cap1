@@ -13,7 +13,7 @@ class _NotificationPageState extends State<NotificationPage> {
   @override
   Widget build(BuildContext context) {
     // Xác định xem đây có phải là trang Admin hay không
-    bool isAdminPage = true; // Thay đổi giá trị này nếu trang này là của Admin
+    bool isAdminPage = false; // Thay đổi giá trị này nếu trang này là của Admin
 
     return Scaffold(
       backgroundColor: Colors.white,

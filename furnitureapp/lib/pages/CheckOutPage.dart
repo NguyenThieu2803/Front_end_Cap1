@@ -15,7 +15,6 @@ class CheckOutPage extends StatefulWidget {
     required this.totalAmount,
   });
 
-
   @override
   _CheckOutPageState createState() => _CheckOutPageState();
 }
@@ -32,13 +31,14 @@ class _CheckOutPageState extends State<CheckOutPage> {
   final _cardExpYearController = TextEditingController();
   final _cardCVCController = TextEditingController();
   final _cardHolderNameController = TextEditingController();
-final double shippingFee = 30.0;
-    late double subTotal;
-    late double total;
+  final double shippingFee = 30.0;
+  late double subTotal;
+  late double total;
   @override
   void initState() {
     super.initState();
-    Stripe.publishableKey = "pk_test_51Q4IszJ48Cc6e6PCngveNBvfhkg9qO12qhW65Au0spXnyY59DGhbfLf2WgpVV7Yg6bKJivrIZBYmtezg24kEh7L700mAjoAcEK";
+    Stripe.publishableKey =
+        "pk_test_51Q4IszJ48Cc6e6PCngveNBvfhkg9qO12qhW65Au0spXnyY59DGhbfLf2WgpVV7Yg6bKJivrIZBYmtezg24kEh7L700mAjoAcEK";
     Stripe.instance.applySettings();
     _loadData();
   }
@@ -47,25 +47,33 @@ final double shippingFee = 30.0;
     setState(() => _isLoading = true);
     try {
       final addressesData = await APIService.getAllAddresses();
-      final addresses = addressesData.map((addressData) => AddressUser.fromJson(addressData)).toList();
-      _defaultAddress = addresses.firstWhere((address) => address.isDefault, orElse: () => addresses.first);
-      
+      final addresses = addressesData
+          .map((addressData) => AddressUser.fromJson(addressData))
+          .toList();
+      _defaultAddress = addresses.firstWhere((address) => address.isDefault,
+          orElse: () => addresses.first);
+
       final cartData = await APIService.getCart();
       _cart = Cart.fromJson(cartData);
-      
+
       // Filter cart items based on selected product IDs
-      _cart?.items = _cart?.items?.where((item) => widget.selectedProductIds.contains(item.product?.id)).toList();
-      
+      _cart?.items = _cart?.items
+          ?.where(
+              (item) => widget.selectedProductIds.contains(item.product?.id))
+          .toList();
+
       final cardsData = await APIService.getAllCards();
-      _cards = cardsData.map((cardData) => CardModel.fromJson(cardData)).toList();
+      _cards =
+          cardsData.map((cardData) => CardModel.fromJson(cardData)).toList();
       subTotal = widget.totalAmount;
-      total=widget.totalAmount + shippingFee;
+      total = widget.totalAmount + shippingFee;
       setState(() {
         _isLoading = false;
       });
     } catch (e) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to load data: $e')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Failed to load data: $e')));
     }
   }
 
@@ -122,104 +130,125 @@ final double shippingFee = 30.0;
   }
 
   Future<void> _processCheckout() async {
-  // Generate card token only if the selected payment method is 'Credit Card'
-  String? cardToken;
-  if (_selectedPaymentMethod == 'Credit Card') {
-    cardToken = await generateStripeToken();
-    if (cardToken == null) return; // Exit if token generation failed
-  }
+    // Generate card token only if the selected payment method is 'Credit Card'
+    String? cardToken;
+    if (_selectedPaymentMethod == 'Credit Card') {
+      cardToken = await generateStripeToken();
+      if (cardToken == null) return; // Exit if token generation failed
+    }
 
-  try {
-    Map<String, dynamic> checkoutData = {
-      'paymentMethod': _selectedPaymentMethod,
-      'addressId': _defaultAddress?.id,
-      'totalPrices': total,
-      if (cardToken != null) 'cardToken': cardToken,
-      'products': widget.selectedProductIds.map((id) => {'productId': id}).toList(),
-    };
+    try {
+      Map<String, dynamic> checkoutData = {
+        'paymentMethod': _selectedPaymentMethod,
+        'addressId': _defaultAddress?.id,
+        'totalPrices': total,
+        if (cardToken != null) 'cardToken': cardToken,
+        'products':
+            widget.selectedProductIds.map((id) => {'productId': id}).toList(),
+      };
 
-    final result = await APIService.checkout(checkoutData);
+      final result = await APIService.checkout(checkoutData);
 
-    // Show success dialog
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          contentPadding: EdgeInsets.all(16.0),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.check_circle,
-                color: Colors.green,
-                size: 80.0,
-              ),
-              SizedBox(height: 20),
-              Text(
-                'Thanh toán thành công',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+      // Show success dialog
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            contentPadding: EdgeInsets.all(16.0),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.check_circle,
+                  color: Colors.green,
+                  size: 80.0,
                 ),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 20),
-              Text(
-                'Đơn hàng của quý khách đã thanh toán thành công. '
-                'FurniFit AR sẽ sớm liên hệ với quý khách để bàn giao sản phẩm, dịch vụ.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16),
-              ),
-              SizedBox(height: 30),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop(); // Close the dialog
-                  Navigator.of(context).pushReplacementNamed('/home'); // Navigate to home
-                },
-                child: Text('Đóng'),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  } catch (e) {
-    print(e);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Checkout failed: $e')),
-    );
+                SizedBox(height: 20),
+                Text(
+                  'Thanh toán thành công',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 20),
+                Text(
+                  'Đơn hàng của quý khách đã thanh toán thành công. '
+                  'FurniFit AR sẽ sớm liên hệ với quý khách để bàn giao sản phẩm, dịch vụ.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16),
+                ),
+                SizedBox(height: 30),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the dialog
+                    Navigator.of(context)
+                        .pushReplacementNamed('/home'); // Navigate to home
+                  },
+                  child: Text('Đóng'),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      print(e);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Checkout failed: $e')),
+      );
+    }
   }
-}
-
 
   @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(title: Text('Checkout')),
-    body: _isLoading
-        ? Center(child: CircularProgressIndicator())
-        : Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.only(bottom: 50), // Adjust as needed
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildAddressSection(),
-                      _buildCartItems(),
-                      _buildPaymentMethod(),
-                    ],
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+  title: Text(
+    'Check Out',
+    style: TextStyle(
+      fontSize: 23,
+      fontWeight: FontWeight.bold,
+    ),
+  ),
+  backgroundColor: Color(0xFFEDECF2),
+  leading: IconButton(
+    icon: Icon(
+      Icons.arrow_back,
+      size: 30, // Thêm dòng này để chỉnh kích thước icon
+    ),
+    onPressed: () {
+      Navigator.of(context).pop(); // Quay lại trang trước
+    },
+  ),
+),
+
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.only(bottom: 50), // Adjust as needed
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildAddressSection(),
+                        _buildCartItems(),
+                        _buildPaymentMethod(),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              SafeArea(
-                child: _buildTotalAndBuyButton(), // Moved outside of the Stack
-              ),
-            ],
-          ),
-  );
-}
+                SafeArea(
+                  child:
+                      _buildTotalAndBuyButton(), // Moved outside of the Stack
+                ),
+              ],
+            ),
+    );
+  }
 
   Widget _buildCartItems() {
     print(_cart);
@@ -263,60 +292,57 @@ Widget build(BuildContext context) {
   }
 
   Widget _buildCartItem(CartItem item) {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 8),
-      padding: EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.3),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: Offset(0, 3),
-          ),
-        ],
+  return Container(
+    margin: EdgeInsets.symmetric(vertical: 8),
+    padding: EdgeInsets.all(16), // Thêm padding để nội dung không quá chật
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(15), // Bo góc mềm mại
+      border: Border.all(
+        color: Colors.grey.withOpacity(0.2), // Viền nhẹ với màu xám
+        width: 2.0, // Độ dày của viền
       ),
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              item.product?.images?.first ?? '',
-              width: 80,
-              height: 80,
-              fit: BoxFit.cover,
-            ),
+    ),
+    child: Row(
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(12), // Bo góc của hình ảnh
+          child: Image.network(
+            item.product?.images?.first ?? '',
+            width: 80,
+            height: 80,
+            fit: BoxFit.cover,
           ),
-          SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.name ?? 'Unknown Product',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF3E3364),
-                  ),
+        ),
+        SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                item.name ?? 'Unknown Product',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2B2321),
                 ),
-                SizedBox(height: 4),
-                Text(
-                  '\$${item.price?.toStringAsFixed(2) ?? '0.00'}',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
-                  ),
+              ),
+              SizedBox(height: 4),
+              Text(
+                '\$${item.price?.toStringAsFixed(2) ?? '0.00'}',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600], // Màu xám đậm hơn cho giá
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
+
 
   Widget _buildQuantityButton(IconData icon) {
     return Container(
@@ -333,7 +359,7 @@ Widget build(BuildContext context) {
         ],
       ),
       child: IconButton(
-        icon: Icon(icon, color: Color(0xFF3E3364)),
+        icon: Icon(icon, color: Color(0xFF2B2321)),
         onPressed: () {
           // Handle quantity change
         },
@@ -352,7 +378,7 @@ Widget build(BuildContext context) {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF3E3364),
+              color: Color(0xFF2B2321),
             ),
           ),
           SizedBox(height: 8),
@@ -364,10 +390,9 @@ Widget build(BuildContext context) {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey.withOpacity(0.3),
+                    color: Colors.grey.withOpacity(0.5),
                     spreadRadius: 1,
                     blurRadius: 5,
-                    offset: Offset(0, 3),
                   ),
                 ],
               ),
@@ -375,7 +400,7 @@ Widget build(BuildContext context) {
                 children: [
                   Icon(
                     Icons.radio_button_checked,
-                    color: Colors.orange,
+                    color: const Color(0xFF2B2321),
                   ),
                   SizedBox(width: 16),
                   Expanded(
@@ -387,7 +412,7 @@ Widget build(BuildContext context) {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                            color: const Color(0xFF2B2321),
                           ),
                         ),
                         SizedBox(height: 4),
@@ -429,18 +454,23 @@ Widget build(BuildContext context) {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Payment method', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text('Payment Method',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           RadioListTile(
             title: Text('Payment Upon Receipt'),
             value: 'Payment Upon Receipt',
             groupValue: _selectedPaymentMethod,
-            onChanged: (value) => setState(() => _selectedPaymentMethod = value.toString()),
+            activeColor: Color(0xFF2B2321),
+            onChanged: (value) =>
+                setState(() => _selectedPaymentMethod = value.toString()),
           ),
           RadioListTile(
             title: Text('Credit Card'),
             value: 'Credit Card',
             groupValue: _selectedPaymentMethod,
-            onChanged: (value) => setState(() => _selectedPaymentMethod = value.toString()),
+            activeColor: Color(0xFF2B2321),
+            onChanged: (value) =>
+                setState(() => _selectedPaymentMethod = value.toString()),
           ),
           if (_selectedPaymentMethod == 'Credit Card')
             Padding(
@@ -489,21 +519,23 @@ Widget build(BuildContext context) {
   }
 
   Widget _buildTotalAndBuyButton() {
-
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.3),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: Offset(0, -3),
-          ),
-        ],
-      ),
+  color: Colors.white,
+  borderRadius: BorderRadius.only(
+    topLeft: Radius.circular(20),  // Bo góc trên trái
+    topRight: Radius.circular(20), // Bo góc trên phải
+  ),
+  boxShadow: [
+    BoxShadow(
+      color: Colors.grey.withOpacity(0.3),
+      blurRadius: 4,
+      offset: Offset(0, -3),
+    ),
+  ],
+),
+
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -530,7 +562,7 @@ Widget build(BuildContext context) {
                   fontSize: 18,
                   color: Color(0xFFFFD700),
                   fontWeight: FontWeight.w600,
-                  letterSpacing: 1.2,
+                  letterSpacing: 1.9,
                 ),
               ),
             ),
@@ -549,7 +581,7 @@ Widget build(BuildContext context) {
           style: TextStyle(
             fontSize: 16,
             fontWeight: isBold ? FontWeight.w600 : FontWeight.w400,
-            color: Colors.black87,
+            color: const Color(0xFF2B2321),
           ),
         ),
         Text(
@@ -557,7 +589,7 @@ Widget build(BuildContext context) {
           style: TextStyle(
             fontSize: 16,
             fontWeight: isBold ? FontWeight.w600 : FontWeight.w400,
-            color: isBold ? Colors.black : Colors.grey[600],
+            color: isBold ? const Color(0xFF2B2321) : Colors.grey[600],
           ),
         ),
       ],
