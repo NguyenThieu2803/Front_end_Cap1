@@ -17,25 +17,23 @@ class _UserProfilePageState extends State<UserProfilePage> {
       body: SafeArea(
         child: Column(
           children: [
-            UserProfileAppBar(), // Đảm bảo FavoriteAppBar không null
+            UserProfileAppBar(), // Đảm bảo UserProfileAppBar không null
             Expanded(
               child: Container(
                 decoration: const BoxDecoration(
                   color: Color(0xFFEDECF2),
-                ),
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.only(
+                  borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(30),
                     topRight: Radius.circular(30),
                   ),
-                  child: ListView(
-                    padding: EdgeInsets.only(top: 10),
-                    children: [
-                      UserProfileItemSamples(),
-                      // Thêm SizedBox để tạo khoảng trống ở cuối danh sách
-                      SizedBox(height: 20),
-                    ],
-                  ),
+                ),
+                child: ListView(
+                  padding: const EdgeInsets.only(top: 10),
+                  children: const [
+                    UserProfileItemSamples(),
+                    // Thêm SizedBox để tạo khoảng trống ở cuối danh sách
+                    SizedBox(height: 20),
+                  ],
                 ),
               ),
             ),

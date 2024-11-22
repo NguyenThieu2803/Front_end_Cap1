@@ -8,13 +8,13 @@ class ProductReviewsItemSamples extends StatelessWidget {
   final String productId;
   final DataService _dataService = DataService();
 
-  ProductReviewsItemSamples({Key? key, required this.productId}) : super(key: key);
+  ProductReviewsItemSamples({super.key, required this.productId});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 80,
+        toolbarHeight: 52,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           iconSize: 30,
@@ -61,7 +61,7 @@ class ProductReviewsItemSamples extends StatelessWidget {
 
   Widget _buildReviewItem(Review review) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      margin: const EdgeInsets.only(right: 15, left: 15, top: 15),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -81,9 +81,9 @@ class ProductReviewsItemSamples extends StatelessWidget {
           Row(
             children: [
               CircleAvatar(
-                child: Text(review.userName?[0] ?? 'U'),
                 backgroundColor: Colors.grey[300],
                 radius: 20,
+                child: Text(review.userName?[0] ?? 'U'),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -137,7 +137,6 @@ class ProductReviewsItemSamples extends StatelessWidget {
               ),
             ),
           ],
-          const Divider(thickness: 1),
         ],
       ),
     );

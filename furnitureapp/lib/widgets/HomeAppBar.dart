@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:furnitureapp/pages/NotificationPage.dart';
 import 'package:furnitureapp/pages/TaskBar.dart';
 import 'package:furnitureapp/model/Categories.dart';
+import 'package:furnitureapp/pages/NotificationPage.dart';
 
 
 class HomeAppBar extends StatefulWidget {
   final Function(String?, double?, double?) onFiltersApplied;
 
   const HomeAppBar({
-    Key? key,
+    super.key,
     required this.onFiltersApplied,
-  }) : super(key: key);
+  });
 
   @override
   _HomeAppBarState createState() => _HomeAppBarState();

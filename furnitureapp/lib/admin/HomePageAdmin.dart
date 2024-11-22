@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:furnitureapp/admin/AdminPage.dart';
 import 'package:furnitureapp/pages/CartPage.dart';
+import 'package:furnitureapp/admin/AdminPage.dart';
 import 'package:furnitureapp/pages/FavoritePage.dart';
+import 'package:furnitureapp/widgets/HomeAppBar.dart';
 import 'package:furnitureapp/pages/UserProfilePage.dart';
+import 'package:furnitureapp/widgets/HomeItemsWidget.dart';
 import 'package:furnitureapp/widgets/CategoriesWidget.dart';
 import 'package:furnitureapp/widgets/HomeAdminNavigationBar.dart';
-import 'package:furnitureapp/widgets/HomeAppBar.dart';
-import 'package:furnitureapp/widgets/HomeItemsWidget.dart';
-import 'package:furnitureapp/model/Categories.dart';
 
 class HomePageAdmin extends StatefulWidget {
   const HomePageAdmin({super.key});

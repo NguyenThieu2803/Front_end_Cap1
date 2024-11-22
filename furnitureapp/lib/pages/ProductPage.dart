@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:furnitureapp/model/Review.dart';
 import 'package:furnitureapp/model/product.dart';
 import 'package:furnitureapp/api/api.service.dart';
 import 'package:furnitureapp/widgets/ProductReviews.dart';
-import 'package:furnitureapp/model/Review.dart';
 
 class ProductPage extends StatefulWidget {
   final Product product;
@@ -120,17 +119,27 @@ class _ProductPageState extends State<ProductPage>
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.product.name!,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
-        ),
-        backgroundColor: Colors.white,
-        iconTheme: IconThemeData(color: Colors.black),
-      ),
+appBar: AppBar(
+  leading: IconButton(
+    icon: Icon(
+      Icons.arrow_back,
+      size: 30, // Kích thước biểu tượng
+    ),
+    onPressed: () {
+      Navigator.of(context).pop(); // Điều hướng quay lại trang trước đó
+    },
+  ),
+  title: Text(
+    widget.product.name!,
+    style: const TextStyle(
+      fontWeight: FontWeight.bold,
+      fontSize: 20,
+    ),
+  ),
+  backgroundColor: Colors.white,
+  iconTheme: IconThemeData(color: Colors.black),
+),
+
       backgroundColor: const Color(0xFFEDECF2),
       body: Column(
         children: [
@@ -413,7 +422,6 @@ class _ProductPageState extends State<ProductPage>
             offset: Offset(0, -2),
           ),
         ],
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

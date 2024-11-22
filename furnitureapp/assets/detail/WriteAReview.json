@@ -1,0 +1,36 @@
+{
+    "reviews": [
+      {
+        "id": 1,
+        "user": {
+          "username": "Nguyễn Văn Thiều",
+          "avatar": null,
+          "review_date": "20/09/2024"
+        },
+        "product": {
+          "name": "Ghế Công Thái Học",
+          "specs": {
+            "material": "Lưng da pu + nệm, chân thép mạ crom, ngã lưng duỗi chân",
+            "colors": ["Đen", "xám", "trắng"],
+            "origin": "Nhập khẩu"
+          }
+        }
+      },
+      {
+        "id": 2,
+        "user": {
+          "username": "Trần Thị Hương",
+          "avatar": null,
+          "review_date": "21/09/2024"
+        },
+        "product": {
+          "name": "Ghế Công Thái Học",
+          "specs": {
+            "material": "Lưng da pu + nệm, chân thép mạ crom, ngã lưng duỗi chân",
+            "colors": ["Đen", "xám", "trắng"],
+            "origin": "Nhập khẩu"
+          }
+        }
+      }
+    ]
+  }

@@ -80,7 +80,7 @@ class _NotificationItemSamplesState extends State<NotificationItemSamples> {
       children: [
         // Orders Section
         Container(
-          padding: EdgeInsets.all(16),
+          padding: EdgeInsets.only(top: 10, left: 15, right: 15, bottom: 15),
           child: Column(
             children: orders.map((order) => _buildOrderItem(order)).toList(),
           ),
@@ -128,7 +128,7 @@ class _NotificationItemSamplesState extends State<NotificationItemSamples> {
             ),
             child: Icon(Icons.shopping_bag_rounded, color: Colors.black, size: 37),
           ),
-          SizedBox(width: 14),
+          SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -172,7 +172,7 @@ class _NotificationItemSamplesState extends State<NotificationItemSamples> {
             radius: 25,
             backgroundImage: AssetImage(message.imageUrl),
           ),
-          SizedBox(width: 12),
+          SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

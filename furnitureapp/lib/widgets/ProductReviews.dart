@@ -7,7 +7,7 @@ class ProductReviews extends StatelessWidget {
   final String productId;
   final DataService _dataService = DataService();
 
-  ProductReviews({Key? key, required this.productId}) : super(key: key);
+  ProductReviews({super.key, required this.productId});
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +29,7 @@ class ProductReviews extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(15),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -65,11 +65,11 @@ class ProductReviews extends StatelessWidget {
             ),
             if (reviews.isEmpty)
               Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(10),
                 child: Text('There are no reviews yet'),
               )
             else
-              ...displayedReviews.map((review) => _buildReviewItem(review)).toList(),
+              ...displayedReviews.map((review) => _buildReviewItem(review)),
           ],
         );
       },
@@ -78,8 +78,8 @@ class ProductReviews extends StatelessWidget {
 
   Widget _buildReviewItem(Review review) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -98,8 +98,8 @@ class ProductReviews extends StatelessWidget {
           Row(
             children: [
               CircleAvatar(
-                child: Text(review.userName?[0] ?? 'U'),
                 backgroundColor: Colors.grey[200],
+                child: Text(review.userName?[0] ?? 'U'),
               ),
               SizedBox(width: 12),
               Expanded(

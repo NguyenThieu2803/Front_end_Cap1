@@ -14,7 +14,7 @@ class FavoriteItemSamples extends StatefulWidget {
 }
 
 class _FavoriteItemSamplesState extends State<FavoriteItemSamples> {
-  Wishlist? wishlist; // Use the correct Wishlist model
+  Wishlist? wishlist; // Sử dụng đúng mô hình Wishlist
   bool isLoading = true;
 
   @override
@@ -28,14 +28,13 @@ class _FavoriteItemSamplesState extends State<FavoriteItemSamples> {
       Wishlist? loadedWishlist = await DataService().getWishlistByUserId();
       setState(() {
         wishlist = loadedWishlist;
-        isLoading = false; // Data has been loaded
+        isLoading = false; // Dữ liệu đã được tải
       });
     } catch (e) {
       print("Error loading wishlist: $e");
       setState(() {
-        isLoading = false; // Stop loading even if there was an error
+        isLoading = false; // Dừng tải dù có lỗi
       });
-      // Handle error (e.g., show a message to the user)
     }
   }
 
@@ -43,18 +42,13 @@ class _FavoriteItemSamplesState extends State<FavoriteItemSamples> {
     try {
       final result = await APIService.deleteWishlist(productId);
       if (result) {
-        // Successfully removed, refresh the wishlist
-        _loadWishlist(); // Or you could manually remove the item from the list
+        _loadWishlist(); // Tải lại danh sách yêu thích
         ScaffoldMessenger.of(context).showSnackBar(
-          
           const SnackBar(content: Text('Removed from wishlist')),
         );
       } else {
-        // Handle errors like product not found, etc.
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-                  "Failed to remove from wishlist")), // Assuming result has a message field
+          const SnackBar(content: Text('Failed to remove from wishlist')),
         );
       }
     } catch (e) {
@@ -68,10 +62,10 @@ class _FavoriteItemSamplesState extends State<FavoriteItemSamples> {
   List<Review> _getReviewsForProducts(List<Product?> products) {
     return products.map((product) {
       return Review(
-        id: product?.id, // Use the actual review ID if available.
+        id: product?.id,
         rating: (product?.rating ?? 0).toInt(),
         images: product?.images ?? [],
-        comment: "This is a review for ${product?.name}",  // Or fetch real comment
+        comment: "This is a review for ${product?.name}",
       );
     }).toList();
   }
@@ -79,18 +73,16 @@ class _FavoriteItemSamplesState extends State<FavoriteItemSamples> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Center(
-          child: CircularProgressIndicator()); // Show loading indicator
+      return const Center(child: CircularProgressIndicator()); // Hiển thị chỉ báo tải
     } else if (wishlist == null || wishlist!.product.isEmpty) {
-      return const Center(
-          child: Text("Your wishlist is empty")); // Handle empty wishlist
+      return const Center(child: Text("Your wishlist is empty")); // Xử lý danh sách yêu thích trống
     } else {
       List<Review> reviews = _getReviewsForProducts(wishlist!.product.map((item) => item.product).toList());
       return Column(
         children: wishlist!.product.asMap().entries.map((entry) {
           int index = entry.key;
           WishlistItem item = entry.value;
-            Review review = reviews[index]; // Get the review for this product
+          Review review = reviews[index]; // Lấy đánh giá cho sản phẩm này
           return Container(
             height: 110,
             margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
@@ -104,8 +96,7 @@ class _FavoriteItemSamplesState extends State<FavoriteItemSamples> {
                 SizedBox(
                   height: 70,
                   width: 70,
-                  child: item.product!.images != null &&
-                          item.product!.images!.isNotEmpty
+                  child: item.product!.images != null && item.product!.images!.isNotEmpty
                       ? Image.network(item.product!.images![0])
                       : const Placeholder(),
                 ),
@@ -116,20 +107,26 @@ class _FavoriteItemSamplesState extends State<FavoriteItemSamples> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          item.product?.name ?? 'Unknown product',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF2B2321),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 10), // Đẩy tên sản phẩm sang phải
+                          child: Text(
+                            item.product?.name ?? 'Unknown product',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF2B2321),
+                            ),
                           ),
                         ),
-                        Text(
-                          "\$${item.product?.price?.toStringAsFixed(0) ?? 'N/A'}",
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF2B2321),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 10), // Đẩy giá sang phải
+                          child: Text(
+                            "\$${item.product?.price?.toStringAsFixed(0) ?? 'N/A'}",
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF2B2321),
+                            ),
                           ),
                         ),
                       ],
@@ -154,9 +151,9 @@ class _FavoriteItemSamplesState extends State<FavoriteItemSamples> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>  ProductPage(
+                            builder: (context) => ProductPage(
                               product: item.product!,
-                              review: review, // Pass the correct Review object
+                              review: review, // Chuyển đánh giá đúng
                             ),
                           ),
                         );

@@ -613,10 +613,10 @@ class APIService {
             'description': product['description'] ?? '',
             'shortDescription': product['shortDescription'] ?? '',
             'price': product['price'] ?? 0,
-            'dimensions': product['dimensions'] ?? null,
+            'dimensions': product['dimensions'],
             'stockQuantity': product['stockQuantity'] ?? 0,
             'material': product['material'] ?? '',
-            'color': product['color'] ?? null,
+            'color': product['color'],
             'images': List<String>.from(product['images'] ?? []),
             'category': product['category'] ?? '',
             'discount': product['discount'] ?? 0,
@@ -635,7 +635,7 @@ class APIService {
       }
     } catch (e) {
       print('Error in searchProducts: $e');
-      throw e;
+      rethrow;
     }
   }
 

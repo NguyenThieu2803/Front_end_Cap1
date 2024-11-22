@@ -13,7 +13,7 @@ class _FavoriteAppBarState extends State<FavoriteAppBar> {
   Widget build(BuildContext context) {
     return Container(
       color: Colors.white,
-      padding: EdgeInsets.all(25),
+      padding: EdgeInsets.all(12),
       child: Row(
         children: [
           InkWell(
@@ -42,7 +42,7 @@ class _FavoriteAppBarState extends State<FavoriteAppBar> {
           Spacer(), // Tạo khoảng cách giữa tiêu đề và icon trái tim
           Icon(
             Icons.favorite,
-            size: 30,
+            size: 25,
             color: Colors.red, // Đặt màu cho biểu tượng trái tim
           ),
         ],

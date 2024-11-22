@@ -54,36 +54,41 @@ class _CartItemSamplesState extends State<CartItemSamples> {
 
     return Column(
       children: [
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 15),
-          child: Row(
-            children: [
-              Checkbox(
-                value: isAllSelected,
-                activeColor: Color(0xFF2B2321),
-                onChanged: (bool? value) {
-                  setState(() {
-                    isAllSelected = value ?? false;
-                    if (isAllSelected) {
-                      selectedProductIds = cart!.items!.map((item) => item.product!.id!).toSet();
-                    } else {
-                      selectedProductIds.clear();
-                    }
-                    _updateTotalPrice();
-                  });
-                },
-              ),
-              Text(
-                "Select All",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2B2321),
-                ),
-              ),
-            ],
-          ),
+        Row(
+  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  children: [
+    Padding(
+      padding: const EdgeInsets.only(left: 20), // Đẩy checkbox sang phải
+      child: Checkbox(
+        value: isAllSelected,
+        activeColor: Color(0xFF2B2321),
+        onChanged: (bool? value) {
+          setState(() {
+            isAllSelected = value ?? false;
+            if (isAllSelected) {
+              selectedProductIds = cart!.items!.map((item) => item.product!.id!).toSet();
+            } else {
+              selectedProductIds.clear();
+            }
+            _updateTotalPrice();
+          });
+        },
+      ),
+    ),
+    Padding(
+      padding: const EdgeInsets.only(right: 15),
+      child: Text(
+        "Select All",
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: Color(0xFF2B2321),
         ),
+      ),
+    ),
+  ],
+),
+
         Column(
           children: cart!.items!.map((item) => buildCartItem(item)).toList(),
         ),

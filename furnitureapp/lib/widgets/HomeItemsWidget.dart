@@ -55,7 +55,7 @@ class _HomeItemsWidgetState extends State<HomeItemsWidget> {
   Future<Set<String>> _loadWishlistProductIds() async {
     try {
       Wishlist? wishlist = await DataService().getWishlistByUserId();
-      if (wishlist != null && wishlist.product != null) {
+      if (wishlist != null) {
         return wishlist.product.map((item) => item.product?.id ?? '').toSet();
       }
     } catch (e) {
@@ -82,7 +82,7 @@ class _HomeItemsWidgetState extends State<HomeItemsWidget> {
       children: [
         Container(
           alignment: Alignment.centerLeft,
-          margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
           child: Text(
             widget.selectedCategory == "All Product"
                 ? "All Products"
@@ -128,7 +128,7 @@ class _HomeItemsWidgetState extends State<HomeItemsWidget> {
                     physics: const NeverScrollableScrollPhysics(),
                     crossAxisCount: 2,
                     shrinkWrap: true,
-                    padding: const EdgeInsets.only(top: 10),
+                    padding: const EdgeInsets.only(top: 8),
                     children: List.generate(products.length, (index) {
                       return ProductTile(
                         product: products[index],
@@ -203,7 +203,7 @@ class _ProductTileState extends State<ProductTile> {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.only(left: 12, right: 12, top: 8, bottom: 8),
-      margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -218,14 +218,14 @@ class _ProductTileState extends State<ProductTile> {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Color(0xFF2B2321),
+                    color: Colors.red,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
                     "-${widget.product.discount}%",
                     style: TextStyle(
                       fontSize: 12,
-                      color: const Color.fromARGB(255, 168, 149, 149),
+                      color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -298,7 +298,7 @@ class _ProductTileState extends State<ProductTile> {
                       ),
                       SizedBox(width: 2),
                       Text(
-                        "${widget.product.rating?.toStringAsFixed(1) ?? '0.0'}",
+                        widget.product.rating?.toStringAsFixed(1) ?? '0.0',
                         style: TextStyle(
                           fontSize: 15,
                           color: Colors.grey[600],

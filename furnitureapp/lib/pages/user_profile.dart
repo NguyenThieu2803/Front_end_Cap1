@@ -3,6 +3,8 @@ import 'package:furnitureapp/services/data_service.dart';
 import 'package:furnitureapp/model/UserProfile_model.dart';
 
 class UserProfileScreen extends StatefulWidget {
+  const UserProfileScreen({super.key});
+
   @override
   _UserProfileScreenState createState() => _UserProfileScreenState();
 }
@@ -19,7 +21,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   Future<void> _loadUserProfile() async {
     UserProfile? userProfile = await dataService.loadUserProfile();
-    print("This is user profile: ${userProfile}"); // Added print statement for debugging
+    print("This is user profile: $userProfile"); // Added print statement for debugging
     if (userProfile != null) {
       setState(() {
         _userProfileScreen = userProfile;
