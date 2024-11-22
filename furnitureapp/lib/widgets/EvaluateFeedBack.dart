@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 class EvaluateFeedBack extends StatelessWidget {
-  const EvaluateFeedBack({Key? key}) : super(key: key);
+  const EvaluateFeedBack({super.key});
 
   @override
   Widget build(BuildContext context) {

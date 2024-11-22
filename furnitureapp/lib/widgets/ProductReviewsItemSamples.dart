@@ -8,7 +8,7 @@ class ProductReviewsItemSamples extends StatelessWidget {
   final String productId;
   final DataService _dataService = DataService();
 
-  ProductReviewsItemSamples({Key? key, required this.productId}) : super(key: key);
+  ProductReviewsItemSamples({super.key, required this.productId});
 
   @override
   Widget build(BuildContext context) {
@@ -81,9 +81,9 @@ class ProductReviewsItemSamples extends StatelessWidget {
           Row(
             children: [
               CircleAvatar(
-                child: Text(review.userName?[0] ?? 'U'),
                 backgroundColor: Colors.grey[300],
                 radius: 20,
+                child: Text(review.userName?[0] ?? 'U'),
               ),
               const SizedBox(width: 12),
               Expanded(

@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:furnitureapp/pages/CartPage.dart';
-import 'package:furnitureapp/pages/FavoritePage.dart';
-import 'package:furnitureapp/pages/UserProfilePage.dart';
-import 'package:furnitureapp/pages/SearchPage.dart';
-import 'package:furnitureapp/widgets/CategoriesWidget.dart';
-import 'package:furnitureapp/widgets/HomeAppBar.dart';
-import 'package:furnitureapp/widgets/HomeItemsWidget.dart';
-import 'package:furnitureapp/widgets/HomeNavigationBar.dart';
-import 'package:furnitureapp/model/Categories.dart';
-import 'package:furnitureapp/translate/localization.dart';
 import 'package:furnitureapp/config/config.dart';
+import 'package:furnitureapp/pages/CartPage.dart';
+import 'package:furnitureapp/pages/SearchPage.dart';
+import 'package:furnitureapp/model/Categories.dart';
+import 'package:furnitureapp/pages/FavoritePage.dart';
+import 'package:furnitureapp/widgets/HomeAppBar.dart';
+import 'package:furnitureapp/pages/UserProfilePage.dart';
+import 'package:furnitureapp/translate/localization.dart';
+import 'package:furnitureapp/widgets/HomeItemsWidget.dart';
+import 'package:furnitureapp/widgets/CategoriesWidget.dart';
+import 'package:furnitureapp/widgets/HomeNavigationBar.dart';
 
 
 class HomePage extends StatefulWidget {
@@ -84,7 +84,7 @@ class HomeContent extends StatelessWidget {
   final double? maxPrice;
   final Function(String?, double?, double?) onFiltersApplied;
 
-  const HomeContent({Key? key, required this.selectedCategory, this.minPrice, this.maxPrice, required this.onFiltersApplied}) : super(key: key);
+  const HomeContent({super.key, required this.selectedCategory, this.minPrice, this.maxPrice, required this.onFiltersApplied});
 
   @override
   Widget build(BuildContext context) {

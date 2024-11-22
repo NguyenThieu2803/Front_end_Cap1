@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:furnitureapp/model/Review.dart';
 import 'package:furnitureapp/model/product.dart';
 import 'package:furnitureapp/api/api.service.dart';
 import 'package:furnitureapp/widgets/ProductReviews.dart';
-import 'package:furnitureapp/model/Review.dart';
 
 class ProductPage extends StatefulWidget {
   final Product product;

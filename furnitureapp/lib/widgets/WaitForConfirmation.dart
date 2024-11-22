@@ -3,7 +3,7 @@ import 'package:furnitureapp/services/data_service.dart';
 import 'package:furnitureapp/model/Order_model.dart'; // Import the Order model
 
 class WaitForConfirmation extends StatelessWidget {
-  const WaitForConfirmation({Key? key}) : super(key: key);
+  const WaitForConfirmation({super.key});
 
   @override
   Widget build(BuildContext context) {

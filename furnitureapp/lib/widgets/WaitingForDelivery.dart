@@ -4,7 +4,7 @@ import 'package:furnitureapp/services/data_service.dart';
 import 'package:intl/intl.dart'; // Import for date formatting
 
 class WaitingForDelivery extends StatefulWidget {
-  const WaitingForDelivery({Key? key}) : super(key: key);
+  const WaitingForDelivery({super.key});
 
   @override
   _WaitingForDeliveryState createState() => _WaitingForDeliveryState();

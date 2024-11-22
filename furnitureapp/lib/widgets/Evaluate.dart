@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:furnitureapp/widgets/EvaluateFeedBack.dart';
 
 class Evaluate extends StatelessWidget {
-  const Evaluate({Key? key}) : super(key: key);
+  const Evaluate({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -293,7 +293,7 @@ class Product {
 }
 
 class ReturnPage extends StatelessWidget {
-  const ReturnPage({Key? key}) : super(key: key);
+  const ReturnPage({super.key});
 
   @override
   Widget build(BuildContext context) {
