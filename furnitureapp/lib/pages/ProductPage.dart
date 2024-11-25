@@ -3,11 +3,12 @@ import 'package:furnitureapp/model/product.dart';
 import 'package:furnitureapp/api/api.service.dart';
 import 'package:furnitureapp/widgets/ProductReviews.dart';
 import 'package:furnitureapp/model/Review.dart';
+import 'package:model_viewer_plus/model_viewer_plus.dart';
 
 class ProductPage extends StatefulWidget {
   final Product product;
   final Review review;
-
+  
   const ProductPage({super.key, required this.product, required this.review});
 
   @override
@@ -16,6 +17,7 @@ class ProductPage extends StatefulWidget {
 
 class _ProductPageState extends State<ProductPage>
     with SingleTickerProviderStateMixin {
+  int currentModelIndex = 0;
   int quantity = 1;
   bool isFavorite = false;
   Color? selectedColor;
@@ -163,48 +165,50 @@ appBar: AppBar(
       ),
     );
   }
+  
 
-  Widget _buildProductImage(double screenWidth, double screenHeight) {
-    return Stack(
-      children: [
-        Center(
-          child: Container(
-            width: screenWidth,
-            height: screenHeight * 0.4,
-            decoration: BoxDecoration(
-              color: const Color(0xFFD9D9D9),
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.elliptical(250, 70),
-                bottomRight: Radius.elliptical(250, 70),
-              ),
-            ),
-            child: widget.product.images != null && widget.product.images!.isNotEmpty
-                ? Image.network(
-                    widget.product.images![0],
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      print('Error loading image: $error');
-                      return const Center(
-                        child: Icon(
-                          Icons.image_not_supported,
-                          size: 50,
-                          color: Colors.grey,
-                        ),
-                      );
-                    },
-                  )
-                : const Center(
-                    child: Icon(
-                      Icons.image_not_supported,
-                      size: 50,
-                      color: Colors.grey,
-                    ),
+Widget _buildProductImage(double screenWidth, double screenHeight) {
+  // Kiểm tra nếu widget.product là null
+  return Container(
+    width: screenWidth,
+    height: screenHeight * 0.4,
+    decoration: const BoxDecoration(
+      color: Color(0xFFD9D9D9),
+      borderRadius: BorderRadius.only(
+        bottomLeft: Radius.elliptical(250, 70),
+        bottomRight: Radius.elliptical(250, 70),
+      ),
+    ),
+    child: widget.product.model3d != null && widget.product.model3d!.isNotEmpty
+       ? ModelViewer(
+  backgroundColor: const Color(0xFFD9D9D9),
+  src: 'assets/images_3d/AR-Code-1683008719374.glb', // Đảm bảo đường dẫn là chính xác
+  alt: 'A 3D model of ${widget.product.name}',
+  ar: true,
+  autoRotate: true,
+  cameraControls: true,
+  loading: Loading.eager,
+)
+        : const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(height: 10),
+                Text(
+                  'No 3D model available',
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 16,
                   ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
-    );
-  }
+  );
+}
+
+
+
 
   Widget _buildProductDetails() {
     return Padding(

@@ -14,6 +14,7 @@ import 'package:furnitureapp/model/login_response_model.dart';
 
 class APIService {
   static var client = http.Client();
+  
 
   // register post request
   static Future<bool> register(String username, String password, String email,
@@ -181,6 +182,7 @@ class APIService {
           'weight': product['weight'],
           'sold': product['sold'], // Thêm trường sold
           'rating': product['rating'], // Thêm trường rating
+          
         };
       }).toList();
 
@@ -744,4 +746,6 @@ class APIService {
           'Failed to add wishlist: ${response.statusCode} - ${response.body}');
     }
   }
+
+  static fetchModel3D(String productId) {}
 }
