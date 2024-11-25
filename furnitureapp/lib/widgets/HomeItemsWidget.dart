@@ -55,7 +55,7 @@ class _HomeItemsWidgetState extends State<HomeItemsWidget> {
   Future<Set<String>> _loadWishlistProductIds() async {
     try {
       Wishlist? wishlist = await DataService().getWishlistByUserId();
-      if (wishlist != null && wishlist.product != null) {
+      if (wishlist != null) {
         return wishlist.product.map((item) => item.product?.id ?? '').toSet();
       }
     } catch (e) {
@@ -298,7 +298,7 @@ class _ProductTileState extends State<ProductTile> {
                       ),
                       SizedBox(width: 2),
                       Text(
-                        "${widget.product.rating?.toStringAsFixed(1) ?? '0.0'}",
+                        widget.product.rating?.toStringAsFixed(1) ?? '0.0',
                         style: TextStyle(
                           fontSize: 15,
                           color: Colors.grey[600],

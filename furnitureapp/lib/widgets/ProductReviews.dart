@@ -7,7 +7,7 @@ class ProductReviews extends StatelessWidget {
   final String productId;
   final DataService _dataService = DataService();
 
-  ProductReviews({Key? key, required this.productId}) : super(key: key);
+  ProductReviews({super.key, required this.productId});
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +69,7 @@ class ProductReviews extends StatelessWidget {
                 child: Text('There are no reviews yet'),
               )
             else
-              ...displayedReviews.map((review) => _buildReviewItem(review)).toList(),
+              ...displayedReviews.map((review) => _buildReviewItem(review)),
           ],
         );
       },
@@ -98,8 +98,8 @@ class ProductReviews extends StatelessWidget {
           Row(
             children: [
               CircleAvatar(
-                child: Text(review.userName?[0] ?? 'U'),
                 backgroundColor: Colors.grey[200],
+                child: Text(review.userName?[0] ?? 'U'),
               ),
               SizedBox(width: 12),
               Expanded(

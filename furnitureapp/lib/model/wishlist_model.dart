@@ -54,11 +54,11 @@ class WishlistItem {
 
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    if (this.product != null) {
-      data['product'] = this.product!.toJson();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    if (product != null) {
+      data['product'] = product!.toJson();
     }
-    data['_id'] = this.id;
+    data['_id'] = id;
     return data;
   }
 }

@@ -1,17 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:furnitureapp/pages/CartPage.dart';
-import 'package:furnitureapp/pages/FavoritePage.dart';
-import 'package:furnitureapp/pages/UserProfilePage.dart';
-import 'package:furnitureapp/translate/localization.dart';
-import 'package:furnitureapp/widgets/HomeAppBar.dart';
-import 'package:furnitureapp/widgets/HomeItemsWidget.dart';
-import 'package:furnitureapp/widgets/HomeNavigationBar.dart';
-import 'package:furnitureapp/services/data_service.dart';
-import 'package:furnitureapp/model/product.dart';
-import 'package:furnitureapp/config/config.dart';
-import 'package:furnitureapp/model/Review.dart';
-import 'package:furnitureapp/pages/ProductPage.dart';
 import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:furnitureapp/model/Review.dart';
+import 'package:furnitureapp/model/product.dart';
+import 'package:furnitureapp/pages/ProductPage.dart';
+import 'package:furnitureapp/services/data_service.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});

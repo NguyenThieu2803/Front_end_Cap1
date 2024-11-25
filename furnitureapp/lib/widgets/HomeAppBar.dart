@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:furnitureapp/pages/NotificationPage.dart';
 import 'package:furnitureapp/pages/TaskBar.dart';
 import 'package:furnitureapp/model/Categories.dart';
+import 'package:furnitureapp/pages/NotificationPage.dart';
 
 
 class HomeAppBar extends StatefulWidget {
   final Function(String?, double?, double?) onFiltersApplied;
 
   const HomeAppBar({
-    Key? key,
+    super.key,
     required this.onFiltersApplied,
-  }) : super(key: key);
+  });
 
   @override
   _HomeAppBarState createState() => _HomeAppBarState();
@@ -39,7 +39,6 @@ class _HomeAppBarState extends State<HomeAppBar> with SingleTickerProviderStateM
   @override
   void dispose() {
     _animationController.dispose();
-    _hideTaskbarOverlay();
     super.dispose();
   }
 
@@ -82,10 +81,9 @@ class _HomeAppBarState extends State<HomeAppBar> with SingleTickerProviderStateM
   }
 
   void _hideTaskbarOverlay() {
-    _animationController.reverse().then((_) {
-      _overlayEntry?.remove();
-      _overlayEntry = null;
-    });
+    if (_animationController.isAnimating) {
+      _animationController.reverse();
+    }
   }
 
   @override

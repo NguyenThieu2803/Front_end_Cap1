@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:furnitureapp/model/Review.dart';
 import 'package:furnitureapp/model/product.dart';
 import 'package:furnitureapp/api/api.service.dart';
 import 'package:furnitureapp/widgets/ProductReviews.dart';
@@ -182,7 +183,7 @@ Widget _buildProductImage(double screenWidth, double screenHeight) {
     child: widget.product.model3d != null && widget.product.model3d!.isNotEmpty
        ? ModelViewer(
   backgroundColor: const Color(0xFFD9D9D9),
-  src: 'assets/images_3d/AR-Code-1683008719374.glb', // Đảm bảo đường dẫn là chính xác
+  src: widget.product.model3d!, // Đảm bảo đường dẫn là chính xác
   alt: 'A 3D model of ${widget.product.name}',
   ar: true,
   autoRotate: true,
@@ -211,104 +212,84 @@ Widget _buildProductImage(double screenWidth, double screenHeight) {
 
 
   Widget _buildProductDetails() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Container(
-        color: const Color(0xFFEDECF2),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.product.name ?? 'No Name',
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: const Offset(0, -3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Tên sản phẩm trên một hàng
+          Text(
+            widget.product.name ?? 'No Name',
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF2B2321),
             ),
-            const SizedBox(height: 2),
+          ),
+          const SizedBox(height: 8), // Giảm khoảng cách
 
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    widget.product.brand ?? 'N/A',
+          // Đánh giá và số lượng đã bán trên cùng một hàng
+          Row(
+            children: [
+              Row(
+                children: [
+                  ..._buildStarRating(widget.review.rating ?? 0),
+                  const SizedBox(width: 4),
+                  Text(
+                    '(${widget.review.rating?.toStringAsFixed(1) ?? '0.0'})',
                     style: const TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.bold,
                       color: Color(0xFF2B2321),
                     ),
                   ),
+                ],
+              ),
+              const SizedBox(width: 15),
+              Text(
+                '${widget.product.sold ?? 0} Sold',
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey,
                 ),
-                const SizedBox(width: 8),
-                Row(
-                  children: [
-                    ..._buildStarRating(widget.review.rating ?? 0),
-                    const SizedBox(width: 4),
-                    Text(
-                      '(${widget.review.rating?.toStringAsFixed(1) ?? '0.0'})',
-                      style: const TextStyle(fontSize: 16, color: Color(0xFF2B2321)),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12), // Giảm khoảng cách
 
-            // Sold information and Quantity controls
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    const Text(
-                      'Sold:',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      '${widget.product.sold ?? 0} items',
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ],
-                ),
-                _buildQuantityControls(),
-              ],
-            ),
-          ],
-        ),
+          // Color Options
+          _buildColorOptions(),
+        ],
       ),
     );
   }
 
-  Widget _buildQuantityControls() {
-    return Row(
-      children: [
-        IconButton(
-          icon: const Icon(Icons.remove),
-          onPressed: decreaseQuantity,
-          padding: EdgeInsets.zero,
+  Widget _buildQuantityButton(IconData icon, VoidCallback onPressed) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[300],
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: IconButton(
+        icon: Icon(icon, color: Colors.black, size: 12),
+        onPressed: onPressed,
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(
+          minWidth: 20,
+          minHeight: 20,
         ),
-        SizedBox(
-          width: 40,
-          child: Center(
-            child: Text(
-              '$quantity',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ),
-        IconButton(
-          icon: const Icon(Icons.add),
-          onPressed: increaseQuantity,
-          padding: EdgeInsets.zero,
-        ),
-      ],
+      ),
     );
   }
 
@@ -379,6 +360,7 @@ Widget _buildProductImage(double screenWidth, double screenHeight) {
             ),
           ),
           const SizedBox(height: 10),
+          _buildSpecItem('- Brand:', widget.product.brand ?? 'N/A'),
           _buildSpecItem('- Style:', widget.product.style ?? 'N/A'),
           _buildSpecItem(
             '- Dimensions:',
@@ -514,7 +496,6 @@ Widget _buildProductImage(double screenWidth, double screenHeight) {
   Widget _buildColorOptions() {
     List<Color> productColors = [];
 
-    // Get colors from product data
     if (widget.product.color?.primary != null) {
       Color? primaryColor = _colorFromString(widget.product.color!.primary!);
       if (primaryColor != Colors.transparent) {
@@ -524,29 +505,19 @@ Widget _buildProductImage(double screenWidth, double screenHeight) {
 
     if (widget.product.color?.secondary != null &&
         widget.product.color!.secondary!.toLowerCase() != "none") {
-      Color? secondaryColor =
-          _colorFromString(widget.product.color!.secondary!);
+      Color? secondaryColor = _colorFromString(widget.product.color!.secondary!);
       if (secondaryColor != Colors.transparent) {
         productColors.add(secondaryColor);
       }
-    }
-
-    // If no colors found, return a message
-    if (productColors.isEmpty) {
-      return const Text(
-        'Other colors have not been updated yet',
-        style: TextStyle(fontSize: 16, color: Colors.grey),
-      );
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text(
-              'Choose colors:',
+              'Choose colors: ',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             Text(
@@ -559,35 +530,53 @@ Widget _buildProductImage(double screenWidth, double screenHeight) {
         ),
         const SizedBox(height: 10),
         Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: productColors.map((color) {
-            bool isSelected =
-                selectedColor == color; // Check if this color is selected
-            return GestureDetector(
-              onTap: () {
-                setState(() {
-                  selectedColor = color; // Update selected color
-                });
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: isSelected
-                        ? Colors.blue
-                        : Colors.transparent, // Change border color if selected
-                    width: 2,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Color options
+            Row(
+              children: productColors.map((color) {
+                return Padding(
+                  padding: const EdgeInsets.only(right: 10),
+                  child: _buildColorOption(color),
+                );
+              }).toList(),
+            ),
+            
+            // Quantity control
+            Row(
+              children: [
+                Text(
+                  '−',
+                  style: TextStyle(
+                    fontSize: 24,
+                    color: Colors.black54,
+                    fontWeight: FontWeight.w400,
                   ),
-                  shape: BoxShape.circle,
                 ),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.all(8.0), // Add padding for the color
-                  child: _buildColorOption(
-                      color), // Method to build the colored circle
+                const SizedBox(width: 15),
+                Container(
+                  width: 30,
+                  alignment: Alignment.center,
+                  child: Text(
+                    '$quantity',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
                 ),
-              ),
-            );
-          }).toList(),
+                const SizedBox(width: 15),
+                Text(
+                  '+',
+                  style: TextStyle(
+                    fontSize: 24,
+                    color: Colors.black54,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ],
     );
@@ -642,25 +631,25 @@ Widget _buildProductImage(double screenWidth, double screenHeight) {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Enhanced description styling
+                // Description
                 Text(
                   widget.product.description ?? 'No description available',
                   style: const TextStyle(
-                    fontSize: 18, // Increased font size for better readability
-                    fontWeight: FontWeight.bold, // Make description bold
-                    color: Color(0xFF2B2321), // Dark color for contrast
+                    fontSize: 16,
+                    color: Color(0xFF2B2321),
+                    height: 1.5,
                   ),
                 ),
                 const SizedBox(height: 20),
-                _buildProductSpecs(), // Product specifications
-                const SizedBox(height: 20),
-                _buildColorOptions(), // Color options
+                
+                // Product specifications
+                _buildProductSpecs(),
               ],
             ),
           ),
           widget.product.id != null 
               ? ProductReviews(productId: widget.product.id!)
-              : Center(child: Text('Product ID not available')),
+              : const Center(child: Text('Product ID not available')),
         ],
       ),
     );

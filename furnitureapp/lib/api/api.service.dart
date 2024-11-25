@@ -1,16 +1,12 @@
 import 'dart:convert';
-import 'dart:convert';
-import 'dart:convert';
 import 'package:http/http.dart' as http; //+
-import 'package:furnitureapp/model/Review.dart';
 import 'package:furnitureapp/model/Review.dart';
 import 'package:furnitureapp/config/config.dart';
 import 'package:furnitureapp/model/Categories.dart';
-import 'package:furnitureapp/model/Categories.dart';
 import 'package:furnitureapp/utils/share_service.dart';
 import 'package:furnitureapp/services/data_service.dart';
-import 'package:furnitureapp/services/data_service.dart';
 import 'package:furnitureapp/model/login_response_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class APIService {
   static var client = http.Client();
@@ -182,7 +178,7 @@ class APIService {
           'weight': product['weight'],
           'sold': product['sold'], // Thêm trường sold
           'rating': product['rating'], // Thêm trường rating
-          
+          'model3d': product['model3d'],
         };
       }).toList();
 
@@ -278,6 +274,7 @@ class APIService {
           'weight': product['weight'],
           'sold': product['sold'],
           'rating': product['rating'],
+          'model3d': product['model3d'],
         };
       }).toList();
 
@@ -617,10 +614,10 @@ class APIService {
             'description': product['description'] ?? '',
             'shortDescription': product['shortDescription'] ?? '',
             'price': product['price'] ?? 0,
-            'dimensions': product['dimensions'] ?? null,
+            'dimensions': product['dimensions'],
             'stockQuantity': product['stockQuantity'] ?? 0,
             'material': product['material'] ?? '',
-            'color': product['color'] ?? null,
+            'color': product['color'],
             'images': List<String>.from(product['images'] ?? []),
             'category': product['category'] ?? '',
             'discount': product['discount'] ?? 0,
@@ -639,7 +636,7 @@ class APIService {
       }
     } catch (e) {
       print('Error in searchProducts: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -747,5 +744,95 @@ class APIService {
     }
   }
 
-  static fetchModel3D(String productId) {}
+  static Future<Map<String, dynamic>> getDeliveredOrders() async {
+    String? token = await ShareService.getToken();
+    if (token == null) {
+      throw Exception('User not logged in');
+    }
+    
+    Map<String, String> requestHeaders = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+    
+    var url = Uri.http(Config.apiURL, Config.deliveredOrdersAPI);
+    print("Request URL: $url"); // Debug URL
+    
+    var response = await client.get(url, headers: requestHeaders);
+    print("Response status: ${response.statusCode}"); // Debug status
+    print("Response body: ${response.body}"); // Debug response
+    
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } else {
+      throw Exception('Failed to fetch delivered orders: ${response.statusCode} - ${response.body}');
+    }
+  }
+
+  static Future<bool> createReview(
+      String productId,
+      double rating,
+      String comment,
+      List<String> images,
+  ) async {
+    try {
+      String? token = await ShareService.getToken();
+      if (token == null) {
+        throw Exception('User not logged in');
+      }
+
+      var userProfile = await getUserProfile();
+      String userId = userProfile['_id'];
+
+      // Log để debug
+      print('Creating review with:');
+      print('userId: $userId');
+      print('productId: $productId');
+      print('rating: $rating');
+      print('comment: $comment');
+      print('images: $images');
+
+      var url = Uri.http(Config.apiURL, Config.createReviewAPI);
+      
+      // Tạo request body với images là mảng rỗng mặc định
+      var requestBody = {
+        'userId': userId,
+        'productId': productId,
+        'rating': rating,
+        'comment': comment,
+        'isVerifiedPurchase': true,
+        'images': [], // Luôn gửi mảng rỗng nếu không có ảnh
+      };
+
+      print('Request body: ${jsonEncode(requestBody)}');
+
+      var response = await client.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(requestBody),
+      );
+
+      print('Response status code: ${response.statusCode}');
+      print('Review creation response: ${response.body}');
+      
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        return true;
+      } else {
+        throw Exception('Failed to create review: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      print('Error creating review: $e');
+      throw e;
+    }
+  }
+
+  static Future<String?> getUserId() async {
+    // Implement logic để lấy userId từ local storage hoặc state management
+    // Ví dụ:
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('userId');
+  }
 }

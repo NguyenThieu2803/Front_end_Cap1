@@ -5,14 +5,17 @@ import '../model/address_model.dart';
 import 'package:furnitureapp/model/Review.dart';
 import 'package:furnitureapp/api/api.service.dart';
 import 'package:furnitureapp/model/Categories.dart';
-import 'package:furnitureapp/model/Order_model.dart';
+import 'package:furnitureapp/model/order_model.dart';
 import 'package:furnitureapp/model/wishlist_model.dart';
 import 'package:furnitureapp/model/Cart_User_Model.dart';
 import 'package:furnitureapp/model/UserProfile_model.dart';
-
-
+import 'package:furnitureapp/config/config.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DataService {
+  const DataService();
+
   Future<List<Product>> loadProducts({
     String? category,
     double? minPrice,
@@ -259,6 +262,31 @@ class DataService {
     } catch (e) {
       print('Error adding to wishlist: $e');
       return false;
+    }
+  }
+
+  Future<List<OrderData>> getDeliveredOrders() async {
+    try {
+      final response = await APIService.getDeliveredOrders();
+      print("Raw API Response: $response"); // Debug log
+      
+      if (response['success'] == true && response['data'] != null) {
+        List<dynamic> ordersData = response['data'] as List;
+        print("Orders data: $ordersData"); // Debug log
+        
+        return ordersData.map((orderJson) {
+          try {
+            return OrderData.fromJson(orderJson);
+          } catch (e) {
+            print("Error parsing individual order: $e");
+            return null;
+          }
+        }).whereType<OrderData>().toList();
+      }
+      return [];
+    } catch (error) {
+      print('Error in getDeliveredOrders: $error');
+      return [];
     }
   }
 }

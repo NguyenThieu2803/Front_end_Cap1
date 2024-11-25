@@ -1,10 +1,20 @@
-import 'package:flutter/material.dart';
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:furnitureapp/widgets/EvaluateFeedBack.dart';
+import 'package:furnitureapp/model/order_model.dart';
+import 'package:intl/intl.dart';
+import '../services/data_service.dart';
 
-class Evaluate extends StatelessWidget {
-  const Evaluate({super.key});
+class Evaluate extends StatefulWidget {
+  const Evaluate({Key? key}) : super(key: key);
+
+  @override
+  State<Evaluate> createState() => _EvaluateState();
+}
+
+class _EvaluateState extends State<Evaluate> {
+  final DataService _dataService = DataService();
 
   @override
   Widget build(BuildContext context) {
@@ -39,256 +49,203 @@ class Evaluate extends StatelessWidget {
           centerTitle: true,
         ),
       ),
-      body: FutureBuilder<List<Product>>(
-        future: loadProducts(),
+      body: FutureBuilder<List<OrderData>>(
+        future: _dataService.getDeliveredOrders(),
         builder: (context, snapshot) {
+          print('Connection state: ${snapshot.connectionState}');
+          
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else {
-            final products = snapshot.data!;
-            return Container(
-              color: const Color(0xFFEDECF2),
-              child: ListView.builder(
-                itemCount: products.length,
-                itemBuilder: (context, index) {
-                  final product = products[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 10), // Thêm khoảng cách 10 giữa các thẻ
-                    child: _buildProductSection(
-                      context,
-                      headerText: product.headerText,
-                      imageUrl: product.imageUrl,
-                      productName: product.productName,
-                      productDetail: product.productDetail,
-                      totalAmountLabel: product.totalAmountLabel,
-                      totalAmount: product.totalAmount,
-                      estimatedDeliveryDate: product.estimatedDeliveryDate,
-                      returnButtonText: product.returnButtonText,
-                      cancelButtonText: product.cancelButtonText,
+            print('Error loading orders: ${snapshot.error}');
+            print('Error stack trace: ${snapshot.stackTrace}');
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Error loading orders: ${snapshot.error}',
+                      style: const TextStyle(color: Colors.red),
+                      textAlign: TextAlign.center,
                     ),
-                  );
-                },
+                  ],
+                ),
+              ),
+            );
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            print('No orders data available');
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.inbox_outlined, size: 48, color: Colors.grey),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'No delivered orders found',
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                ],
               ),
             );
           }
+
+          print('Successfully loaded ${snapshot.data!.length} orders');
+          
+          return Container(
+            color: const Color(0xFFEDECF2),
+            child: ListView.builder(
+              itemCount: snapshot.data!.length,
+              itemBuilder: (context, index) {
+                final order = snapshot.data![index];
+                print('Building order card for order ID: ${order.id}');
+                return _buildOrderCard(context, order);
+              },
+            ),
+          );
         },
       ),
     );
   }
 
-  Future<List<Product>> loadProducts() async {
-    String jsonString = await rootBundle.loadString('assets/detail/Evaluate.json');
-    final jsonResponse = json.decode(jsonString);
-    return (jsonResponse['products'] as List)
-        .map((product) => Product.fromJson(product))
-        .toList();
-  }
-
-Widget _buildProductSection(
-  BuildContext context, {
-  required String headerText,
-  required String imageUrl,
-  required String productName,
-  required String productDetail,
-  required String totalAmountLabel,
-  required String totalAmount,
-  required String estimatedDeliveryDate,
-  required String returnButtonText,
-  required String cancelButtonText,
-}) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15), // Reduce horizontal padding
-    child: Card(
-      color: Colors.white,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 350), // Set a max width for the card
-        child: Padding(
-          padding: const EdgeInsets.all(10.0), // Reduce padding inside the card
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildProductHeader(headerText),
-              const SizedBox(height: 8), // Adjust spacing
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      imageUrl,
-                      width: 90, // Adjust image width
-                      height: 90, // Adjust image height
-                      fit: BoxFit.cover,
+  Widget _buildOrderCard(BuildContext context, OrderData order) {
+    final currencyFormatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
+    
+    try {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        child: Card(
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Order ID: ${order.id}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8), // Adjust spacing
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          productName,
-                          style: const TextStyle(
-                            fontSize: 15, // Adjust font size
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 6), // Adjust spacing
-                        Text(
-                          productDetail,
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 13, // Adjust font size
-                          ),
-                        ),
-                      ],
+                    Text(
+                      DateFormat('dd/MM/yyyy').format(order.orderDate),
+                      style: const TextStyle(color: Colors.grey),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8), // Adjust spacing
-              _buildTotalAmountSection(totalAmountLabel, totalAmount),
-              const SizedBox(height: 8), // Adjust spacing
-              Text(
-                estimatedDeliveryDate,
-                style: const TextStyle(fontSize: 14, color: Colors.grey),
-              ),
-              const SizedBox(height: 8), // Adjust spacing
-              _buildActionButtons(context, returnButtonText, cancelButtonText),
-            ],
+                  ],
+                ),
+                const Divider(),
+                ...order.products.map((product) {
+                  try {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.network(
+                              product.product.images?.first ?? 'default_image_url',
+                              width: 80,
+                              height: 80,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                print('Error loading image: $error');
+                                return Container(
+                                  width: 80,
+                                  height: 80,
+                                  color: Colors.grey[200],
+                                  child: const Icon(Icons.image_not_supported),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  product.product.name ?? 'Unnamed Product',
+                                  style: const TextStyle(fontWeight: FontWeight.w500),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Quantity: ${product.quantity}',
+                                  style: const TextStyle(color: Colors.grey),
+                                ),
+                                Text(
+                                  'Price: ${currencyFormatter.format(product.amount)}',
+                                  style: const TextStyle(color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                          ),
+                          OutlinedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => EvaluateFeedBack(
+                                    productId: product.product.id ?? '',
+                                    productName: product.product.name ?? 'Unnamed Product',
+                                    productImage: product.product.images?.first,
+                                  ),
+                                ),
+                              );
+                            },
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              backgroundColor: Colors.red,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: const Text('Review'),
+                          ),
+                        ],
+                      ),
+                    );
+                  } catch (e) {
+                    print('Error building product item: $e');
+                    return const SizedBox.shrink();
+                  }
+                }).toList(),
+                const Divider(),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Total Amount:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      currencyFormatter.format(order.totalAmount),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-    ),
-  );
-}
-
-
-  Widget _buildProductHeader(String headerText) {
-    Color textColor;
-    if (headerText == 'Delivered') {
-      textColor = Colors.red;
-    } else if (headerText == 'The order has been delivered') {
-      textColor = Colors.green;
-    } else {
-      textColor = Colors.deepOrange;
+      );
+    } catch (e) {
+      print('Error building order card: $e');
+      return const SizedBox.shrink();
     }
-
-    return Row(
-      children: [
-        const Spacer(),
-        Text(
-          headerText,
-          style: TextStyle(
-            color: textColor,
-            fontSize: 16,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTotalAmountSection(String label, String totalAmount) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 16),
-        ),
-        Text(
-          totalAmount,
-          style: const TextStyle(
-            fontSize: 16,
-            color: Colors.black,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionButtons(BuildContext context, String returnButtonText, String cancelButtonText) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Expanded(
-          child: OutlinedButton(
-            onPressed: () {
-              // Hành động cho nút hủy
-            },
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: Colors.grey),
-              padding: const EdgeInsets.symmetric(vertical: 10),
-            ),
-            child: Text(
-              cancelButtonText,
-              style: const TextStyle(color: Colors.black, fontSize: 14),
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: OutlinedButton(
-            onPressed: () {
-              // Điều hướng đến trang EvaluateFeedBack
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const EvaluateFeedBack()),
-              );
-            },
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: Colors.red),
-              backgroundColor: Colors.red,
-              padding: const EdgeInsets.symmetric(vertical: 10),
-            ),
-            child: Text(
-              returnButtonText,
-              style: const TextStyle(color: Colors.white, fontSize: 14),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class Product {
-  String headerText;
-  String imageUrl;
-  String productName;
-  String productDetail;
-  String totalAmountLabel;
-  String totalAmount;
-  String estimatedDeliveryDate;
-  String returnButtonText;
-  String cancelButtonText;
-
-  Product({
-    required this.headerText,
-    required this.imageUrl,
-    required this.productName,
-    required this.productDetail,
-    required this.totalAmountLabel,
-    required this.totalAmount,
-    required this.estimatedDeliveryDate,
-    required this.returnButtonText,
-    required this.cancelButtonText,
-  });
-
-  factory Product.fromJson(Map<String, dynamic> json) {
-    return Product(
-      headerText: json['headerText'],
-      imageUrl: json['imageUrl'],
-      productName: json['productName'],
-      productDetail: json['productDetail'],
-      totalAmountLabel: json['totalAmountLabel'],
-      totalAmount: json['totalAmount'],
-      estimatedDeliveryDate: json['estimatedDeliveryDate'],
-      returnButtonText: json['returnButtonText'],
-      cancelButtonText: json['cancelButtonText'],
-    );
   }
 }
 

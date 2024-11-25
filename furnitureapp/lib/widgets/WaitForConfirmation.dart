@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:furnitureapp/model/order_model.dart';
 import 'package:furnitureapp/services/data_service.dart';
-import 'package:furnitureapp/model/Order_model.dart';
 import 'package:furnitureapp/widgets/OrderInformation.dart';
 
 class WaitForConfirmation extends StatefulWidget {

@@ -1,17 +1,14 @@
 import 'dart:io';
-import 'package:furnitureapp/model/Review.dart';
-import 'package:furnitureapp/pages/StartNow.dart';
-
 import 'pages/Homepage.dart';
 import 'pages/LoginPage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:furnitureapp/model/product.dart';
+import 'package:furnitureapp/model/Review.dart';
+import 'package:furnitureapp/model/Review.dart';
 import 'package:furnitureapp/model/product.dart';
 import 'package:furnitureapp/pages/sign_up.dart';
+import 'package:furnitureapp/pages/StartNow.dart';
 import 'package:furnitureapp/pages/SearchPage.dart';
-import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:furnitureapp/pages/ProductPage.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:furnitureapp/admin/HomePageAdmin.dart';
@@ -21,6 +18,8 @@ import 'package:furnitureapp/pages/NotificationPage.dart';
 import 'package:furnitureapp/services/language_manager.dart';
 import 'package:furnitureapp/widgets/HomeMainNavigationBar.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+
+
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
