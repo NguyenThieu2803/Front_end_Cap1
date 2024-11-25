@@ -185,7 +185,7 @@ set material(String? material) => _material = material;
         : (json['rating'] is int) 
             ? (json['rating'] as int).toDouble() 
             : json['rating']?.toDouble();
-    _model3dUrl = json['model3dUrl'];
+    _model3dUrl = json['model3d'];
   }
 
   Map<String, dynamic> toJson() {
@@ -213,7 +213,7 @@ if (_dimensions != null) {
     data['weight'] = _weight;
     data['sold'] = _sold;
     data['rating'] = _rating;
-    data['model3dUrl'] = _model3dUrl;
+    data['model3d'] = _model3dUrl;
     return data;
   }
 

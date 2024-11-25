@@ -540,12 +540,16 @@ appBar: AppBar(
             // Quantity control
             Row(
               children: [
-                Text(
-                  '−',
-                  style: TextStyle(
-                    fontSize: 24,
-                    color: Colors.black54,
-                    fontWeight: FontWeight.w400,
+                // Minus button
+                GestureDetector(
+                  onTap: decreaseQuantity,  // Connect to decrease function
+                  child: Text(
+                    '−',
+                    style: TextStyle(
+                      fontSize: 24,
+                      color: Colors.black54,
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 15),
@@ -561,12 +565,16 @@ appBar: AppBar(
                   ),
                 ),
                 const SizedBox(width: 15),
-                Text(
-                  '+',
-                  style: TextStyle(
-                    fontSize: 24,
-                    color: Colors.black54,
-                    fontWeight: FontWeight.w400,
+                // Plus button
+                GestureDetector(
+                  onTap: increaseQuantity,  // Connect to increase function
+                  child: Text(
+                    '+',
+                    style: TextStyle(
+                      fontSize: 24,
+                      color: Colors.black54,
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
                 ),
               ],

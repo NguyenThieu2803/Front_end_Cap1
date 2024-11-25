@@ -772,56 +772,41 @@ class APIService {
       String productId,
       double rating,
       String comment,
-      List<String> images,
+      List<String> imagePaths,
   ) async {
     try {
       String? token = await ShareService.getToken();
-      if (token == null) {
-        throw Exception('User not logged in');
-      }
+      if (token == null) throw Exception('User not logged in');
 
       var userProfile = await getUserProfile();
       String userId = userProfile['_id'];
 
-      // Log để debug
-      print('Creating review with:');
-      print('userId: $userId');
-      print('productId: $productId');
-      print('rating: $rating');
-      print('comment: $comment');
-      print('images: $images');
-
-      var url = Uri.http(Config.apiURL, Config.createReviewAPI);
+      var uri = Uri.http(Config.apiURL, Config.createReviewAPI);
+      var request = http.MultipartRequest('POST', uri);
       
-      // Tạo request body với images là mảng rỗng mặc định
-      var requestBody = {
-        'userId': userId,
-        'productId': productId,
-        'rating': rating,
-        'comment': comment,
-        'isVerifiedPurchase': true,
-        'images': [], // Luôn gửi mảng rỗng nếu không có ảnh
-      };
+      // Add headers
+      request.headers.addAll({
+        'Authorization': 'Bearer $token',
+      });
 
-      print('Request body: ${jsonEncode(requestBody)}');
+      // Add text fields
+      request.fields['userId'] = userId;
+      request.fields['productId'] = productId;
+      request.fields['rating'] = rating.toString();
+      request.fields['comment'] = comment;
 
-      var response = await client.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode(requestBody),
-      );
-
-      print('Response status code: ${response.statusCode}');
-      print('Review creation response: ${response.body}');
-      
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        return true;
-      } else {
-        throw Exception('Failed to create review: ${response.statusCode} - ${response.body}');
+      // Add image files
+      for (String path in imagePaths) {
+        request.files.add(
+          await http.MultipartFile.fromPath('image', path),
+        );
       }
+
+      var response = await request.send();
+      var responseData = await response.stream.bytesToString();
+      print('Review creation response: $responseData');
+
+      return response.statusCode == 201 || response.statusCode == 200;
     } catch (e) {
       print('Error creating review: $e');
       throw e;

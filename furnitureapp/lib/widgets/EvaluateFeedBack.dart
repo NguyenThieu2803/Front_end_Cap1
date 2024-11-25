@@ -171,12 +171,22 @@ class _EvaluateFeedBackState extends State<EvaluateFeedBack> {
     }
 
     try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
       final success = await APIService.createReview(
         widget.productId,
         _rating,
         _commentController.text,
         _selectedImages,
       );
+
+      // Hide loading indicator
+      Navigator.pop(context);
 
       if (success) {
         Navigator.pop(context, true);
@@ -185,6 +195,9 @@ class _EvaluateFeedBackState extends State<EvaluateFeedBack> {
         );
       }
     } catch (e) {
+      // Hide loading indicator
+      Navigator.pop(context);
+      
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error submitting review: $e')),
       );
