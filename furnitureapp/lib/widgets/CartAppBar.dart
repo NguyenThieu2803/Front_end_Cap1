@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:furnitureapp/pages/HomePage.dart'; // Đảm bảo bạn import đúng file HomePage
 import 'package:font_awesome_flutter/font_awesome_flutter.dart'; // Import the Font Awesome package
+import 'package:ar_flutter_plugin/ar_flutter_plugin.dart'; // Import the AR plugin
+import 'package:furnitureapp/widgets/CartARViewer.dart';
+import 'package:furnitureapp/services/ar_service.dart';
+import 'package:ar_flutter_plugin/datatypes/node_types.dart';
+import 'package:ar_flutter_plugin/datatypes/hittest_result_types.dart';
+import 'package:ar_flutter_plugin/models/ar_node.dart';
+import 'package:ar_flutter_plugin/models/ar_hittest_result.dart';
 
 class CartAppBar extends StatefulWidget {
   const CartAppBar({super.key});
@@ -10,6 +17,24 @@ class CartAppBar extends StatefulWidget {
 }
 
 class _CartAppBarState extends State<CartAppBar> {
+  void _openARViewer(BuildContext context) async {
+    // Kiểm tra khả năng AR trước khi mở
+    bool hasARCapability = await ArService.checkARCapabilities();
+    if (!hasARCapability) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Your device does not support AR features')),
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CartARViewer(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -50,9 +75,7 @@ class _CartAppBarState extends State<CartAppBar> {
           Padding(
             padding: const EdgeInsets.only(right: 1.0),  // Adjust this value to move the icon left or right
             child: InkWell(
-              onTap: () {
-                // Action for Unity icon tap
-              },
+              onTap: () => _openARViewer(context),
               child: FaIcon(
                 FontAwesomeIcons.unity,  // Unity icon from Font Awesome
                 size: 25,

@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class APIService {
   static var client = http.Client();
+  
 
   // register post request
   static Future<bool> register(String username, String password, String email,

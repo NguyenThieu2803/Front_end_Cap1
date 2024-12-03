@@ -3,11 +3,15 @@ import 'package:furnitureapp/model/Review.dart';
 import 'package:furnitureapp/model/product.dart';
 import 'package:furnitureapp/api/api.service.dart';
 import 'package:furnitureapp/widgets/ProductReviews.dart';
+import 'package:furnitureapp/model/Review.dart';
+import 'package:model_viewer_plus/model_viewer_plus.dart';
+import 'package:furnitureapp/widgets/ARViewerWidget.dart';
+import 'package:furnitureapp/services/ar_service.dart';
 
 class ProductPage extends StatefulWidget {
   final Product product;
   final Review review;
-
+  
   const ProductPage({super.key, required this.product, required this.review});
 
   @override
@@ -16,6 +20,7 @@ class ProductPage extends StatefulWidget {
 
 class _ProductPageState extends State<ProductPage>
     with SingleTickerProviderStateMixin {
+  int currentModelIndex = 0;
   int quantity = 1;
   bool isFavorite = false;
   Color? selectedColor;
@@ -163,48 +168,76 @@ appBar: AppBar(
       ),
     );
   }
+  
 
-  Widget _buildProductImage(double screenWidth, double screenHeight) {
-    return Stack(
+Widget _buildProductImage(double screenWidth, double screenHeight) {
+  return Container(
+    width: screenWidth,
+    height: screenHeight * 0.4,
+    decoration: const BoxDecoration(
+      color: Color(0xFFD9D9D9),
+      borderRadius: BorderRadius.only(
+        bottomLeft: Radius.elliptical(250, 70),
+        bottomRight: Radius.elliptical(250, 70),
+      ),
+    ),
+    child: Stack(
       children: [
-        Center(
-          child: Container(
-            width: screenWidth,
-            height: screenHeight * 0.4,
-            decoration: BoxDecoration(
-              color: const Color(0xFFD9D9D9),
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.elliptical(250, 70),
-                bottomRight: Radius.elliptical(250, 70),
+        widget.product.model3d != null && widget.product.model3d!.isNotEmpty
+            ? ModelViewer(
+                backgroundColor: const Color(0xFFD9D9D9),
+                src: widget.product.model3d!,
+                alt: 'A 3D model of ${widget.product.name}',
+                ar: true,
+                autoRotate: true,
+                cameraControls: true,
+                loading: Loading.eager,
+              )
+            : const Center(
+                child: Text('No 3D model available'),
+              ),
+        
+        if (widget.product.model3d != null && widget.product.model3d!.isNotEmpty)
+          Positioned(
+            right: 16,
+            bottom: 16,
+            child: FloatingActionButton(
+              heroTag: 'arButton',
+              backgroundColor: Colors.white,
+              onPressed: () async {
+                if (await ArService.checkARCapabilities()) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ARViewerWidget(
+                        modelUrl: widget.product.model3d!,
+                        modelFormat: widget.product.modelFormat,
+                        modelConfig: widget.product.modelConfig,
+                      ),
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('AR is not supported on this device'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              child: const Icon(
+                Icons.view_in_ar,
+                color: Colors.black,
               ),
             ),
-            child: widget.product.images != null && widget.product.images!.isNotEmpty
-                ? Image.network(
-                    widget.product.images![0],
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      print('Error loading image: $error');
-                      return const Center(
-                        child: Icon(
-                          Icons.image_not_supported,
-                          size: 50,
-                          color: Colors.grey,
-                        ),
-                      );
-                    },
-                  )
-                : const Center(
-                    child: Icon(
-                      Icons.image_not_supported,
-                      size: 50,
-                      color: Colors.grey,
-                    ),
-                  ),
           ),
-        ),
       ],
-    );
-  }
+    ),
+  );
+}
+
+
+
 
   Widget _buildProductDetails() {
     return Container(
