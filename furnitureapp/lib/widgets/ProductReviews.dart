@@ -24,7 +24,7 @@ class ProductReviews extends StatelessWidget {
 
         final reviews = snapshot.data ?? [];
         final displayedReviews = reviews.take(2).toList();
-        
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -69,7 +69,14 @@ class ProductReviews extends StatelessWidget {
                 child: Text('There are no reviews yet'),
               )
             else
-              ...displayedReviews.map((review) => _buildReviewItem(review)),
+              Expanded( // Mở rộng phần danh sách bình luận
+                child: ListView.builder(
+                  itemCount: displayedReviews.length,
+                  itemBuilder: (context, index) {
+                    return _buildReviewItem(displayedReviews[index]);
+                  },
+                ),
+              ),
           ],
         );
       },
@@ -117,8 +124,8 @@ class ProductReviews extends StatelessWidget {
                       children: List.generate(
                         5,
                         (index) => Icon(
-                          index < (review.rating ?? 0) 
-                              ? Icons.star 
+                          index < (review.rating ?? 0)
+                              ? Icons.star
                               : Icons.star_border,
                           color: Colors.amber,
                           size: 16,
