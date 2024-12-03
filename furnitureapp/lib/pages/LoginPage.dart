@@ -199,15 +199,78 @@ class _LoginPageState extends State<LoginPage> {
                           _socialLoginButton(
                               icon: Icons.facebook,
                               color: Colors.blue,
-                              onPressed: () {}),
+                              onPressed: () async {
+                                setState(() => _isLoading = true);
+                                try {
+                                  bool success = await APIService.signInWithFacebook();
+                                  if (success) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Facebook login successful!'))
+                                    );
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => const HomePage()),
+                                    );
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Facebook login failed!'))
+                                    );
+                                  }
+                                } finally {
+                                  setState(() => _isLoading = false);
+                                }
+                              },
+                          ),
                           _socialLoginButton(
                               icon: Icons.g_mobiledata,
                               color: Colors.red,
-                              onPressed: () {}),
+                              onPressed: () async {
+                                setState(() => _isLoading = true);
+                                try {
+                                  bool success = await APIService.signInWithGoogle();
+                                  if (success) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Google login successful!'))
+                                    );
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => const HomePage()),
+                                    );
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Google login failed!'))
+                                    );
+                                  }
+                                } finally {
+                                  setState(() => _isLoading = false);
+                                }
+                              },
+                          ),
                           _socialLoginButton(
                               icon: Icons.apple,
                               color: Colors.black,
-                              onPressed: () {}),
+                              onPressed: () async {
+                                setState(() => _isLoading = true);
+                                try {
+                                  bool success = await APIService.signInWithApple();
+                                  if (success) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Apple login successful!'))
+                                    );
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => const HomePage()),
+                                    );
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Apple login failed!'))
+                                    );
+                                  }
+                                } finally {
+                                  setState(() => _isLoading = false);
+                                }
+                              },
+                          ),
                         ]),
                     const SizedBox(height: 20),
                     Row(mainAxisAlignment: MainAxisAlignment.center, children: [

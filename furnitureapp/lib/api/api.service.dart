@@ -2,11 +2,14 @@ import 'dart:convert';
 import 'package:http/http.dart' as http; //+
 import 'package:furnitureapp/model/Review.dart';
 import 'package:furnitureapp/config/config.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:furnitureapp/model/Categories.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:furnitureapp/utils/share_service.dart';
 import 'package:furnitureapp/services/data_service.dart';
-import 'package:furnitureapp/model/login_response_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:furnitureapp/model/login_response_model.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
 class APIService {
   static var client = http.Client();
@@ -834,5 +837,113 @@ class APIService {
     // Ví dụ:
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('userId');
+  }
+
+  // Thêm phương thức xử lý social login
+  static Future<bool> socialLogin(UserCredential userCredential) async {
+    try {
+      // Lấy token từ Firebase
+      String? firebaseToken = await userCredential.user?.getIdToken();
+      
+      if (firebaseToken == null) {
+        return false;
+      }
+
+      Map<String, String> requestHeaders = {
+        'Content-type': 'application/json',
+        'Firebase-Token': firebaseToken  // Gửi token Firebase tới server
+      };
+      
+      var url = Uri.http(Config.apiURL, Config.socialLoginAPI);
+      
+      var response = await client.post(
+        url,
+        headers: requestHeaders,
+        body: jsonEncode({
+          'email': userCredential.user?.email,
+          'displayName': userCredential.user?.displayName,
+          'photoURL': userCredential.user?.photoURL,
+          'provider': userCredential.credential?.providerId,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        // Lưu token từ backend của bạn
+        await ShareService.setLoginDetails(loginResponseJson(response.body));
+        return true;
+      }
+      return false;
+    } catch (e) {
+      print('Social login error: $e');
+      return false;
+    }
+  }
+
+  // Google Sign In
+  static Future<bool> signInWithGoogle() async {
+    try {
+      // Khởi tạo GoogleSignIn mà không cần clientId
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        scopes: ['email'],
+        // Xóa clientId và thay bằng serverClientId nếu cần
+        // serverClientId: 'YOUR_SERVER_CLIENT_ID'
+      );
+      
+      // Sign out trước để đảm bảo flow đăng nhập mới
+      await googleSignIn.signOut();
+      
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      if (googleUser == null) return false;
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final UserCredential userCredential = 
+          await FirebaseAuth.instance.signInWithCredential(credential);
+      
+      return await socialLogin(userCredential);
+    } catch (e) {
+      print('Google sign in error details: ${e.toString()}');
+      return false;
+    }
+  }
+
+  // Facebook Sign In
+  static Future<bool> signInWithFacebook() async {
+    try {
+      final LoginResult result = await FacebookAuth.instance.login();
+      if (result.status != LoginStatus.success) return false;
+
+      // Lấy access token string trực tiếp
+      final String accessToken = result.accessToken?.toString() ?? '';
+      
+      final OAuthCredential credential = 
+          FacebookAuthProvider.credential(accessToken);
+      
+      final UserCredential userCredential = 
+          await FirebaseAuth.instance.signInWithCredential(credential);
+      
+      return await socialLogin(userCredential);
+    } catch (e) {
+      print('Facebook sign in error: $e');
+      return false;
+    }
+  }
+
+  // Apple Sign In
+  static Future<bool> signInWithApple() async {
+    try {
+      final appleProvider = AppleAuthProvider();
+      final UserCredential userCredential = 
+          await FirebaseAuth.instance.signInWithProvider(appleProvider);
+      
+      return await socialLogin(userCredential);
+    } catch (e) {
+      print('Apple sign in error: $e');
+      return false;
+    }
   }
 }
