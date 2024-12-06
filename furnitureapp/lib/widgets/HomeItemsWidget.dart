@@ -160,11 +160,25 @@ class ProductTile extends StatefulWidget {
 
 class _ProductTileState extends State<ProductTile> {
   late bool isFavorite;
+  double averageRating = 0.0;
+  final DataService _dataService = DataService();
 
   @override
   void initState() {
     super.initState();
     isFavorite = widget.isFavorite;
+    _loadAverageRating();
+  }
+
+  Future<void> _loadAverageRating() async {
+    if (widget.product.id != null) {
+      final rating = await _dataService.getProductAverageRating(widget.product.id!);
+      if (mounted) {
+        setState(() {
+          averageRating = rating;
+        });
+      }
+    }
   }
 
   Future<void> _toggleFavorite() async {
@@ -267,8 +281,7 @@ class _ProductTileState extends State<ProductTile> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  Row(
                     children: [
                       Text(
                         "\$${calculateDiscountedPrice(widget.product.price ?? 0, widget.product.discount ?? 0).toStringAsFixed(0)}",
@@ -278,6 +291,7 @@ class _ProductTileState extends State<ProductTile> {
                           color: Color(0xFF2B2321),
                         ),
                       ),
+                      SizedBox(width: 4),
                       if (widget.product.discount != null && widget.product.discount! > 0)
                         Text(
                           "\$${widget.product.price?.toStringAsFixed(0)}",
@@ -298,7 +312,7 @@ class _ProductTileState extends State<ProductTile> {
                       ),
                       SizedBox(width: 2),
                       Text(
-                        widget.product.rating?.toStringAsFixed(1) ?? '0.0',
+                        averageRating.toStringAsFixed(1),
                         style: TextStyle(
                           fontSize: 15,
                           color: Colors.grey[600],

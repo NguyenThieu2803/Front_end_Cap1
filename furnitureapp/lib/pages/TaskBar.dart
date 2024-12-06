@@ -215,7 +215,7 @@ class _TaskBarState extends State<TaskBar> {
         Expanded(
           child: _buildTextField(
             controller: minPriceController,
-            hintText: 'vnd',
+            hintText: 'Min...',
             keyboardType: TextInputType.number,
           ),
         ),
@@ -223,7 +223,7 @@ class _TaskBarState extends State<TaskBar> {
         Expanded(
           child: _buildTextField(
             controller: maxPriceController,
-            hintText: 'vnd',
+            hintText: 'Max...',
             keyboardType: TextInputType.number,
           ),
         ),

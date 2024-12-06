@@ -594,11 +594,8 @@ class APIService {
       var queryParams = {'query': query};
       
       var url = Uri.http(Config.apiURL, Config.searchProductAPI, queryParams);
-      print('Search URL: $url'); // Debug log
       
       var response = await http.get(url, headers: requestHeaders);
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         var jsonResponse = jsonDecode(response.body);
@@ -609,25 +606,26 @@ class APIService {
           
           List<dynamic> products = jsonResponse['data']['products'];
           return products.map((product) => {
-            '_id': product['_id'] ?? '',
-            'name': product['name'] ?? '',
-            'description': product['description'] ?? '',
-            'shortDescription': product['shortDescription'] ?? '',
-            'price': product['price'] ?? 0,
-            'dimensions': product['dimensions'],
-            'stockQuantity': product['stockQuantity'] ?? 0,
-            'material': product['material'] ?? '',
+            '_id': product['_id'],
+            'name': product['name'],
+            'description': product['description'],
+            'price': product['price'],
+            'stockQuantity': product['stockQuantity'],
+            'material': product['material'],
             'color': product['color'],
-            'images': List<String>.from(product['images'] ?? []),
-            'category': product['category'] ?? '',
-            'discount': product['discount'] ?? 0,
-            'promotionId': product['promotionId'],
-            'brand': product['brand'] ?? '',
-            'style': product['style'] ?? '',
-            'assemblyRequired': product['assemblyRequired'] ?? false,
-            'weight': product['weight'] ?? 0,
-            'sold': product['sold'] ?? 0,
-            'rating': product['rating'] ?? 0,
+            'images': product['images'],
+            'category': product['category'],
+            'discount': product['discount'],
+            'brand': product['brand'],
+            'style': product['style'],
+            'assemblyRequired': product['assemblyRequired'],
+            'dimensions': product['dimensions'],
+            'weight': product['weight'],
+            'sold': product['sold'],
+            'rating': product['rating'],
+            'model3d': product['model3d'],
+            'modelFormat': product['modelFormat'],
+            'modelConfig': product['modelConfig'],
           }).toList();
         }
         return [];
@@ -819,5 +817,34 @@ class APIService {
     // Ví dụ:
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('userId');
+  }
+
+  static Future<double> getProductAverageRating(String productId) async {
+    try {
+      String? token = await ShareService.getToken();
+      Map<String, String> requestHeaders = {
+        'Content-Type': 'application/json',
+        'Authorization': token != null ? 'Bearer $token' : '',
+      };
+
+      var url = Uri.http(Config.apiURL, '${Config.reviewByProductAPI}/$productId');
+      var response = await client.get(url, headers: requestHeaders);
+
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        if (data['success'] == true && data['data'] != null) {
+          List<dynamic> reviews = data['data']['reviews'];
+          if (reviews.isEmpty) return 0.0;
+          
+          double totalRating = reviews.fold(0.0, (sum, review) => 
+            sum + (review['rating']?.toDouble() ?? 0.0));
+          return totalRating / reviews.length;
+        }
+      }
+      return 0.0;
+    } catch (e) {
+      print('Error calculating average rating: $e');
+      return 0.0;
+    }
   }
 }

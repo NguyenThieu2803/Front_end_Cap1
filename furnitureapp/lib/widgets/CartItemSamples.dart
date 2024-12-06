@@ -161,6 +161,8 @@ class _CartItemSamplesState extends State<CartItemSamples> {
                       fontWeight: FontWeight.w500,
                       color: Color(0xFF2B2321),
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   SizedBox(height: 4),
                   Row(

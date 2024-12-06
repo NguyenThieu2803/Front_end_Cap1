@@ -174,13 +174,29 @@ class _WaitingForDeliveryState extends State<WaitingForDelivery> {
       children: products.map((productOrder) {
         return Padding(
           padding: const EdgeInsets.only(right: 8.0),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Image.network(
-              productOrder.product.images?.first ?? '',
-              width: 80,
-              height: 80,
-              fit: BoxFit.cover,
+          child: Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              color: Colors.white,
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                productOrder.product.images?.first ?? '',
+                width: 80,
+                height: 80,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Center(
+                    child: Icon(
+                      Icons.image_not_supported,
+                      color: Colors.grey,
+                    ),
+                  );
+                },
+              ),
             ),
           ),
         );
@@ -207,11 +223,22 @@ class _WaitingForDeliveryState extends State<WaitingForDelivery> {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  imageUrl,
+                child: Container(
                   width: 100,
                   height: 100,
-                  fit: BoxFit.cover,
+                  color: Colors.white,
+                  child: Image.network(
+                    imageUrl,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Center(
+                        child: Icon(
+                          Icons.image_not_supported,
+                          color: Colors.grey,
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
