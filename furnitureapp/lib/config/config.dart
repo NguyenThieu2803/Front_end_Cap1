@@ -1,7 +1,7 @@
 class Config {
   static const String appName = "Furniture APP";
   // static const String apiURL = "10.0.2.2:3000";
-  static const String apiURL = "192.168.5.101:3000";
+  static const String apiURL = "192.168.100.228:3000";
   // static const String apiURL = "127.0.0.1:3000";
   // static const String apiURL = "172.20.59.122:3000";
   //static const String apiURL = "172.16.20.238:3000";
