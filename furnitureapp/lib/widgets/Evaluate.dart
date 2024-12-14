@@ -112,7 +112,7 @@ class _EvaluateState extends State<Evaluate> {
   }
 
   Widget _buildOrderCard(BuildContext context, OrderData order) {
-    final currencyFormatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
+    final currencyFormatter = NumberFormat.currency(locale: 'en_US', symbol: '\$');
     
     try {
       return Padding(
@@ -156,7 +156,7 @@ class _EvaluateState extends State<Evaluate> {
                               product.product.images?.first ?? 'default_image_url',
                               width: 80,
                               height: 80,
-                              fit: BoxFit.cover,
+                              fit: BoxFit.contain,
                               errorBuilder: (context, error, stackTrace) {
                                 print('Error loading image: $error');
                                 return Container(

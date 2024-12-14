@@ -108,26 +108,30 @@ class _OrderInformationState extends State<OrderInformation> {
           centerTitle: true,
         ),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Container(
-              color: const Color(0xFFEDECF2),
-              child: Padding(
-                padding: const EdgeInsets.all(15.0),
-                child: Column(
-                  children: [
-                    _buildStatusSection(),
-                    _buildAddressSection(),
-                    _buildShopSection(),
-                    const Spacer(),
-                  ],
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: Container(
+                  color: const Color(0xFFEDECF2),
+                  child: Padding(
+                    padding: const EdgeInsets.all(15.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildStatusSection(),
+                        _buildAddressSection(),
+                        _buildShopSection(),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
-          _buildActionButtons(),
-        ],
+            _buildActionButtons(),
+          ],
+        ),
       ),
     );
   }
@@ -233,7 +237,7 @@ class _OrderInformationState extends State<OrderInformation> {
                   product.product.name ?? '',
                   product.product.shortDescription ?? '',
                   '\$${product.amount.toStringAsFixed(0)}',
-                  '\$${(product.amount * 1.5).toStringAsFixed(0)}', // Assuming original price is 50% higher
+                  '\$${(product.amount * 1.5).toStringAsFixed(0)}',
                   product.quantity,
                   product.product.images?.first ?? '',
                 ),
@@ -265,14 +269,18 @@ class _OrderInformationState extends State<OrderInformation> {
 
   Widget _buildProductItem(String title, String description, String price,
       String oldPrice, int quantity, String imageUrl) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Image.network(
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.network(
               imageUrl,
               width: 60,
               height: 60,
+              fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
                 return Container(
                   width: 60,
@@ -282,43 +290,65 @@ class _OrderInformationState extends State<OrderInformation> {
                 );
               },
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
                   ),
-                  Text(
-                    description,
-                    style: const TextStyle(color: Colors.grey),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
                   ),
-                  Row(
-                    children: [
-                      Text(
-                        oldPrice,
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          decoration: TextDecoration.lineThrough,
-                        ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Text(
+                      oldPrice,
+                      style: const TextStyle(
+                        decoration: TextDecoration.lineThrough,
+                        color: Colors.grey,
+                        fontSize: 14,
                       ),
-                      const SizedBox(width: 5),
-                      Text(
-                        price,
-                        style: const TextStyle(color: Colors.red),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      price,
+                      style: const TextStyle(
+                        color: Colors.red,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
                       ),
-                    ],
-                  ),
-                ],
-              ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            Text('x$quantity'),
-          ],
-        ),
-      ],
+          ),
+          Text(
+            'x$quantity',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
     );
   }
 

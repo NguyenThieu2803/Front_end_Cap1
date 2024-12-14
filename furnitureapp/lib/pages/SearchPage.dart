@@ -17,6 +17,18 @@ class _SearchPageState extends State<SearchPage> {
   final TextEditingController _searchController = TextEditingController();
   final DataService _dataService = DataService();
   Timer? _debounce;
+  Map<String, double> _productRatings = {};
+
+  Future<void> _loadAverageRating(String productId) async {
+    try {
+      final rating = await _dataService.getProductAverageRating(productId);
+      setState(() {
+        _productRatings[productId] = rating;
+      });
+    } catch (e) {
+      print('Error loading average rating: $e');
+    }
+  }
 
   void _performSearch(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
@@ -25,6 +37,7 @@ class _SearchPageState extends State<SearchPage> {
       if (query.isEmpty) {
         setState(() {
           _searchResults = [];
+          _productRatings.clear();
         });
         return;
       }
@@ -37,6 +50,12 @@ class _SearchPageState extends State<SearchPage> {
         setState(() {
           _searchResults = results;
         });
+        
+        for (var product in results) {
+          if (product.id != null) {
+            _loadAverageRating(product.id!);
+          }
+        }
       } catch (e) {
         print('Error searching products: $e');
         ScaffoldMessenger.of(context).showSnackBar(
@@ -72,20 +91,26 @@ class _SearchPageState extends State<SearchPage> {
           onTap: () {
             try {
               final productForDetail = Product(
-                id: product.id ?? '',
-                name: product.name ?? 'No Name',
-                description: product.description ?? '',
-                price: product.price ?? 0.0,
-                images: product.images ?? [],
-                category: product.category ?? '',
-                rating: product.rating ?? 0.0,
-                stockQuantity: product.stockQuantity ?? 0,
-                material: product.material ?? '',
-                brand: product.brand ?? '',
-                style: product.style ?? '',
-                assemblyRequired: product.assemblyRequired ?? false,
-                weight: product.weight ?? 0,
-                sold: product.sold ?? 0,
+                id: product.id,
+                name: product.name,
+                description: product.description,
+                price: product.price,
+                dimensions: product.dimensions,
+                stockQuantity: product.stockQuantity,
+                material: product.material,
+                color: product.color,
+                images: product.images,
+                category: product.category,
+                discount: product.discount,
+                brand: product.brand,
+                style: product.style,
+                assemblyRequired: product.assemblyRequired,
+                weight: product.weight,
+                sold: product.sold,
+                rating: product.rating,
+                model3d: product.model3d,
+                modelFormat: product.modelFormat,
+                modelConfig: product.modelConfig,
               );
 
               final review = Review(
@@ -169,7 +194,7 @@ class _SearchPageState extends State<SearchPage> {
                                   color: Colors.amber,
                                 ),
                                 Text(
-                                  product.rating!.toStringAsFixed(1),
+                                  _productRatings[product.id]?.toStringAsFixed(1) ?? '0.0',
                                   style: const TextStyle(
                                     fontSize: 12,
                                     color: Colors.grey,
@@ -205,7 +230,7 @@ class _SearchPageState extends State<SearchPage> {
       borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
       child: Image.network(
         product.images![0],
-        fit: BoxFit.cover,
+        fit: BoxFit.contain,
         errorBuilder: (context, error, stackTrace) {
           print('Error loading image: $error');
           return const Center(

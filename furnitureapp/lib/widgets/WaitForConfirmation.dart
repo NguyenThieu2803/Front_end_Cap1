@@ -207,7 +207,7 @@ class _WaitForConfirmationState extends State<WaitForConfirmation> {
                   imageUrl,
                   width: 100,
                   height: 100,
-                  fit: BoxFit.cover,
+                  fit: BoxFit.contain,
                 ),
               ),
               const SizedBox(width: 10),

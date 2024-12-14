@@ -4,8 +4,9 @@ class Config {
 
   // static const String apiURL = "10.0.2.2:3000";
   // static const String apiURL = "192.168.5.104:3000";
+  // static const String apiURL = "192.168.100.228:3000";
   // static const String apiURL = "127.0.0.1:3000";
-  // static const String apiURL = "192.168.5.103:3000";
+  // static const String apiURL = "172.20.59.122:3000";
   //static const String apiURL = "172.16.20.238:3000";
   static const String registerAPI = "api/auth/register";
   static const String loginAPI = "api/auth/login";

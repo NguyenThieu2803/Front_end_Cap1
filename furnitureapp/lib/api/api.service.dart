@@ -606,11 +606,8 @@ class APIService {
       var queryParams = {'query': query};
       
       var url = Uri.http(Config.apiURL, Config.searchProductAPI, queryParams);
-      print('Search URL: $url'); // Debug log
       
       var response = await http.get(url, headers: requestHeaders);
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         var jsonResponse = jsonDecode(response.body);
@@ -621,25 +618,26 @@ class APIService {
           
           List<dynamic> products = jsonResponse['data']['products'];
           return products.map((product) => {
-            '_id': product['_id'] ?? '',
-            'name': product['name'] ?? '',
-            'description': product['description'] ?? '',
-            'shortDescription': product['shortDescription'] ?? '',
-            'price': product['price'] ?? 0,
-            'dimensions': product['dimensions'],
-            'stockQuantity': product['stockQuantity'] ?? 0,
-            'material': product['material'] ?? '',
+            '_id': product['_id'],
+            'name': product['name'],
+            'description': product['description'],
+            'price': product['price'],
+            'stockQuantity': product['stockQuantity'],
+            'material': product['material'],
             'color': product['color'],
-            'images': List<String>.from(product['images'] ?? []),
-            'category': product['category'] ?? '',
-            'discount': product['discount'] ?? 0,
-            'promotionId': product['promotionId'],
-            'brand': product['brand'] ?? '',
-            'style': product['style'] ?? '',
-            'assemblyRequired': product['assemblyRequired'] ?? false,
-            'weight': product['weight'] ?? 0,
-            'sold': product['sold'] ?? 0,
-            'rating': product['rating'] ?? 0,
+            'images': product['images'],
+            'category': product['category'],
+            'discount': product['discount'],
+            'brand': product['brand'],
+            'style': product['style'],
+            'assemblyRequired': product['assemblyRequired'],
+            'dimensions': product['dimensions'],
+            'weight': product['weight'],
+            'sold': product['sold'],
+            'rating': product['rating'],
+            'model3d': product['model3d'],
+            'modelFormat': product['modelFormat'],
+            'modelConfig': product['modelConfig'],
           }).toList();
         }
         return [];
@@ -833,149 +831,32 @@ class APIService {
     return prefs.getString('userId');
   }
 
-  // Thêm phương thức xử lý social login
-  static Future<bool> socialLogin(UserCredential userCredential) async {
+  static Future<double> getProductAverageRating(String productId) async {
     try {
-      // Lấy token từ Firebase
-      String? firebaseToken = await userCredential.user?.getIdToken();
-      
-      if (firebaseToken == null) {
-        return false;
-      }
-
+      String? token = await ShareService.getToken();
       Map<String, String> requestHeaders = {
-        'Content-type': 'application/json',
-        'Firebase-Token': firebaseToken  // Gửi token Firebase tới server
+        'Content-Type': 'application/json',
+        'Authorization': token != null ? 'Bearer $token' : '',
       };
-      
-      var url = Uri.http(Config.apiURL, Config.socialLoginAPI);
-      
-      var response = await client.post(
-        url,
-        headers: requestHeaders,
-        body: jsonEncode({
-          'email': userCredential.user?.email,
-          'displayName': userCredential.user?.displayName,
-          'photoURL': userCredential.user?.photoURL,
-          'provider': userCredential.credential?.providerId,
-        }),
-      );
+
+      var url = Uri.http(Config.apiURL, '${Config.reviewByProductAPI}/$productId');
+      var response = await client.get(url, headers: requestHeaders);
 
       if (response.statusCode == 200) {
-        // Lưu token từ backend của bạn
-        await ShareService.setLoginDetails(loginResponseJson(response.body));
-        return true;
+        var data = jsonDecode(response.body);
+        if (data['success'] == true && data['data'] != null) {
+          List<dynamic> reviews = data['data']['reviews'];
+          if (reviews.isEmpty) return 0.0;
+          
+          double totalRating = reviews.fold(0.0, (sum, review) => 
+            sum + (review['rating']?.toDouble() ?? 0.0));
+          return totalRating / reviews.length;
+        }
       }
-      return false;
+      return 0.0;
     } catch (e) {
-      print('Social login error: $e');
-      return false;
-    }
-  }
-
-  // Google Sign In
-  static Future<bool> signInWithGoogle() async {
-    try {
-      // Khởi tạo GoogleSignIn mà không cần clientId
-      final GoogleSignIn googleSignIn = GoogleSignIn(
-        scopes: ['email'],
-        // Xóa clientId và thay bằng serverClientId nếu cần
-        // serverClientId: 'YOUR_SERVER_CLIENT_ID'
-      );
-      
-      // Sign out trước để đảm bảo flow đăng nhập mới
-      await googleSignIn.signOut();
-      
-      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-      if (googleUser == null) return false;
-
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      final UserCredential userCredential = 
-          await FirebaseAuth.instance.signInWithCredential(credential);
-      
-      return await socialLogin(userCredential);
-    } catch (e) {
-      print('Google sign in error details: ${e.toString()}');
-      return false;
-    }
-  }
-
-  // Facebook Sign In
-  static Future<bool> signInWithFacebook() async {
-    try {
-      final LoginResult result = await FacebookAuth.instance.login();
-      if (result.status != LoginStatus.success) return false;
-
-      // Lấy access token string trực tiếp
-      final String accessToken = result.accessToken?.toString() ?? '';
-      
-      final OAuthCredential credential = 
-          FacebookAuthProvider.credential(accessToken);
-      
-      final UserCredential userCredential = 
-          await FirebaseAuth.instance.signInWithCredential(credential);
-      
-      return await socialLogin(userCredential);
-    } catch (e) {
-      print('Facebook sign in error: $e');
-      return false;
-    }
-  }
-
-  // Apple Sign In
-  static Future<bool> signInWithApple() async {
-    try {
-      final appleProvider = AppleAuthProvider();
-      final UserCredential userCredential = 
-          await FirebaseAuth.instance.signInWithProvider(appleProvider);
-      
-      return await socialLogin(userCredential);
-    } catch (e) {
-      print('Apple sign in error: $e');
-      return false;
-    }
-  }
-
-  static Future<bool> deleteOrder(String orderId) async {
-    String? token = await ShareService.getToken();
-    if (token == null) {
-      throw Exception('User not logged in');
-    }
-    Map<String, String> requestHeaders = {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    };
-    var url = Uri.http(Config.apiURL, '/api/v1/orders/$orderId');
-    var response = await client.delete(url, headers: requestHeaders);
-    if (response.statusCode == 200) {
-      return true;
-    } else {
-      throw Exception('Failed to delete order: ${response.statusCode} - ${response.body}');
-    }
-  }
-
-  static Future<bool> updateAvatar(String filePath) async {
-    String? token = await ShareService.getToken();
-    if (token == null) {
-      throw Exception('User not logged in');
-    }
-
-    var url = Uri.http(Config.apiURL, '/api/auth/users/avatar');
-    var request = http.MultipartRequest('PUT', url);
-
-    request.headers['Authorization'] = 'Bearer $token';
-    request.files.add(await http.MultipartFile.fromPath('image', filePath));
-
-    var response = await request.send();
-    if (response.statusCode == 200) {
-      return true;
-    } else {
-      throw Exception('Failed to update avatar: ${response.statusCode}');
+      print('Error calculating average rating: $e');
+      return 0.0;
     }
   }
 }

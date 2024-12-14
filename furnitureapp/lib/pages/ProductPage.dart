@@ -3,6 +3,8 @@ import 'package:furnitureapp/model/Review.dart';
 import 'package:furnitureapp/model/product.dart';
 import 'package:furnitureapp/api/api.service.dart';
 import 'package:furnitureapp/services/ar_service.dart';
+import 'package:furnitureapp/services/ar_service.dart';
+import 'package:furnitureapp/services/data_service.dart';
 import 'package:furnitureapp/widgets/ProductReviews.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'package:furnitureapp/widgets/ARViewerWidget.dart';
@@ -26,12 +28,26 @@ class _ProductPageState extends State<ProductPage>
 
   List<Map<String, dynamic>> favoriteProducts = [];
   late TabController _tabController;
+  double? averageRating;
+  final DataService _dataService = DataService();
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(
         length: 2, vsync: this); // Two tabs for Details and Reviews
+    _loadAverageRating();
+  }
+
+  Future<void> _loadAverageRating() async {
+    if (widget.product.id != null) {
+      final rating = await _dataService.getProductAverageRating(widget.product.id!);
+      if (mounted) {
+        setState(() {
+          averageRating = rating;
+        });
+      }
+    }
   }
 
   @override
@@ -272,10 +288,10 @@ Widget _buildProductImage(double screenWidth, double screenHeight) {
             children: [
               Row(
                 children: [
-                  ..._buildStarRating(widget.review.rating ?? 0),
+                  ..._buildStarRating(averageRating ?? 0.0),
                   const SizedBox(width: 4),
                   Text(
-                    '(${widget.review.rating?.toStringAsFixed(1) ?? '0.0'})',
+                    '(${averageRating?.toStringAsFixed(1) ?? '0.0'})',
                     style: const TextStyle(
                       fontSize: 16,
                       color: Color(0xFF2B2321),
@@ -321,15 +337,36 @@ Widget _buildProductImage(double screenWidth, double screenHeight) {
   }
 
   // Function to build star rating based on the rating value from Review model
-  List<Widget> _buildStarRating(int rating) {
+  List<Widget> _buildStarRating(double rating) {
     List<Widget> stars = [];
-    int starCount = rating.clamp(0, 5); // Ensure rating is between 0 and 5
+    int fullStars = rating.floor();
+    bool hasHalfStar = (rating - fullStars) >= 0.5;
 
-    for (int i = 0; i < 5; i++) {
-      stars.add(Icon(
-        i < starCount ? Icons.star : Icons.star_border,
-        color: Colors.black, // Color of the stars
-        size: 20, // Size of the stars
+    // Add full stars
+    for (int i = 0; i < fullStars; i++) {
+      stars.add(const Icon(
+        Icons.star,
+        color: Colors.amber,
+        size: 20,
+      ));
+    }
+
+    // Add half star if needed
+    if (hasHalfStar) {
+      stars.add(const Icon(
+        Icons.star_half,
+        color: Colors.amber,
+        size: 20,
+      ));
+    }
+
+    // Add empty stars
+    int emptyStars = 5 - stars.length;
+    for (int i = 0; i < emptyStars; i++) {
+      stars.add(const Icon(
+        Icons.star_border,
+        color: Colors.amber,
+        size: 20,
       ));
     }
 
@@ -547,11 +584,14 @@ Widget _buildProductImage(double screenWidth, double screenHeight) {
               'Choose colors: ',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-            Text(
-              selectedColor != null
-                  ? _getColorNameFromColor(selectedColor!)
-                  : "Please choose product color",
-              style: const TextStyle(fontSize: 16, color: Color(0xFF2B2321)),
+            Expanded(
+              child: Text(
+                selectedColor != null
+                    ? _getColorNameFromColor(selectedColor!)
+                    : "Please choose product color",
+                style: const TextStyle(fontSize: 16, color: Color(0xFF2B2321)),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ],
         ),
@@ -574,7 +614,7 @@ Widget _buildProductImage(double screenWidth, double screenHeight) {
               children: [
                 // Minus button
                 GestureDetector(
-                  onTap: decreaseQuantity,  // Connect to decrease function
+                  onTap: decreaseQuantity,
                   child: Text(
                     '−',
                     style: TextStyle(
@@ -599,7 +639,7 @@ Widget _buildProductImage(double screenWidth, double screenHeight) {
                 const SizedBox(width: 15),
                 // Plus button
                 GestureDetector(
-                  onTap: increaseQuantity,  // Connect to increase function
+                  onTap: increaseQuantity,
                   child: Text(
                     '+',
                     style: TextStyle(

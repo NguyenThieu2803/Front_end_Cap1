@@ -31,29 +31,27 @@ class DataService {
         );
 
         if (selectedCategory.id != null) {
-          print('Loading products for category: ${selectedCategory.id}');
-          productList =
-              await APIService.fetchProductsByCategory(selectedCategory.id!);
+          productList = await APIService.fetchProductsByCategory(selectedCategory.id!);
         } else {
           productList = await APIService.fetchAllProducts();
         }
       }
 
-      List<Product> products = productList
-          .map((productJson) => Product.fromJson(productJson))
-          .where((product) {
-        if (product.price == null) return false;
+      List<Product> products = [];
+      for (var productJson in productList) {
+        if (productJson['price'] == null) continue;
 
-        bool meetsMinPrice = minPrice == null || product.price! >= minPrice;
-        bool meetsMaxPrice = maxPrice == null || product.price! <= maxPrice;
+        double? price = productJson['price']?.toDouble();
+        if (minPrice != null && price! < minPrice) continue;
+        if (maxPrice != null && price! > maxPrice) continue;
 
-        print('Product: ${product.name}, Price: ${product.price}, '
-            'Meets min: $meetsMinPrice, Meets max: $meetsMaxPrice');
+        double avgRating = await getProductAverageRating(productJson['_id']);
+        
+        Product product = Product.fromJson(productJson);
+        product.rating = avgRating;
+        products.add(product);
+      }
 
-        return meetsMinPrice && meetsMaxPrice;
-      }).toList();
-
-      print('Filtered products count: ${products.length}');
       return products;
     } catch (error) {
       print('Failed to load products: $error');
@@ -150,49 +148,29 @@ class DataService {
   Future<List<Product>> searchProducts(String query) async {
     try {
       List<Map<String, dynamic>> productList = await APIService.searchProducts(query);
-      print('API Response: $productList'); // Debug log
 
       return productList.map((json) {
-        // Parse dimensions if available
-        Dimensions? dimensions;
-        if (json['dimensions'] != null) {
-          dimensions = Dimensions(
-            height: json['dimensions']['height'],
-            width: json['dimensions']['width'],
-            depth: json['dimensions']['depth'],
-            unit: json['dimensions']['unit'],
-          );
-        }
-
-        // Parse color if available
-        ProductColor? color;
-        if (json['color'] != null) {
-          color = ProductColor(
-            primary: json['color']['primary'],
-            secondary: json['color']['secondary'],
-          );
-        }
-
         return Product(
-          id: json['_id'] ?? '', // MongoDB usually uses _id
-          name: json['name'] ?? 'No Name',
-          description: json['description'] ?? '',
-          shortDescription: json['shortDescription'] ?? '',
-          price: (json['price'] ?? 0).toDouble(),
-          dimensions: dimensions,
-          stockQuantity: json['stockQuantity'] ?? 0,
-          material: json['material'] ?? '',
-          color: color,
+          id: json['_id'],
+          name: json['name'],
+          description: json['description'],
+          price: json['price']?.toDouble(),
+          dimensions: json['dimensions'] != null ? Dimensions.fromJson(json['dimensions']) : null,
+          stockQuantity: json['stockQuantity'],
+          material: json['material'],
+          color: json['color'] != null ? ProductColor.fromJson(json['color']) : null,
           images: List<String>.from(json['images'] ?? []),
-          category: json['category'] ?? '',
-          discount: json['discount'] ?? 0,
-          promotionId: json['promotionId'],
-          brand: json['brand'] ?? '',
-          style: json['style'] ?? '',
-          assemblyRequired: json['assemblyRequired'] ?? false,
-          weight: json['weight'] ?? 0,
-          sold: json['sold'] ?? 0,
-          rating: (json['rating'] ?? 0).toDouble(),
+          category: json['category'],
+          discount: json['discount'],
+          brand: json['brand'],
+          style: json['style'],
+          assemblyRequired: json['assemblyRequired'],
+          weight: json['weight'],
+          sold: json['sold'],
+          rating: json['rating']?.toDouble(),
+          model3d: json['model3d'],
+          modelFormat: json['modelFormat'],
+          modelConfig: json['modelConfig'],
         );
       }).toList();
     } catch (error) {
@@ -284,6 +262,15 @@ class DataService {
     } catch (error) {
       print('Error in getDeliveredOrders: $error');
       return [];
+    }
+  }
+
+  Future<double> getProductAverageRating(String productId) async {
+    try {
+      return await APIService.getProductAverageRating(productId);
+    } catch (e) {
+      print('Error getting average rating: $e');
+      return 0.0;
     }
   }
 }
