@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:furnitureapp/api/api.service.dart';
 import 'package:furnitureapp/model/order_model.dart';
 
 class OrderInformation extends StatefulWidget {
   final OrderData orderData;
 
   const OrderInformation({
-    Key? key,
+    super.key,
     required this.orderData,
-  }) : super(key: key);
+  });
 
   @override
   _OrderInformationState createState() => _OrderInformationState();
@@ -17,15 +18,61 @@ class _OrderInformationState extends State<OrderInformation> {
   bool _isCancelling = false;
 
   void _cancelOrder() async {
-    setState(() {
-      _isCancelling = true;
-    });
+    bool? confirm = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Cancel Order'),
+          content: const Text('Are you sure you want to cancel this order?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('No'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Yes'),
+            ),
+          ],
+        );
+      },
+    );
 
-    // Add your order cancellation logic here
-    await Future.delayed(const Duration(seconds: 2)); // Simulating cancellation process
+    if (confirm == true) {
+      setState(() {
+        _isCancelling = true;
+      });
 
-    // Navigate back to the previous screen after successful cancellation
-    Navigator.of(context).pop();
+      try {
+        bool success = await APIService.deleteOrder(widget.orderData.id);
+        if (success) {
+          // Show success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Order cancelled successfully'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+          // Remove the order from the list and update the UI
+          Navigator.of(context).pop(true); // Pass true to indicate successful deletion
+        }
+      } catch (e) {
+        print("Error cancelling order: $e");
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to cancel order: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      } finally {
+        setState(() {
+          _isCancelling = false;
+        });
+      }
+    }
   }
 
   @override
@@ -193,7 +240,7 @@ class _OrderInformationState extends State<OrderInformation> {
                 if (product != widget.orderData.products.last) const Divider(),
               ],
             );
-          }).toList(),
+          }),
           const Divider(),
           Padding(
             padding: const EdgeInsets.only(top: 10.0),

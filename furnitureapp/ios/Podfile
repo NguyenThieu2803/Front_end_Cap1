@@ -33,6 +33,7 @@ target 'Runner' do
   use_modular_headers!
 
   pod 'Stripe', '~> 23.30.0'
+  pod 'ARKit'
   
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 end

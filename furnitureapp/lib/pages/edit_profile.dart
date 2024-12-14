@@ -1,4 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:furnitureapp/api/api.service.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -11,12 +14,153 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final _nameController = TextEditingController();
   final _bioController = TextEditingController();
   String _selectedGender = '';
+  String _profileImageUrl = '';
+  XFile? _selectedImage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
+
+  Future<void> _loadUserProfile() async {
+    try {
+      final userProfile = await APIService.getUserProfile();
+      setState(() {
+        _nameController.text = userProfile['user_name'] ?? '';
+        _profileImageUrl = userProfile['profileImage'] ?? '';
+      });
+    } catch (e) {
+      print('Error loading user profile: $e');
+    }
+  }
 
   @override
   void dispose() {
     _nameController.dispose();
     _bioController.dispose();
     super.dispose();
+  }
+
+  void _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      setState(() {
+        _selectedImage = image;
+      });
+    }
+  }
+
+  void _handleSave() async {
+    try {
+      if (_selectedImage != null) {
+        // Show loading dialog
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return Dialog(
+              backgroundColor: Colors.white,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.pink),
+                    ),
+                    const SizedBox(height: 15),
+                    const Text(
+                      'Saving changes...',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+
+        // Upload avatar
+        bool success = await APIService.updateAvatar(_selectedImage!.path);
+        
+        // Close loading dialog
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+
+        if (success) {
+          // Reload user profile
+          await _loadUserProfile();
+          
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Row(
+                  children: [
+                    Icon(
+                      Icons.check_circle,
+                      color: Colors.white,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'Profile updated successfully',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ],
+                ),
+                backgroundColor: Colors.green,
+                duration: Duration(seconds: 2),
+                behavior: SnackBarBehavior.floating,
+                margin: EdgeInsets.all(10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                ),
+              ),
+            );
+            Navigator.pop(context); // Quay lại màn hình trước
+          }
+        }
+      }
+    } catch (e) {
+      // Close loading dialog if it's still showing
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+      
+      print('Error updating profile: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                Icon(
+                  Icons.error,
+                  color: Colors.white,
+                ),
+                SizedBox(width: 8),
+                Text(
+                  'Failed to update profile',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.all(10),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+            ),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -40,9 +184,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         ),
         actions: [
           TextButton(
-            onPressed: () {
-              // Handle save profile
-            },
+            onPressed: _handleSave,
             child: const Text(
               'Save',
               style: TextStyle(
@@ -62,32 +204,37 @@ class _EditProfilePageState extends State<EditProfilePage> {
             Center(
               child: Stack(
                 children: [
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.person,
-                      size: 50,
-                      color: Colors.grey,
-                    ),
+                  CircleAvatar(
+                    radius: 50,
+                    backgroundImage: _selectedImage != null
+                        ? FileImage(File(_selectedImage!.path))
+                        : (_profileImageUrl.isNotEmpty
+                            ? NetworkImage(_profileImageUrl) as ImageProvider
+                            : null),
+                    child: (_selectedImage == null && _profileImageUrl.isEmpty)
+                        ? const Icon(
+                            Icons.person,
+                            size: 50,
+                            color: Colors.grey,
+                          )
+                        : null,
                   ),
                   Positioned(
                     bottom: 0,
                     right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(
-                        color: Colors.pink,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.camera_alt,
-                        color: Colors.white,
-                        size: 20,
+                    child: GestureDetector(
+                      onTap: _pickImage,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.pink,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.camera_alt,
+                          color: Colors.white,
+                          size: 20,
+                        ),
                       ),
                     ),
                   ),

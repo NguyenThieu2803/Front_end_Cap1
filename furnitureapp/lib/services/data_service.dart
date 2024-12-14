@@ -9,9 +9,6 @@ import 'package:furnitureapp/model/order_model.dart';
 import 'package:furnitureapp/model/wishlist_model.dart';
 import 'package:furnitureapp/model/Cart_User_Model.dart';
 import 'package:furnitureapp/model/UserProfile_model.dart';
-import 'package:furnitureapp/config/config.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 
 class DataService {
   const DataService();

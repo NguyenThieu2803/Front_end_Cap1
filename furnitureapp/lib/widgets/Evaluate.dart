@@ -1,13 +1,13 @@
 import 'dart:convert';
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:furnitureapp/widgets/EvaluateFeedBack.dart';
-import 'package:furnitureapp/model/order_model.dart';
-import 'package:intl/intl.dart';
 import '../services/data_service.dart';
+import 'package:furnitureapp/model/order_model.dart';
+import 'package:furnitureapp/widgets/EvaluateFeedBack.dart';
 
 class Evaluate extends StatefulWidget {
-  const Evaluate({Key? key}) : super(key: key);
+  const Evaluate({super.key});
 
   @override
   State<Evaluate> createState() => _EvaluateState();
@@ -219,7 +219,7 @@ class _EvaluateState extends State<Evaluate> {
                     print('Error building product item: $e');
                     return const SizedBox.shrink();
                   }
-                }).toList(),
+                }),
                 const Divider(),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

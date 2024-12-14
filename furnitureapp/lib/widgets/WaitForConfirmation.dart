@@ -4,7 +4,7 @@ import 'package:furnitureapp/services/data_service.dart';
 import 'package:furnitureapp/widgets/OrderInformation.dart';
 
 class WaitForConfirmation extends StatefulWidget {
-  const WaitForConfirmation({Key? key}) : super(key: key);
+  const WaitForConfirmation({super.key});
 
   @override
   State<WaitForConfirmation> createState() => _WaitForConfirmationState();
@@ -151,7 +151,7 @@ class _WaitForConfirmationState extends State<WaitForConfirmation> {
                       onExpandPressed: null,
                     ),
                   );
-                }).toList(),
+                }),
               if (hasMultipleProducts)
                 Column(
                   children: [

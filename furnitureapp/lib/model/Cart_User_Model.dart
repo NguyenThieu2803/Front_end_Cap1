@@ -1,4 +1,5 @@
 import 'package:furnitureapp/model/product.dart';
+import 'package:furnitureapp/services/ar_service.dart';
 
 class Cart {
   String? id;
@@ -112,5 +113,14 @@ class CartItem {
     data['id'] = id;
     
     return data;
+  }
+
+  Future<bool> hasValidModel3D() async {
+    if (product?.model3d != null && 
+           product!.model3d!.isNotEmpty) {
+      bool isValid = await ArService.validateModelUrl(product!.model3d!);
+      return isValid;
+    }
+    return false;
   }
 }

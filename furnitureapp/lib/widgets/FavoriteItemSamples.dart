@@ -59,13 +59,13 @@ class _FavoriteItemSamplesState extends State<FavoriteItemSamples> {
     }
   }
 
-  List<Review> _getReviewsForProducts(List<Product?> products) {
+  List<Review> _getReviewsForProducts(List<Product> products) {
     return products.map((product) {
       return Review(
-        id: product?.id,
-        rating: (product?.rating ?? 0).toInt(),
-        images: product?.images ?? [],
-        comment: "This is a review for ${product?.name}",
+        id: product.id,
+        rating: (product.rating ?? 0).toInt(),
+        images: product.images ?? [],
+        comment: "This is a review for ${product.name}",
       );
     }).toList();
   }
@@ -73,103 +73,118 @@ class _FavoriteItemSamplesState extends State<FavoriteItemSamples> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Center(child: CircularProgressIndicator()); // Hiển thị chỉ báo tải
-    } else if (wishlist == null || wishlist!.product.isEmpty) {
-      return const Center(child: Text("Your wishlist is empty")); // Xử lý danh sách yêu thích trống
-    } else {
-      List<Review> reviews = _getReviewsForProducts(wishlist!.product.map((item) => item.product).toList());
-      return Column(
-        children: wishlist!.product.asMap().entries.map((entry) {
-          int index = entry.key;
-          WishlistItem item = entry.value;
-          Review review = reviews[index]; // Lấy đánh giá cho sản phẩm này
-          return Container(
-            height: 110,
-            margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              children: [
-                SizedBox(
-                  height: 70,
-                  width: 70,
-                  child: item.product!.images != null && item.product!.images!.isNotEmpty
-                      ? Image.network(item.product!.images![0])
-                      : const Placeholder(),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left: 10), // Đẩy tên sản phẩm sang phải
-                          child: Text(
-                            item.product?.name ?? 'Unknown product',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF2B2321),
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 10), // Đẩy giá sang phải
-                          child: Text(
-                            "\$${item.product?.price?.toStringAsFixed(0) ?? 'N/A'}",
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF2B2321),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        _removeFromWishlist(item.product?.id ?? "");
-                      },
-                      child: const Icon(
-                        Icons.delete,
-                        color: Colors.red,
-                      ),
-                    ),
-                    const SizedBox(height: 25),
-                    InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ProductPage(
-                              product: item.product!,
-                              review: review, // Chuyển đánh giá đúng
-                            ),
-                          ),
-                        );
-                      },
-                      child: const Icon(
-                        Icons.arrow_forward,
-                        color: Color(0xFF2B2321),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          );
-        }).toList(),
+      return const Center(child: CircularProgressIndicator());
+    }
+    
+    if (wishlist == null || wishlist!.product.isEmpty) {
+      return const Center(
+        child: Text(
+          "Your wishlist is empty",
+          style: TextStyle(fontSize: 16),
+        ),
       );
     }
+
+    // Filter out any null products before creating reviews
+    final validProducts = wishlist!.product
+        .where((item) => item.product != null)
+        .map((item) => item.product!)
+        .toList();
+        
+    List<Review> reviews = _getReviewsForProducts(validProducts);
+
+    return Column(
+      children: validProducts.asMap().entries.map((entry) {
+        int index = entry.key;
+        Product product = entry.value;
+        Review review = reviews[index];
+        
+        return Container(
+          height: 110,
+          margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            children: [
+              SizedBox(
+                height: 70,
+                width: 70,
+                child: product.images != null && product.images!.isNotEmpty
+                    ? Image.network(product.images![0])
+                    : const Placeholder(),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(left: 10),
+                        child: Text(
+                          product.name ?? 'Unknown product',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF2B2321),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 10),
+                        child: Text(
+                          "\$${product.price?.toStringAsFixed(0) ?? 'N/A'}",
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF2B2321),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  InkWell(
+                    onTap: () {
+                      _removeFromWishlist(product.id ?? "");
+                    },
+                    child: const Icon(
+                      Icons.delete,
+                      color: Colors.red,
+                    ),
+                  ),
+                  const SizedBox(height: 25),
+                  InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ProductPage(
+                            product: product,
+                            review: review,
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Icon(
+                      Icons.arrow_forward,
+                      color: Color(0xFF2B2321),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
   }
 }

@@ -25,6 +25,18 @@ class AddressUser {
     this.isDefault = false,
   });
 
+  Map<String, dynamic> toJson() => {
+    'name': fullName,
+    'phone': phoneNumber,
+    'street': streetAddress,
+    'district': district,
+    'ward': ward,
+    'commune': commune,
+    'city': city,
+    'province': province,
+    'isDefault': isDefault,
+  };
+
   factory AddressUser.fromJson(Map<String, dynamic> json) {
     return AddressUser(
       id: json['_id'] ?? '',

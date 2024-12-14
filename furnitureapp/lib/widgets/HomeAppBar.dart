@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:furnitureapp/pages/TaskBar.dart';
-import 'package:furnitureapp/model/Categories.dart';
 import 'package:furnitureapp/pages/NotificationPage.dart';
 
 
@@ -80,11 +79,19 @@ class _HomeAppBarState extends State<HomeAppBar> with SingleTickerProviderStateM
     _animationController.forward();
   }
 
-  void _hideTaskbarOverlay() {
-    if (_animationController.isAnimating) {
-      _animationController.reverse();
-    }
+void _hideTaskbarOverlay() {
+  if (_animationController.isAnimating) {
+    _animationController.reverse();
   }
+  
+  // Kiểm tra nếu _overlayEntry đã được khởi tạo trước khi gọi remove
+  if (_overlayEntry != null) {
+    _overlayEntry!.remove();
+    _overlayEntry = null; // Đảm bảo _overlayEntry không giữ tham chiếu sau khi remove
+  }
+}
+
+
 
   @override
   Widget build(BuildContext context) {

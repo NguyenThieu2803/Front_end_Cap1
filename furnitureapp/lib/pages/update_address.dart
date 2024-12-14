@@ -77,6 +77,9 @@ class _UpdateAddressPageState extends State<UpdateAddressPage> {
         _phoneController.text,
         _streetController.text,
         selectedDistrict,
+        selectedWard,
+        selectedWard,
+        selectedDistrict,
         selectedProvince,
         isDefaultAddress,
       );

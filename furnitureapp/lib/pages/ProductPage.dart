@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:furnitureapp/model/Review.dart';
 import 'package:furnitureapp/model/product.dart';
 import 'package:furnitureapp/api/api.service.dart';
+import 'package:furnitureapp/services/ar_service.dart';
 import 'package:furnitureapp/widgets/ProductReviews.dart';
-import 'package:furnitureapp/model/Review.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
+import 'package:furnitureapp/widgets/ARViewerWidget.dart';
 
 class ProductPage extends StatefulWidget {
   final Product product;
@@ -169,7 +170,6 @@ appBar: AppBar(
   
 
 Widget _buildProductImage(double screenWidth, double screenHeight) {
-  // Kiểm tra nếu widget.product là null
   return Container(
     width: screenWidth,
     height: screenHeight * 0.4,
@@ -180,31 +180,58 @@ Widget _buildProductImage(double screenWidth, double screenHeight) {
         bottomRight: Radius.elliptical(250, 70),
       ),
     ),
-    child: widget.product.model3d != null && widget.product.model3d!.isNotEmpty
-       ? ModelViewer(
-  backgroundColor: const Color(0xFFD9D9D9),
-  src: widget.product.model3d!, // Đảm bảo đường dẫn là chính xác
-  alt: 'A 3D model of ${widget.product.name}',
-  ar: true,
-  autoRotate: true,
-  cameraControls: true,
-  loading: Loading.eager,
-)
-        : const Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(height: 10),
-                Text(
-                  'No 3D model available',
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 16,
-                  ),
-                ),
-              ],
+    child: Stack(
+      children: [
+        widget.product.model3d != null && widget.product.model3d!.isNotEmpty
+            ? ModelViewer(
+                backgroundColor: const Color(0xFFD9D9D9),
+                src: widget.product.model3d!,
+                alt: 'A 3D model of ${widget.product.name}',
+                ar: true,
+                autoRotate: true,
+                cameraControls: true,
+                loading: Loading.eager,
+              )
+            : const Center(
+                child: Text('No 3D model available'),
+              ),
+        
+        if (widget.product.model3d != null && widget.product.model3d!.isNotEmpty)
+          Positioned(
+            right: 16,
+            bottom: 16,
+            child: FloatingActionButton(
+              heroTag: 'arButton',
+              backgroundColor: Colors.white,
+              onPressed: () async {
+                if (await ArService.checkARCapabilities()) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ARViewerWidget(
+                        modelUrl: widget.product.model3d!,
+                        modelFormat: widget.product.modelFormat,
+                        modelConfig: widget.product.modelConfig,
+                      ),
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('AR is not supported on this device'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              child: const Icon(
+                Icons.view_in_ar,
+                color: Colors.black,
+              ),
             ),
           ),
+      ],
+    ),
   );
 }
 
@@ -545,12 +572,16 @@ Widget _buildProductImage(double screenWidth, double screenHeight) {
             // Quantity control
             Row(
               children: [
-                Text(
-                  '−',
-                  style: TextStyle(
-                    fontSize: 24,
-                    color: Colors.black54,
-                    fontWeight: FontWeight.w400,
+                // Minus button
+                GestureDetector(
+                  onTap: decreaseQuantity,  // Connect to decrease function
+                  child: Text(
+                    '−',
+                    style: TextStyle(
+                      fontSize: 24,
+                      color: Colors.black54,
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 15),
@@ -566,12 +597,16 @@ Widget _buildProductImage(double screenWidth, double screenHeight) {
                   ),
                 ),
                 const SizedBox(width: 15),
-                Text(
-                  '+',
-                  style: TextStyle(
-                    fontSize: 24,
-                    color: Colors.black54,
-                    fontWeight: FontWeight.w400,
+                // Plus button
+                GestureDetector(
+                  onTap: increaseQuantity,  // Connect to increase function
+                  child: Text(
+                    '+',
+                    style: TextStyle(
+                      fontSize: 24,
+                      color: Colors.black54,
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
                 ),
               ],

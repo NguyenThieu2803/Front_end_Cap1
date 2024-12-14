@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:furnitureapp/model/Categories.dart';
 import 'package:furnitureapp/services/data_service.dart';
 
-
 class TaskBar extends StatefulWidget {
   final VoidCallback onClose;
   final Function(String?, double?, double?) onFiltersApplied;
@@ -193,12 +192,6 @@ class _TaskBarState extends State<TaskBar> {
               width: 1.0,
             ),
           ),
-          borderRadius: product == 'Lamp'
-              ? BorderRadius.only(
-                  bottomLeft: Radius.circular(25),
-                  bottomRight: Radius.circular(25),
-                )
-              : BorderRadius.zero,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -247,7 +240,7 @@ class _TaskBarState extends State<TaskBar> {
   }) {
     return TextFormField(
       controller: controller,
-      keyboardType: TextInputType.number,
+      keyboardType: keyboardType,
       decoration: InputDecoration(
         hintText: hintText,
         filled: true,
@@ -290,9 +283,6 @@ class _TaskBarState extends State<TaskBar> {
             return;
           }
 
-          print('Applying filters - Category: $selectedCategory, '
-                'Min: $minPrice, Max: $maxPrice');
-                
           widget.onFiltersApplied(selectedCategory, minPrice, maxPrice);
           widget.onClose();
         }

@@ -372,8 +372,18 @@ class APIService {
     }
   }
 
-  static Future<bool> updateAddress(String addressId, String name, String phone,
-      String street, String city, String province, bool isDefault) async {
+  static Future<bool> updateAddress(
+      String addressId,
+      String name,
+      String phone,
+      String street,
+      String district,
+      String ward,
+      String commune,
+      String city,
+      String province,
+      bool isDefault,
+  ) async {
     String? token = await ShareService.getToken();
     if (token == null) {
       throw Exception('User not logged in');
@@ -382,12 +392,11 @@ class APIService {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',
     };
-    var url = Uri.http(Config.apiURL, Config.addressAPI);
+    var url = Uri.http(Config.apiURL, '${Config.addressAPI}/$addressId');
     var repository = await client.put(
       url,
       headers: requestHeaders,
       body: jsonEncode({
-        "addressId": addressId,
         'name': name,
         'phone': phone,
         'street': street,
@@ -776,59 +785,44 @@ class APIService {
       String productId,
       double rating,
       String comment,
-      List<String> images,
+      List<String> imagePaths,
   ) async {
     try {
       String? token = await ShareService.getToken();
-      if (token == null) {
-        throw Exception('User not logged in');
-      }
+      if (token == null) throw Exception('User not logged in');
 
       var userProfile = await getUserProfile();
       String userId = userProfile['_id'];
 
-      // Log để debug
-      print('Creating review with:');
-      print('userId: $userId');
-      print('productId: $productId');
-      print('rating: $rating');
-      print('comment: $comment');
-      print('images: $images');
-
-      var url = Uri.http(Config.apiURL, Config.createReviewAPI);
+      var uri = Uri.http(Config.apiURL, Config.createReviewAPI);
+      var request = http.MultipartRequest('POST', uri);
       
-      // Tạo request body với images là mảng rỗng mặc định
-      var requestBody = {
-        'userId': userId,
-        'productId': productId,
-        'rating': rating,
-        'comment': comment,
-        'isVerifiedPurchase': true,
-        'images': [], // Luôn gửi mảng rỗng nếu không có ảnh
-      };
+      // Add headers
+      request.headers.addAll({
+        'Authorization': 'Bearer $token',
+      });
 
-      print('Request body: ${jsonEncode(requestBody)}');
+      // Add text fields
+      request.fields['userId'] = userId;
+      request.fields['productId'] = productId;
+      request.fields['rating'] = rating.toString();
+      request.fields['comment'] = comment;
 
-      var response = await client.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode(requestBody),
-      );
-
-      print('Response status code: ${response.statusCode}');
-      print('Review creation response: ${response.body}');
-      
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        return true;
-      } else {
-        throw Exception('Failed to create review: ${response.statusCode} - ${response.body}');
+      // Add image files
+      for (String path in imagePaths) {
+        request.files.add(
+          await http.MultipartFile.fromPath('image', path),
+        );
       }
+
+      var response = await request.send();
+      var responseData = await response.stream.bytesToString();
+      print('Review creation response: $responseData');
+
+      return response.statusCode == 201 || response.statusCode == 200;
     } catch (e) {
       print('Error creating review: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -944,6 +938,44 @@ class APIService {
     } catch (e) {
       print('Apple sign in error: $e');
       return false;
+    }
+  }
+
+  static Future<bool> deleteOrder(String orderId) async {
+    String? token = await ShareService.getToken();
+    if (token == null) {
+      throw Exception('User not logged in');
+    }
+    Map<String, String> requestHeaders = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+    var url = Uri.http(Config.apiURL, '/api/v1/orders/$orderId');
+    var response = await client.delete(url, headers: requestHeaders);
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      throw Exception('Failed to delete order: ${response.statusCode} - ${response.body}');
+    }
+  }
+
+  static Future<bool> updateAvatar(String filePath) async {
+    String? token = await ShareService.getToken();
+    if (token == null) {
+      throw Exception('User not logged in');
+    }
+
+    var url = Uri.http(Config.apiURL, '/api/auth/users/avatar');
+    var request = http.MultipartRequest('PUT', url);
+
+    request.headers['Authorization'] = 'Bearer $token';
+    request.files.add(await http.MultipartFile.fromPath('image', filePath));
+
+    var response = await request.send();
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      throw Exception('Failed to update avatar: ${response.statusCode}');
     }
   }
 }
