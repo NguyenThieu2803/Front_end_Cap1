@@ -32,11 +32,15 @@ class _CheckOutPageState extends State<CheckOutPage> {
   final _cardCVCController = TextEditingController();
   final _cardHolderNameController = TextEditingController();
   final double shippingFee = 30.0;
-  late double subTotal;
-  late double total;
+  double subTotal = 0.0;
+  double total = 0.0;
+
   @override
   void initState() {
     super.initState();
+    subTotal = widget.totalAmount;
+    total = widget.totalAmount + shippingFee;
+    
     Stripe.publishableKey =
         "pk_test_51Q4IszJ48Cc6e6PCngveNBvfhkg9qO12qhW65Au0spXnyY59DGhbfLf2WgpVV7Yg6bKJivrIZBYmtezg24kEh7L700mAjoAcEK";
     Stripe.instance.applySettings();
@@ -65,8 +69,6 @@ class _CheckOutPageState extends State<CheckOutPage> {
       final cardsData = await APIService.getAllCards();
       _cards =
           cardsData.map((cardData) => CardModel.fromJson(cardData)).toList();
-      subTotal = widget.totalAmount;
-      total = widget.totalAmount + shippingFee;
       setState(() {
         _isLoading = false;
       });

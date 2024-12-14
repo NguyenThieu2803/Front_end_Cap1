@@ -1,15 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http; //+
-import 'package:furnitureapp/model/Review.dart';
 import 'package:furnitureapp/config/config.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:furnitureapp/model/Categories.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:furnitureapp/utils/share_service.dart';
-import 'package:furnitureapp/services/data_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:furnitureapp/model/login_response_model.dart';
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
 class APIService {
   static var client = http.Client();
@@ -57,6 +51,30 @@ class APIService {
       await ShareService.setLoginDetails(loginResponseJson(repository.body));
       return true;
     } else {
+      return false;
+    }
+  }
+
+  static Future<bool> socialLogin(String firebaseToken) async {
+    try {
+      final response = await http.post(
+        Uri.parse('http://${Config.apiURL}/${Config.socialLoginAPI}'),
+        headers: {
+          'Content-Type': 'application/json',
+          'firebaseToken': firebaseToken,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+        // Save access token to shared preferences
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('token', data['accessToken']);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      print('Error during social login: $e');
       return false;
     }
   }
@@ -857,6 +875,50 @@ class APIService {
     } catch (e) {
       print('Error calculating average rating: $e');
       return 0.0;
+    }
+  }
+
+  static Future<bool> updateAvatar(String imagePath) async {
+    String? token = await ShareService.getToken();
+    if (token == null) {
+      throw Exception('User not logged in');
+    }
+
+    var uri = Uri.http(Config.apiURL, Config.updateAvatarAPI);
+    var request = http.MultipartRequest('PUT', uri);
+
+    request.headers.addAll({
+      'Authorization': 'Bearer $token',
+    });
+
+    request.files.add(await http.MultipartFile.fromPath('image', imagePath));
+
+    var response = await request.send();
+    var responseData = await response.stream.bytesToString();
+    print('Update avatar response: $responseData');
+
+    return response.statusCode == 200;
+  }
+
+  static Future<bool> cancelOrder(String orderId) async {
+    String? token = await ShareService.getToken();
+    if (token == null) {
+      throw Exception('User not logged in');
+    }
+    Map<String, String> requestHeaders = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+    var url = Uri.http(Config.apiURL, '/api/v1/orders/$orderId');
+    var response = await client.put(
+      url,
+      headers: requestHeaders,
+      body: jsonEncode({'payment_status': 'Cancelled'}),
+    );
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      throw Exception('Failed to cancel order: ${response.statusCode} - ${response.body}');
     }
   }
 }

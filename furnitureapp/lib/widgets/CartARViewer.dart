@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:ar_flutter_plugin/models/ar_node.dart';
-import 'package:furnitureapp/services/ar_service.dart';
 import 'package:furnitureapp/model/Cart_User_Model.dart';
 import 'package:furnitureapp/services/data_service.dart';
 import 'package:ar_flutter_plugin/ar_flutter_plugin.dart';
@@ -11,7 +10,6 @@ import 'package:ar_flutter_plugin/managers/ar_anchor_manager.dart';
 import 'package:ar_flutter_plugin/managers/ar_object_manager.dart';
 import 'package:ar_flutter_plugin/managers/ar_session_manager.dart';
 import 'package:ar_flutter_plugin/managers/ar_location_manager.dart';
-import 'package:ar_flutter_plugin/datatypes/hittest_result_types.dart';
 import 'package:ar_flutter_plugin/datatypes/config_planedetection.dart';
 
 class CartARViewer extends StatefulWidget {

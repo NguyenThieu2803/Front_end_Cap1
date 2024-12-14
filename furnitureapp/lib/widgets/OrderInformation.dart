@@ -44,7 +44,7 @@ class _OrderInformationState extends State<OrderInformation> {
       });
 
       try {
-        bool success = await APIService.deleteOrder(widget.orderData.id);
+        bool success = await APIService.cancelOrder(widget.orderData.id);
         if (success) {
           // Show success message
           ScaffoldMessenger.of(context).showSnackBar(
@@ -55,7 +55,7 @@ class _OrderInformationState extends State<OrderInformation> {
             ),
           );
           // Remove the order from the list and update the UI
-          Navigator.of(context).pop(true); // Pass true to indicate successful deletion
+          Navigator.of(context).pop(true); // Pass true to indicate successful cancellation
         }
       } catch (e) {
         print("Error cancelling order: $e");

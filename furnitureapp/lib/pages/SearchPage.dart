@@ -17,7 +17,7 @@ class _SearchPageState extends State<SearchPage> {
   final TextEditingController _searchController = TextEditingController();
   final DataService _dataService = DataService();
   Timer? _debounce;
-  Map<String, double> _productRatings = {};
+  final Map<String, double> _productRatings = {};
 
   Future<void> _loadAverageRating(String productId) async {
     try {

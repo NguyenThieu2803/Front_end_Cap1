@@ -1,7 +1,13 @@
 import 'sign_up.dart';
 import 'package:flutter/material.dart';
+import 'package:furnitureapp/config/config.dart';
 import 'package:furnitureapp/pages/Homepage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:furnitureapp/api/api.service.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -12,8 +18,20 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Firebase.initializeApp(
+      options: FirebaseOptions(
+        apiKey: Config.firebaseConfig['apiKey']!,
+      appId: Config.firebaseConfig['appId']!,
+      messagingSenderId: Config.firebaseConfig['messagingSenderId']!,
+      projectId: Config.firebaseConfig['projectId']!,
+      ),
+    );
+  }
 
   bool validateSave() {
     String name = _nameController.text.trim();
@@ -27,9 +45,9 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     // Kiểm tra mật khẩu
-    if (password.isEmpty || password.length < 4) {
+    if (password.isEmpty || password.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Password must be at least 4 characters long')));
+          content: Text('Password must be at least 6 characters long')));
       return false;
     }
 
@@ -64,6 +82,94 @@ class _LoginPageState extends State<LoginPage> {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content: Text(
                 'login failed username or password not correctlty !. Please try again.')));
+      }
+    }
+  }
+
+  Future<void> _signInWithGoogle() async {
+    try {
+      // Show loading indicator
+      setState(() => _isLoading = true);
+      
+      // Trigger the authentication flow
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      
+      // If user cancels the sign-in flow
+      if (googleUser == null) {
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      // Obtain auth details from request
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      // Create credential
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // Sign in with Firebase
+      final UserCredential userCredential = 
+          await FirebaseAuth.instance.signInWithCredential(credential);
+          
+      // Call your backend
+      if (userCredential.user != null) {
+        await _socialLogin();
+      }
+      
+    } catch (e) {
+      print('Error during Google sign in: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to sign in with Google'))
+      );
+    } finally {
+      // Hide loading indicator
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _signInWithFacebook() async {
+    try {
+      final LoginResult result = await FacebookAuth.instance.login();
+      final OAuthCredential facebookAuthCredential = 
+        FacebookAuthProvider.credential(result.accessToken!.tokenString); // Changed from token to tokenString
+      await FirebaseAuth.instance.signInWithCredential(facebookAuthCredential);
+      await _socialLogin();
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> _signInWithApple() async {
+    try {
+      final AuthorizationCredentialAppleID appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [AppleIDAuthorizationScopes.email, AppleIDAuthorizationScopes.fullName],
+      );
+      final OAuthProvider oAuthProvider = OAuthProvider('apple.com');
+      final AuthCredential credential = oAuthProvider.credential(
+        idToken: appleCredential.identityToken,
+        accessToken: appleCredential.authorizationCode,
+      );
+      await FirebaseAuth.instance.signInWithCredential(credential);
+      await _socialLogin();
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> _socialLogin() async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final idToken = await user.getIdToken();
+      final isSuccess = await APIService.socialLogin(idToken!);
+      if (isSuccess) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Social login failed!')));
       }
     }
   }
@@ -202,20 +308,7 @@ class _LoginPageState extends State<LoginPage> {
                               onPressed: () async {
                                 setState(() => _isLoading = true);
                                 try {
-                                  bool success = await APIService.signInWithFacebook();
-                                  if (success) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Facebook login successful!'))
-                                    );
-                                    Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(builder: (context) => const HomePage()),
-                                    );
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Facebook login failed!'))
-                                    );
-                                  }
+                                  await _signInWithFacebook();
                                 } finally {
                                   setState(() => _isLoading = false);
                                 }
@@ -227,20 +320,7 @@ class _LoginPageState extends State<LoginPage> {
                               onPressed: () async {
                                 setState(() => _isLoading = true);
                                 try {
-                                  bool success = await APIService.signInWithGoogle();
-                                  if (success) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Google login successful!'))
-                                    );
-                                    Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(builder: (context) => const HomePage()),
-                                    );
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Google login failed!'))
-                                    );
-                                  }
+                                  await _signInWithGoogle();
                                 } finally {
                                   setState(() => _isLoading = false);
                                 }
@@ -252,20 +332,7 @@ class _LoginPageState extends State<LoginPage> {
                               onPressed: () async {
                                 setState(() => _isLoading = true);
                                 try {
-                                  bool success = await APIService.signInWithApple();
-                                  if (success) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Apple login successful!'))
-                                    );
-                                    Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(builder: (context) => const HomePage()),
-                                    );
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Apple login failed!'))
-                                    );
-                                  }
+                                  await _signInWithApple();
                                 } finally {
                                   setState(() => _isLoading = false);
                                 }
