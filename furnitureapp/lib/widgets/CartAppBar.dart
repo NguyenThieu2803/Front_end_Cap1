@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:furnitureapp/pages/HomePage.dart'; // Đảm bảo bạn import đúng file HomePage
 import 'package:font_awesome_flutter/font_awesome_flutter.dart'; // Import the Font Awesome package
-import 'package:ar_flutter_plugin/ar_flutter_plugin.dart'; // Import the AR plugin
+// Import the AR plugin
 import 'package:furnitureapp/widgets/CartARViewer.dart';
 import 'package:furnitureapp/services/ar_service.dart';
-import 'package:ar_flutter_plugin/datatypes/node_types.dart';
-import 'package:ar_flutter_plugin/datatypes/hittest_result_types.dart';
-import 'package:ar_flutter_plugin/models/ar_node.dart';
-import 'package:ar_flutter_plugin/models/ar_hittest_result.dart';
 
 class CartAppBar extends StatefulWidget {
   const CartAppBar({super.key});

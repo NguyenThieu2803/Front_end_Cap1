@@ -2,8 +2,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:furnitureapp/model/Review.dart';
 import 'package:furnitureapp/model/product.dart';
-import 'package:furnitureapp/pages/ProductPage.dart';
 import 'package:furnitureapp/services/data_service.dart';
+import 'package:furnitureapp/pages/ProductPage.dart';  
+
+// ... rest of existing imports ...
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -22,29 +24,20 @@ class _SearchPageState extends State<SearchPage> {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     
     _debounce = Timer(const Duration(milliseconds: 500), () async {
-      if (query.isEmpty) {
-        setState(() {
-          _searchResults = [];
-        });
-        return;
-      }
-
       try {
-        print('Searching for: $query'); // Debug log
         final results = await _dataService.searchProducts(query);
-        print('Search results count: ${results.length}'); // Debug log
         
+        results.forEach((product) {
+          print('Search result - Product ${product.name}:');
+          print('- model3d: ${product.model3d}');
+          print('- All data: $product');
+        });
+
         setState(() {
           _searchResults = results;
         });
       } catch (e) {
         print('Error searching products: $e');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error searching products: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
       }
     });
   }
@@ -71,6 +64,9 @@ class _SearchPageState extends State<SearchPage> {
         return InkWell(
           onTap: () {
             try {
+              print('Tapping product: ${product.name}');
+              print('Original model3d URL: ${product.model3d}');
+              
               final productForDetail = Product(
                 id: product.id ?? '',
                 name: product.name ?? 'No Name',
@@ -86,7 +82,10 @@ class _SearchPageState extends State<SearchPage> {
                 assemblyRequired: product.assemblyRequired ?? false,
                 weight: product.weight ?? 0,
                 sold: product.sold ?? 0,
+                model3d: product.model3d,
               );
+              
+              print('ProductForDetail model3d URL: ${productForDetail.model3d}');
 
               final review = Review(
                 id: product.id ?? '',
@@ -98,6 +97,7 @@ class _SearchPageState extends State<SearchPage> {
                 userEmail: '',
               );
 
+              print('ProductForDetail model3d: ${productForDetail.model3d}');
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -108,13 +108,7 @@ class _SearchPageState extends State<SearchPage> {
                 ),
               );
             } catch (e) {
-              print('Error navigating to product details: $e');
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Error viewing product details: $e'),
-                  backgroundColor: Colors.red,
-                ),
-              );
+              print('Error navigating: $e');
             }
           },
           child: Card(

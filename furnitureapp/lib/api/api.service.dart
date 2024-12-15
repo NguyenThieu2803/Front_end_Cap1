@@ -1,10 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http; //+
-import 'package:furnitureapp/model/Review.dart';
 import 'package:furnitureapp/config/config.dart';
-import 'package:furnitureapp/model/Categories.dart';
 import 'package:furnitureapp/utils/share_service.dart';
-import 'package:furnitureapp/services/data_service.dart';
 import 'package:furnitureapp/model/login_response_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -810,7 +807,7 @@ class APIService {
       return response.statusCode == 201 || response.statusCode == 200;
     } catch (e) {
       print('Error creating review: $e');
-      throw e;
+      rethrow;
     }
   }
 

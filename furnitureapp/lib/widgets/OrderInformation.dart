@@ -5,9 +5,9 @@ class OrderInformation extends StatefulWidget {
   final OrderData orderData;
 
   const OrderInformation({
-    Key? key,
+    super.key,
     required this.orderData,
-  }) : super(key: key);
+  });
 
   @override
   _OrderInformationState createState() => _OrderInformationState();
@@ -193,7 +193,7 @@ class _OrderInformationState extends State<OrderInformation> {
                 if (product != widget.orderData.products.last) const Divider(),
               ],
             );
-          }).toList(),
+          }),
           const Divider(),
           Padding(
             padding: const EdgeInsets.only(top: 10.0),

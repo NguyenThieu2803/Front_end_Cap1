@@ -3,7 +3,6 @@ import 'package:furnitureapp/model/Review.dart';
 import 'package:furnitureapp/model/product.dart';
 import 'package:furnitureapp/api/api.service.dart';
 import 'package:furnitureapp/widgets/ProductReviews.dart';
-import 'package:furnitureapp/model/Review.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'package:furnitureapp/widgets/ARViewerWidget.dart';
 import 'package:furnitureapp/services/ar_service.dart';

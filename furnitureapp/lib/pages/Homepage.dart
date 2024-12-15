@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:furnitureapp/config/config.dart';
 import 'package:furnitureapp/pages/CartPage.dart';
 import 'package:furnitureapp/pages/SearchPage.dart';
-import 'package:furnitureapp/model/Categories.dart';
 import 'package:furnitureapp/pages/FavoritePage.dart';
 import 'package:furnitureapp/widgets/HomeAppBar.dart';
 import 'package:furnitureapp/pages/UserProfilePage.dart';

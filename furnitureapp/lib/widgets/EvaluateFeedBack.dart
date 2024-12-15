@@ -9,11 +9,11 @@ class EvaluateFeedBack extends StatefulWidget {
   final String? productImage;
 
   const EvaluateFeedBack({
-    Key? key, 
+    super.key, 
     required this.productId,
     required this.productName,
     this.productImage,
-  }) : super(key: key);
+  });
 
   @override
   State<EvaluateFeedBack> createState() => _EvaluateFeedBackState();
@@ -22,7 +22,7 @@ class EvaluateFeedBack extends StatefulWidget {
 class _EvaluateFeedBackState extends State<EvaluateFeedBack> {
   final TextEditingController _commentController = TextEditingController();
   double _rating = 0;
-  List<String> _selectedImages = [];
+  final List<String> _selectedImages = [];
   final DataService _dataService = DataService();
 
   @override
@@ -155,12 +155,10 @@ class _EvaluateFeedBackState extends State<EvaluateFeedBack> {
     final picker = ImagePicker();
     final pickedFiles = await picker.pickMultiImage();
     
-    if (pickedFiles != null) {
-      setState(() {
-        _selectedImages.addAll(pickedFiles.map((file) => file.path));
-      });
+    setState(() {
+      _selectedImages.addAll(pickedFiles.map((file) => file.path));
+    });
     }
-  }
 
   Future<void> _submitReview() async {
     if (_rating == 0) {

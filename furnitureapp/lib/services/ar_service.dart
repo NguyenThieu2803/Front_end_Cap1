@@ -1,4 +1,3 @@
-import 'package:ar_flutter_plugin/ar_flutter_plugin.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 import 'package:vector_math/vector_math_64.dart';

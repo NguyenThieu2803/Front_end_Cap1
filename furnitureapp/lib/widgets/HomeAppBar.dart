@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:furnitureapp/pages/TaskBar.dart';
-import 'package:furnitureapp/model/Categories.dart';
 import 'package:furnitureapp/pages/NotificationPage.dart';
 
 

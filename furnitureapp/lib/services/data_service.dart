@@ -9,9 +9,6 @@ import 'package:furnitureapp/model/order_model.dart';
 import 'package:furnitureapp/model/wishlist_model.dart';
 import 'package:furnitureapp/model/Cart_User_Model.dart';
 import 'package:furnitureapp/model/UserProfile_model.dart';
-import 'package:furnitureapp/config/config.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 
 class DataService {
   const DataService();
@@ -153,49 +150,28 @@ class DataService {
   Future<List<Product>> searchProducts(String query) async {
     try {
       List<Map<String, dynamic>> productList = await APIService.searchProducts(query);
-      print('API Response: $productList'); // Debug log
+      print('Raw API Response from search: $productList');
 
       return productList.map((json) {
-        // Parse dimensions if available
-        Dimensions? dimensions;
-        if (json['dimensions'] != null) {
-          dimensions = Dimensions(
-            height: json['dimensions']['height'],
-            width: json['dimensions']['width'],
-            depth: json['dimensions']['depth'],
-            unit: json['dimensions']['unit'],
-          );
-        }
-
-        // Parse color if available
-        ProductColor? color;
-        if (json['color'] != null) {
-          color = ProductColor(
-            primary: json['color']['primary'],
-            secondary: json['color']['secondary'],
-          );
-        }
+        String? model3dUrl = json['model3d'];
+        print('Model3D URL for ${json['name']}: $model3dUrl');
 
         return Product(
-          id: json['_id'] ?? '', // MongoDB usually uses _id
+          id: json['_id'] ?? '',
           name: json['name'] ?? 'No Name',
           description: json['description'] ?? '',
-          shortDescription: json['shortDescription'] ?? '',
           price: (json['price'] ?? 0).toDouble(),
-          dimensions: dimensions,
-          stockQuantity: json['stockQuantity'] ?? 0,
-          material: json['material'] ?? '',
-          color: color,
           images: List<String>.from(json['images'] ?? []),
           category: json['category'] ?? '',
-          discount: json['discount'] ?? 0,
-          promotionId: json['promotionId'],
+          rating: (json['rating'] ?? 0).toDouble(),
+          stockQuantity: json['stockQuantity'] ?? 0,
+          material: json['material'] ?? '',
           brand: json['brand'] ?? '',
           style: json['style'] ?? '',
           assemblyRequired: json['assemblyRequired'] ?? false,
           weight: json['weight'] ?? 0,
           sold: json['sold'] ?? 0,
-          rating: (json['rating'] ?? 0).toDouble(),
+          model3d: model3dUrl,
         );
       }).toList();
     } catch (error) {

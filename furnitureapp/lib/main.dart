@@ -4,7 +4,6 @@ import 'pages/LoginPage.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:furnitureapp/model/Review.dart';
-import 'package:furnitureapp/model/Review.dart';
 import 'package:furnitureapp/model/product.dart';
 import 'package:furnitureapp/pages/sign_up.dart';
 import 'package:furnitureapp/pages/StartNow.dart';

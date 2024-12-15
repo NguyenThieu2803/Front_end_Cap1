@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ar_flutter_plugin/ar_flutter_plugin.dart';
 import 'package:ar_flutter_plugin/datatypes/node_types.dart';
-import 'package:ar_flutter_plugin/datatypes/hittest_result_types.dart';
 import 'package:ar_flutter_plugin/models/ar_node.dart';
 import 'package:ar_flutter_plugin/models/ar_hittest_result.dart';
 import 'package:ar_flutter_plugin/datatypes/config_planedetection.dart';
@@ -12,9 +11,10 @@ import 'package:ar_flutter_plugin/managers/ar_session_manager.dart';
 import 'package:vector_math/vector_math_64.dart' hide Colors;
 import 'package:furnitureapp/model/Cart_User_Model.dart';
 import 'package:furnitureapp/services/data_service.dart';
-import 'package:furnitureapp/services/ar_service.dart';
 
 class CartARViewer extends StatefulWidget {
+  const CartARViewer({super.key});
+
   @override
   _CartARViewerState createState() => _CartARViewerState();
 }

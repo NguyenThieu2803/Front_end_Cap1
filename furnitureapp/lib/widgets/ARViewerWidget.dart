@@ -1,15 +1,20 @@
 import 'dart:async';
-import 'package:vector_math/vector_math_64.dart' hide Colors;
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:ar_flutter_plugin/ar_flutter_plugin.dart';
 import 'package:ar_flutter_plugin/datatypes/node_types.dart';
 import 'package:ar_flutter_plugin/managers/ar_anchor_manager.dart';
 import 'package:ar_flutter_plugin/managers/ar_location_manager.dart';
 import 'package:ar_flutter_plugin/managers/ar_object_manager.dart';
 import 'package:ar_flutter_plugin/managers/ar_session_manager.dart';
+import 'package:ar_flutter_plugin/models/ar_node.dart';
+import 'package:vector_math/vector_math_64.dart' as vector;
+import 'package:ar_flutter_plugin/datatypes/hittest_result_types.dart';
 import 'package:ar_flutter_plugin/datatypes/config_planedetection.dart';
 import 'package:ar_flutter_plugin/models/ar_node.dart';
 import 'package:ar_flutter_plugin/models/ar_hittest_result.dart';
+import 'package:ar_flutter_plugin/datatypes/anchor_types.dart' as ar;
 
 class ARViewerWidget extends StatefulWidget {
   final String modelUrl;
@@ -17,11 +22,11 @@ class ARViewerWidget extends StatefulWidget {
   final Map<String, dynamic>? modelConfig;
 
   const ARViewerWidget({
-    Key? key,
+    super.key,
     required this.modelUrl,
-    this.modelFormat,
+    this.modelFormat = "glb",
     this.modelConfig,
-  }) : super(key: key);
+  });
 
   @override
   _ARViewerWidgetState createState() => _ARViewerWidgetState();
@@ -32,83 +37,120 @@ class _ARViewerWidgetState extends State<ARViewerWidget> {
   ARObjectManager? arObjectManager;
   ARAnchorManager? arAnchorManager;
   ARNode? selectedNode;
+  
   double scaleFactor = 0.2;
   List<ARNode> nodes = [];
-  double rotationAngle = 0.0;
   bool isPlacingObject = false;
   String? selectedNodeName;
   bool showPlaneOverlay = false;
   Timer? _hideTimer;
-
-  bool get canPlaceObject => isPlacingObject || nodes.isEmpty;
+  
+  bool _hasPermission = false;
+  bool _isLoading = false;
+  bool _isARSupported = false;
 
   @override
-  void dispose() {
-    _hideTimer?.cancel();
-    arSessionManager?.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _initializeAR();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('AR View'),
-        backgroundColor: Colors.white,
-        iconTheme: const IconThemeData(color: Colors.black),
-      ),
-      body: Stack(
-        children: [
-          ARView(
-            onARViewCreated: onARViewCreated,
-            planeDetectionConfig: PlaneDetectionConfig.horizontalAndVertical,
-          ),
-          Positioned(
-            bottom: 16,
-            left: 16,
-            right: 16,
-            child: Column(
-              children: [
-                // Thanh điều chỉnh kích thước
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.remove, color: Colors.white),
-                      onPressed: () => _updateScale(-0.1),
-                    ),
-                    Expanded(
-                      child: Slider(
-                        value: scaleFactor,
-                        min: 0.1,
-                        max: 2.0,
-                        onChanged: (value) {
-                          _updateScale(value - scaleFactor);
-                        },
-                        activeColor: Colors.blue,
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.add, color: Colors.white),
-                      onPressed: () => _updateScale(0.1),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                // Nút xóa model
-                ElevatedButton.icon(
-                  onPressed: onRemoveAllObjects,
-                  icon: const Icon(Icons.delete),
-                  label: const Text("Remove Model"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                  ),
-                ),
-              ],
-            ),
+  // Kiểm tra hỗ trợ AR
+  Future<bool> _checkARSupport() async {
+    try {
+      if (defaultTargetPlatform == TargetPlatform.iOS || 
+          defaultTargetPlatform == TargetPlatform.android) {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      print("Lỗi kiểm tra hỗ trợ AR: $e");
+      return false;
+    }
+  }
+
+  Future<void> _initializeAR() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Kiểm tra quyền camera trước
+      var status = await Permission.camera.status;
+      if (!status.isGranted) {
+        status = await Permission.camera.request();
+      }
+
+      if (!status.isGranted) {
+        _showPermissionDialog();
+        setState(() {
+          _isLoading = false;
+          _hasPermission = false;
+        });
+        return;
+      }
+
+      // Sau khi có quyền camera, kiểm tra hỗ trợ AR
+      _isARSupported = await _checkARSupport();
+      if (!_isARSupported) {
+        _showARUnsupportedDialog();
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
+
+      setState(() {
+        _hasPermission = true;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print("Lỗi khởi tạo AR: $e");
+      _showErrorSnackBar('Không thể khởi tạo AR: $e');
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _showPermissionDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Yêu Cầu Quyền'),
+        content: const Text('Ứng dụng cần quyền truy cập camera để sử dụng AR'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              openAppSettings(); // Mở cài đặt ứng dụng để cấp quyền
+            },
+            child: const Text('Mở Cài Đặt'),
           ),
         ],
       ),
+    );
+  }
+
+  void _showARUnsupportedDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Không Hỗ Trợ AR'),
+        content: const Text('Thiết bị của bạn không hỗ trợ tính năng Augmented Reality'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Đóng'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
     );
   }
 
@@ -125,7 +167,9 @@ class _ARViewerWidgetState extends State<ARViewerWidget> {
     arSessionManager!.onInitialize(
       showFeaturePoints: false,
       showPlanes: true,
-      customPlaneTexturePath: "assets/triangle.png",
+      customPlaneTexturePath: defaultTargetPlatform == TargetPlatform.android 
+          ? "assets/triangle.png"
+          : "triangle",
       showWorldOrigin: false,
       handlePans: true,
       handleRotation: true,
@@ -134,33 +178,175 @@ class _ARViewerWidgetState extends State<ARViewerWidget> {
 
     arObjectManager!.onInitialize();
     
-    // Khởi tạo các callback
-    initializeARCallbacks();
-
-    // Xử lý sự kiện chạm vào mặt phẳng
+    // Đảm bảo callback này được gọi
     arSessionManager!.onPlaneOrPointTap = onPlaneOrPointTapped;
+    print("Đã đăng ký callback onPlaneOrPointTap");
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (!_isARSupported) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('AR View'),
+        ),
+        body: Center(
+          child: Text('Thiết bị không hỗ trợ AR'),
+        ),
+      );
+    }
+
+    if (!_hasPermission) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('AR View'),
+          backgroundColor: Colors.white,
+          iconTheme: const IconThemeData(color: Colors.black),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('Cần quyền truy cập camera để sử dụng AR'),
+              ElevatedButton(
+                onPressed: _initializeAR,
+                child: const Text('Cấp quyền'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('AR View'),
+        backgroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.black),
+      ),
+      body: Stack(
+        children: [
+          GestureDetector(
+            onPanUpdate: (details) {
+              if (selectedNode != null) {
+                final delta = details.delta;
+                setState(() {
+                  selectedNode!.position = vector.Vector3(
+                    selectedNode!.position.x + delta.dx * 0.01,
+                    selectedNode!.position.y,
+                    selectedNode!.position.z + delta.dy * 0.01,
+                  );
+                });
+              }
+            },
+            child: ARView(
+              onARViewCreated: onARViewCreated,
+              planeDetectionConfig: PlaneDetectionConfig.horizontal,
+            ),
+          ),
+          // Controls UI
+          Positioned(
+            bottom: 16,
+            left: 16,
+            right: 16,
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.remove, color: Colors.white),
+                      onPressed: () => _updateScale(-0.1),
+                    ),
+                    Expanded(
+                      child: Slider(
+                        value: scaleFactor,
+                        min: 0.1,
+                        max: 2.0,
+                        onChanged: (value) => _updateScale(value - scaleFactor),
+                        activeColor: Colors.blue,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.add, color: Colors.white),
+                      onPressed: () => _updateScale(0.1),
+                    ),
+                  ],
+                ),
+                ElevatedButton.icon(
+                  onPressed: onRemoveAllObjects,
+                  icon: const Icon(Icons.delete),
+                  label: const Text("Xóa Model"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    arSessionManager?.dispose();
+    _hideTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> onPlaneOrPointTapped(List<ARHitTestResult> hitTestResults) async {
-    if (!canPlaceObject || hitTestResults.isEmpty) return;
+    print("Đã nhận tap event");
+    print("Số lượng hit results: ${hitTestResults.length}");
+    
+    if (!_isARSupported || hitTestResults.isEmpty || arObjectManager == null) {
+      print("Điều kiện không thỏa: AR supported: $_isARSupported, Hit results empty: ${hitTestResults.isEmpty}, Object manager null: ${arObjectManager == null}");
+      return;
+    }
     
     final hit = hitTestResults.first;
     
     try {
+      print("ModelUrl: ${widget.modelUrl}");
+      
+      if (widget.modelUrl.isEmpty) {
+        _showErrorSnackBar('URL model không hợp lệ');
+        return;
+      }
+
+      if (!widget.modelUrl.toLowerCase().endsWith('.glb')) {
+        print("URL model không phải định dạng GLB");
+        _showErrorSnackBar('URL model phải có định dạng .glb');
+        return;
+      }
+
       String nodeName = 'node_${DateTime.now().millisecondsSinceEpoch}';
+      
+      print("Tạo node với URL: ${widget.modelUrl}");
       
       var newNode = ARNode(
         name: nodeName,
         type: NodeType.webGLB,
         uri: widget.modelUrl,
-        scale: Vector3(scaleFactor, scaleFactor, scaleFactor),
-        position: Vector3(
-          hit.worldTransform.getColumn(3).x,
-          hit.worldTransform.getColumn(3).y,
-          hit.worldTransform.getColumn(3).z,
+        scale: vector.Vector3(scaleFactor, scaleFactor, scaleFactor),
+        position: vector.Vector3(
+          hit.worldTransform[12],
+          hit.worldTransform[13] - 1.5,
+          hit.worldTransform[14] - 2.0,
         ),
-        rotation: Vector4(1.0, 0.0, 0.0, 0.0),
+        rotation: vector.Vector4(1.0, 0.0, 0.0, 0.0),
       );
+      
+      print("Đang thêm node với URI: ${newNode.uri}");
       
       await arObjectManager!.addNode(newNode);
       setState(() {
@@ -168,7 +354,8 @@ class _ARViewerWidgetState extends State<ARViewerWidget> {
         selectedNode = newNode;
         selectedNodeName = nodeName;
       });
-
+      print("Đã thêm node thành công");
+      
       // Ẩn plane detection sau khi đặt model
       await arSessionManager?.onInitialize(
         showFeaturePoints: false,
@@ -181,69 +368,41 @@ class _ARViewerWidgetState extends State<ARViewerWidget> {
       );
       
     } catch (e) {
-      print("Error adding AR node: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error placing model: $e')),
-      );
+      print("Lỗi khi đặt model AR: $e");
+      _showErrorSnackBar('Không thể đặt model: $e');
     }
   }
 
   Future<void> onRemoveAllObjects() async {
     try {
-      if (arObjectManager != null) {
-        // Xóa tất cả các node hiện có
-        final nodesToRemove = List<ARNode>.from(nodes);
-        for (final node in nodesToRemove) {
+      if (arObjectManager != null && nodes.isNotEmpty) {
+        // Xóa trực tiếp node hiện tại
+        for (var node in nodes) {
           await arObjectManager!.removeNode(node);
-          nodes.remove(node);
         }
         
         setState(() {
+          nodes.clear();
           selectedNode = null;
           selectedNodeName = null;
-          isPlacingObject = true;
-          showPlaneOverlay = true; // Hiển thị lại plane detection
         });
-        
-        // Khởi tạo lại session với plane detection được bật
+
+        // Bật lại plane detection
         await arSessionManager?.onInitialize(
           showFeaturePoints: false,
           showPlanes: true,
-          customPlaneTexturePath: "assets/triangle.png",
+          customPlaneTexturePath: defaultTargetPlatform == TargetPlatform.android 
+              ? "assets/triangle.png" 
+              : "triangle",
           showWorldOrigin: false,
           handlePans: true,
           handleRotation: true,
           handleTaps: true,
         );
-
-        // Đặt lại các thông số tracking
-        await arSessionManager?.onPlaneOrPointTap;
       }
     } catch (e) {
-      print('Error removing objects: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error removing objects: $e')),
-      );
-    }
-  }
-
-  Future<void> onRemoveSelectedObject() async {
-    if (selectedNode != null && arObjectManager != null) {
-      try {
-        await arObjectManager!.removeNode(selectedNode!);
-        setState(() {
-          nodes.remove(selectedNode);
-          if (nodes.isNotEmpty) {
-            selectedNode = nodes.last;
-            selectedNodeName = selectedNode?.name;
-          } else {
-            selectedNode = null;
-            selectedNodeName = null;
-          }
-        });
-      } catch (e) {
-        print('Error removing selected object: $e');
-      }
+      print('Lỗi khi xóa object: $e');
+      _showErrorSnackBar('Không thể xóa object: $e');
     }
   }
 
@@ -252,58 +411,16 @@ class _ARViewerWidgetState extends State<ARViewerWidget> {
       scaleFactor = (scaleFactor + delta).clamp(0.1, 2.0);
       if (nodes.isNotEmpty) {
         for (var node in nodes) {
-          node.scale = Vector3(scaleFactor, scaleFactor, scaleFactor);
+          node.scale = vector.Vector3(scaleFactor, scaleFactor, scaleFactor);
           node.position = selectedNode?.position ?? node.position;
         }
       }
     });
   }
 
-  void _updatePlaneVisibility(bool show) {
-    if (!mounted) return;
-    
-    setState(() {
-      showPlaneOverlay = show;
-    });
-    
-    // Đảm bảo hủy timer cũ nếu có
-    _hideTimer?.cancel();
-    
-    if (show) {
-      // Tạo timer mới để ẩn plane sau 2 giây
-      _hideTimer = Timer(const Duration(seconds: 2), () {
-        if (mounted) {
-          arSessionManager?.onInitialize(
-            showFeaturePoints: false,
-            showPlanes: false,  // ặt thành false để ẩn plane
-            customPlaneTexturePath: "",
-            showWorldOrigin: false,
-            handlePans: true,
-            handleRotation: true,
-          );
-          setState(() {
-            showPlaneOverlay = false;
-          });
-        }
-      });
-    }
-    
-    // Chỉ cập nhật hiển thị plane khi cần hiển thị
-    if (show) {
-      arSessionManager?.onInitialize(
-        showFeaturePoints: false,
-        showPlanes: true,
-        customPlaneTexturePath: "assets/triangle.png",
-        showWorldOrigin: false,
-        handlePans: true,
-        handleRotation: true,
-      );
-    }
-  }
-
   void initializeARCallbacks() {
     arObjectManager!.onPanStart = (String nodeName) {
-      print("Started moving node $nodeName");
+      print("Bắt đầu di chuyển node $nodeName");
       setState(() {
         selectedNodeName = nodeName;
         selectedNode = nodes.firstWhere(
@@ -318,7 +435,7 @@ class _ARViewerWidgetState extends State<ARViewerWidget> {
       if (selectedNodeName == nodeName && selectedNode != null) {
         // Lấy transform từ node hiện tại
         final transform = selectedNode!.transform;
-        final Vector3 position = Vector3(
+        final vector.Vector3 position = vector.Vector3(
           transform.getColumn(3).x,
           transform.getColumn(3).y,
           transform.getColumn(3).z,
@@ -327,15 +444,15 @@ class _ARViewerWidgetState extends State<ARViewerWidget> {
         setState(() {
           selectedNode!.position = position;
         });
-        print("Moving node $nodeName to position: $position");
+        print("Di chuyển node $nodeName đến vị trí: $position");
       }
     };
 
     arObjectManager!.onPanEnd = (String nodeName, Matrix4? transform) {
-      print("Finished moving node $nodeName");
+      print("Kết thúc di chuyển node $nodeName");
       if (selectedNodeName == nodeName && selectedNode != null) {
-        // Sử dụng tham số transform được cung cấp thay vì lấy từ selectedNode
-        final Vector3 finalPosition = Vector3(
+        // Sử dụng tham số transform được cung cấp
+        final vector.Vector3 finalPosition = vector.Vector3(
           transform?.getColumn(3).x ?? selectedNode!.transform.getColumn(3).x,
           transform?.getColumn(3).y ?? selectedNode!.transform.getColumn(3).y,
           transform?.getColumn(3).z ?? selectedNode!.transform.getColumn(3).z,
@@ -364,7 +481,7 @@ class _ARViewerWidgetState extends State<ARViewerWidget> {
           );
           isPlacingObject = false;
         });
-        print("Tapped node $nodeName");
+        print("Đã chọn node $nodeName");
       }
     };
   }
