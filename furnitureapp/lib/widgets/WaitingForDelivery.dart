@@ -73,7 +73,7 @@ class _WaitingForDeliveryState extends State<WaitingForDelivery> {
 
   Future<List<OrderData>> _loadOrders() async {
     List<OrderData> orders = await DataService().getOrdersByUserId();
-    return orders.where((order) => order.deliveryStatus == 'Shipping').toList();
+    return orders.where((order) => order.deliveryStatus == 'Shipping' && order.waitingConfirmation).toList();
   }
 
   Widget _buildOrderSection(OrderData orderData) {
