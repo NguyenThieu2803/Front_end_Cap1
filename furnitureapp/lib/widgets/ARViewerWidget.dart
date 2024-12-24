@@ -1,11 +1,15 @@
 import 'dart:async';
+import 'package:ar_flutter_plugin/models/ar_anchor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:furnitureapp/services/ar_service.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:ar_flutter_plugin/models/ar_node.dart';
 import 'package:ar_flutter_plugin/ar_flutter_plugin.dart';
+import 'package:vector_math/vector_math_64.dart' hide Colors;
 import 'package:ar_flutter_plugin/datatypes/node_types.dart';
+import 'package:ar_flutter_plugin/models/ar_hittest_result.dart';
 import 'package:ar_flutter_plugin/managers/ar_anchor_manager.dart';
-import 'package:ar_flutter_plugin/managers/ar_location_manager.dart';
 import 'package:ar_flutter_plugin/managers/ar_object_manager.dart';
 import 'package:ar_flutter_plugin/managers/ar_session_manager.dart';
 import 'package:ar_flutter_plugin/models/ar_node.dart';
@@ -14,7 +18,10 @@ import 'package:ar_flutter_plugin/datatypes/hittest_result_types.dart';
 import 'package:ar_flutter_plugin/datatypes/config_planedetection.dart';
 import 'package:ar_flutter_plugin/models/ar_node.dart';
 import 'package:ar_flutter_plugin/models/ar_hittest_result.dart';
-import 'package:ar_flutter_plugin/datatypes/anchor_types.dart' as ar;
+import 'package:ar_flutter_plugin/datatypes/anchor_types.dart';
+import 'package:ar_flutter_plugin/managers/ar_location_manager.dart';
+import 'package:ar_flutter_plugin/datatypes/config_planedetection.dart';
+import 'dart:math' as math;
 
 class ARViewerWidget extends StatefulWidget {
   final String modelUrl;
@@ -38,7 +45,7 @@ class _ARViewerWidgetState extends State<ARViewerWidget> {
   ARAnchorManager? arAnchorManager;
   ARNode? selectedNode;
   
-  double scaleFactor = 0.2;
+  double scaleFactor = 0.5; // Increased initial scale
   List<ARNode> nodes = [];
   bool isPlacingObject = false;
   String? selectedNodeName;
@@ -48,6 +55,25 @@ class _ARViewerWidgetState extends State<ARViewerWidget> {
   bool _hasPermission = false;
   bool _isLoading = false;
   bool _isARSupported = false;
+  String? _errorMessage;
+  bool isPositionLocked = false;
+  Vector3 lockedPosition = Vector3.zero();
+  double rotationX = 0.0;
+  double rotationY = 0.0;
+  double rotationZ = 0.0;
+
+  // Add new state variables for enhanced rotation
+  bool isRotating = false;
+  double lastRotationX = 0.0;
+  double lastRotationY = 0.0;
+  double lastRotationZ = 0.0;
+  double baseScale = 1.0;
+
+  // Add new variables for rotation constraints
+  static const double maxRotationY = math.pi / 2; // 90 degrees
+  static const double minRotationY = -math.pi / 2; // -90 degrees
+  bool isWallDetected = false;
+  double wallDistance = 0.0;
 
   @override
   void initState() {
@@ -165,6 +191,7 @@ class _ARViewerWidgetState extends State<ARViewerWidget> {
     arAnchorManager = anchorManager;
 
     arSessionManager!.onInitialize(
+      showAnimatedGuide: false, // Disable “move iPhone to start”
       showFeaturePoints: false,
       showPlanes: true,
       customPlaneTexturePath: defaultTargetPlatform == TargetPlatform.android 
@@ -181,6 +208,16 @@ class _ARViewerWidgetState extends State<ARViewerWidget> {
     // Đảm bảo callback này được gọi
     arSessionManager!.onPlaneOrPointTap = onPlaneOrPointTapped;
     print("Đã đăng ký callback onPlaneOrPointTap");
+
+    // Initialize other callbacks
+    initializeARCallbacks();
+  }
+
+  // Automatically adjust model position based on camera distance
+  void _updateModelDistance() {
+    if (arSessionManager == null || selectedNode == null) return;
+    final cameraPose = arSessionManager!.getCameraPose();
+    // Example logic updating model's position or scale using cameraPose
   }
 
   @override
@@ -235,15 +272,54 @@ class _ARViewerWidgetState extends State<ARViewerWidget> {
       body: Stack(
         children: [
           GestureDetector(
-            onPanUpdate: (details) {
+            onScaleStart: (ScaleStartDetails details) {
               if (selectedNode != null) {
-                final delta = details.delta;
+                baseScale = scaleFactor;
+              }
+            },
+            onScaleUpdate: (ScaleUpdateDetails details) {
+              if (selectedNode != null) {
                 setState(() {
-                  selectedNode!.position = vector.Vector3(
-                    selectedNode!.position.x + delta.dx * 0.01,
-                    selectedNode!.position.y,
-                    selectedNode!.position.z + delta.dy * 0.01,
-                  );
+                  if (details.scale != 1.0) {
+                    // Handle scaling
+                    double newScale = (baseScale * details.scale).clamp(0.1, 2.0);
+                    scaleFactor = newScale;
+                    selectedNode!.scale = vector.Vector3(newScale, newScale, newScale);
+                  } else if (isPositionLocked) {
+                    // Constrain rotation to horizontal only
+                    double newRotationY = rotationY + details.focalPointDelta.dx * 0.01;
+                    // Clamp rotation to prevent 360-degree turns
+                    rotationY = newRotationY.clamp(minRotationY, maxRotationY);
+                    
+                    // Keep original position when rotating
+                    final rotationMatrix = Matrix4.identity()
+                      ..rotateY(rotationY);
+                    
+                    // Maintain distance from wall if detected
+                    if (isWallDetected) {
+                      selectedNode!.transform = Matrix4.identity()
+                        ..setTranslation(vector.Vector3(
+                          lockedPosition.x,
+                          lockedPosition.y,
+                          lockedPosition.z
+                        ))
+                        ..multiply(rotationMatrix)
+                        ..scale(scaleFactor);
+                    } else {
+                      selectedNode!.transform = Matrix4.identity()
+                        ..setTranslation(lockedPosition)
+                        ..multiply(rotationMatrix)
+                        ..scale(scaleFactor);
+                    }
+                  } else {
+                    // Handle position change when unlocked
+                    final delta = details.focalPointDelta;
+                    selectedNode!.position = vector.Vector3(
+                      selectedNode!.position.x + delta.dx * 0.01,
+                      selectedNode!.position.y,
+                      selectedNode!.position.z + delta.dy * 0.01,
+                    );
+                  }
                 });
               }
             },
@@ -259,6 +335,33 @@ class _ARViewerWidgetState extends State<ARViewerWidget> {
             right: 16,
             child: Column(
               children: [
+                // Position Lock Controls
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: selectedNode != null && !isPositionLocked 
+                          ? _lockPosition 
+                          : null,
+                      icon: const Icon(Icons.lock),
+                      label: const Text("Lock Position"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        disabledBackgroundColor: Colors.grey,
+                      ),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: isPositionLocked ? _unlockPosition : null,
+                      icon: const Icon(Icons.lock_open),
+                      label: const Text("Unlock Position"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        disabledBackgroundColor: Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -289,6 +392,28 @@ class _ARViewerWidgetState extends State<ARViewerWidget> {
                     backgroundColor: Colors.red,
                   ),
                 ),
+                // Controls for rotation axes
+                if (isPositionLocked && selectedNode != null)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.rotate_left, color: Colors.white),
+                        onPressed: () => _rotateAroundAxis('x'),
+                        tooltip: 'Rotate X-axis',
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.rotate_right, color: Colors.white),
+                        onPressed: () => _rotateAroundAxis('y'),
+                        tooltip: 'Rotate Y-axis',
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.sync, color: Colors.white),
+                        onPressed: () => _rotateAroundAxis('z'),
+                        tooltip: 'Rotate Z-axis',
+                      ),
+                    ],
+                  ),
               ],
             ),
           ),
@@ -314,6 +439,7 @@ class _ARViewerWidgetState extends State<ARViewerWidget> {
     }
     
     final hit = hitTestResults.first;
+    await detectWall(hit);
     
     try {
       print("ModelUrl: ${widget.modelUrl}");
@@ -340,32 +466,54 @@ class _ARViewerWidgetState extends State<ARViewerWidget> {
         scale: vector.Vector3(scaleFactor, scaleFactor, scaleFactor),
         position: vector.Vector3(
           hit.worldTransform[12],
-          hit.worldTransform[13] - 1.5,
-          hit.worldTransform[14] - 2.0,
+          hit.worldTransform[13]-1.5,
+          hit.worldTransform[14]-2,
         ),
         rotation: vector.Vector4(1.0, 0.0, 0.0, 0.0),
       );
+
+      // Adjust position if wall detected
+      if (isWallDetected) {
+        // Keep slight distance from wall
+        const wallOffset = 0.05; // 5cm offset
+        newNode.position = vector.Vector3(
+          newNode.position.x,
+          newNode.position.y,
+          newNode.position.z + wallOffset
+        );
+      }
       
       print("Đang thêm node với URI: ${newNode.uri}");
       
-      await arObjectManager!.addNode(newNode);
-      setState(() {
-        nodes.add(newNode);
-        selectedNode = newNode;
-        selectedNodeName = nodeName;
-      });
-      print("Đã thêm node thành công");
-      
-      // Ẩn plane detection sau khi đặt model
-      await arSessionManager?.onInitialize(
-        showFeaturePoints: false,
-        showPlanes: false,
-        customPlaneTexturePath: "",
-        showWorldOrigin: false,
-        handlePans: true,
-        handleRotation: true,
-        handleTaps: true,
+      var anchor = ARPlaneAnchor(
+        transformation: hit.worldTransform,
+        name: "anchor_${DateTime.now().millisecondsSinceEpoch}",
       );
+      
+      bool? didAddAnchor = await arAnchorManager?.addAnchor(anchor);
+      
+      if (didAddAnchor == true) {
+        // Add node directly without using the anchor as parameter
+        await arObjectManager?.addNode(newNode);
+        setState(() {
+          nodes.add(newNode);
+          selectedNode = newNode;
+          selectedNodeName = nodeName;
+        });
+        
+        print("Đã thêm node thành công");
+        
+        // Hide plane detection after placing model
+        await arSessionManager?.onInitialize(
+          showFeaturePoints: false,
+          showPlanes: false,
+          customPlaneTexturePath: "",
+          showWorldOrigin: false,
+          handlePans: true,
+          handleRotation: true,
+          handleTaps: true,
+        );
+      }
       
     } catch (e) {
       print("Lỗi khi đặt model AR: $e");
@@ -399,6 +547,9 @@ class _ARViewerWidgetState extends State<ARViewerWidget> {
           handleRotation: true,
           handleTaps: true,
         );
+
+        // Đặt lại các thông số tracking
+        arSessionManager?.onPlaneOrPointTap;
       }
     } catch (e) {
       print('Lỗi khi xóa object: $e');
@@ -420,19 +571,21 @@ class _ARViewerWidgetState extends State<ARViewerWidget> {
 
   void initializeARCallbacks() {
     arObjectManager!.onPanStart = (String nodeName) {
-      print("Bắt đầu di chuyển node $nodeName");
-      setState(() {
-        selectedNodeName = nodeName;
-        selectedNode = nodes.firstWhere(
-          (node) => node.name == nodeName,
-          orElse: () => nodes.first,
-        );
-        isPlacingObject = false;
-      });
+      if (!isPositionLocked) {
+        print("Bắt đầu di chuyển node $nodeName");
+        setState(() {
+          selectedNodeName = nodeName;
+          selectedNode = nodes.firstWhere(
+            (node) => node.name == nodeName,
+            orElse: () => nodes.first,
+          );
+          isPlacingObject = false;
+        });
+      }
     };
 
     arObjectManager!.onPanChange = (String nodeName) {
-      if (selectedNodeName == nodeName && selectedNode != null) {
+      if (!isPositionLocked && selectedNodeName == nodeName && selectedNode != null) {
         // Lấy transform từ node hiện tại
         final transform = selectedNode!.transform;
         final vector.Vector3 position = vector.Vector3(
@@ -449,8 +602,8 @@ class _ARViewerWidgetState extends State<ARViewerWidget> {
     };
 
     arObjectManager!.onPanEnd = (String nodeName, Matrix4? transform) {
-      print("Kết thúc di chuyển node $nodeName");
-      if (selectedNodeName == nodeName && selectedNode != null) {
+      if (!isPositionLocked && selectedNodeName == nodeName && selectedNode != null) {
+        print("Kết thúc di chuyển node $nodeName");
         // Sử dụng tham số transform được cung cấp
         final vector.Vector3 finalPosition = vector.Vector3(
           transform?.getColumn(3).x ?? selectedNode!.transform.getColumn(3).x,
@@ -484,5 +637,208 @@ class _ARViewerWidgetState extends State<ARViewerWidget> {
         print("Đã chọn node $nodeName");
       }
     };
+
+    // Long press to delete
+    // Note: onLongPress is not defined for ARObjectManager, so this code is removed.
+  }
+
+  // Thêm xử lý ánh sáng và shadow
+  void _setupLighting() {
+    arSessionManager!.onInitialize(
+      showFeaturePoints: true,
+      showPlanes: true,
+      customPlaneTexturePath: "assets/shadow_texture.png",
+      showWorldOrigin: false,
+      handlePans: true,
+      handleRotation: true,
+      handleTaps: true,
+    );
+  }
+  
+  // Cải thiện scale và rotation
+  void _updateModelTransform(ARNode node) {
+    final m = node.rotation;
+    final sy = math.sqrt(m.entry(0,0) * m.entry(0,0) + m.entry(1,0) * m.entry(1,0));
+    
+    final x = math.atan2(m.entry(2,1), m.entry(2,2));
+    final y = math.atan2(-m.entry(2,0), sy);
+    final z = math.atan2(m.entry(1,0), m.entry(0,0));
+    
+    final transform = Matrix4.identity()
+      ..setTranslation(node.position)
+      ..rotateX(x)
+      ..rotateY(y)
+      ..rotateZ(z)
+      ..scale(node.scale.x, node.scale.y, node.scale.z);
+      
+    node.transform = transform;
+  }
+
+  Future<void> _loadModel(String modelUrl) async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      // Validate model
+      if (!await ArService.validateModelUrl(modelUrl)) {
+        throw Exception('Invalid model URL');
+      }
+
+      // Preload model
+      final cachedPath = await ArService.preloadModel(modelUrl);
+      if (cachedPath == null) {
+        throw Exception('Failed to load model');
+      }
+
+      // Add node with cached model
+      await _addNodeToScene(cachedPath);
+    } catch (e) {
+      setState(() => _errorMessage = e.toString());
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _addNodeToScene(String modelPath) async {
+    if (arObjectManager == null) return;
+
+    try {
+      final node = ARNode(
+        type: NodeType.webGLB,
+        uri: modelPath,
+        scale: vector.Vector3(scaleFactor, scaleFactor, scaleFactor),
+        position: vector.Vector3(0, 0, -1),
+        rotation: vector.Vector4(1.0, 0.0, 0.0, 0.0),
+      );
+      
+      await arObjectManager!.addNode(node);
+      setState(() {
+        nodes.add(node);
+        selectedNode = node;
+      });
+    } catch (e) {
+      print('Error adding node: $e');
+      rethrow;
+    }
+  }
+
+  void _setPosition() {
+    if (selectedNode != null) {
+      setState(() {
+        isPositionLocked = true;
+        // Store current transform state if needed
+        _updateModelTransform(selectedNode!);
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Position locked')),
+      );
+    }
+  }
+
+  void _releasePosition() {
+    setState(() {
+      isPositionLocked = false;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Position released')),
+    );
+  }
+
+  void _lockPosition() {
+    if (selectedNode != null) {
+      setState(() {
+        isPositionLocked = true;
+        lockedPosition = selectedNode!.position;
+        // Store current rotation values
+        lastRotationY = rotationY.clamp(minRotationY, maxRotationY);
+        
+        // If near wall, ensure proper positioning
+        if (isWallDetected) {
+          const wallOffset = 0.05; // 5cm offset
+          lockedPosition = vector.Vector3(
+            lockedPosition.x,
+            lockedPosition.y,
+            lockedPosition.z + wallOffset
+          );
+        }
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Position locked - Drag to rotate in any direction')),
+      );
+    }
+  }
+
+  void _unlockPosition() {
+    setState(() {
+      isPositionLocked = false;
+      // Preserve current transform when unlocking
+      if (selectedNode != null) {
+        selectedNode!.transform = Matrix4.identity()
+          ..setTranslation(selectedNode!.position)
+          ..rotateX(lastRotationX)
+          ..rotateY(lastRotationY)
+          ..rotateZ(lastRotationZ)
+          ..scale(scaleFactor);
+      }
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Position unlocked - Free to move and zoom')),
+    );
+  }
+
+  void _rotateAroundAxis(String axis) {
+    if (selectedNode != null && isPositionLocked) {
+      setState(() {
+        final double rotationAmount = 0.2; // Adjust rotation speed
+        switch (axis) {
+          case 'x':
+            rotationX += rotationAmount;
+            break;
+          case 'y':
+            rotationY += rotationAmount;
+            break;
+          case 'z':
+            rotationZ += rotationAmount;
+            break;
+        }
+        
+        final rotationMatrix = Matrix4.identity()
+          ..rotateX(rotationX)
+          ..rotateY(rotationY)
+          ..rotateZ(rotationZ);
+        
+        selectedNode!.transform = Matrix4.identity()
+          ..setTranslation(lockedPosition)
+          ..multiply(rotationMatrix)
+          ..scale(scaleFactor
+          );
+      });
+    }
+  }
+
+  // Add wall detection method
+  Future<void> detectWall(ARHitTestResult hit) async {
+    try {
+      // Check if hit result indicates a vertical surface
+      if (hit.type == ARHitTestResultType.plane) {
+        setState(() {
+          isWallDetected = true;
+          // Calculate distance from wall
+          wallDistance = math.sqrt(
+            math.pow(hit.worldTransform[12], 2) +
+            math.pow(hit.worldTransform[14], 2)
+          );
+        });
+      } else {
+        setState(() {
+          isWallDetected = false;
+          wallDistance = 0.0;
+        });
+      }
+    } catch (e) {
+      print('Error detecting wall: $e');
+    }
   }
 }

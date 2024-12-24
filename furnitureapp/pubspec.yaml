@@ -24,8 +24,9 @@ dependencies:
   cupertino_icons: ^1.0.8
   api_cache_manager: ^1.0.2
   dio: ^5.4.0
+  crypto: ^3.0.3
+  path: ^1.8.3
 
-  
   # AR dependencies - Cần đảm bảo tương thích iOS
   ar_flutter_plugin: ^0.7.3
   arkit_plugin: ^1.1.0
@@ -39,6 +40,8 @@ dependencies:
   flutter_stripe: ^11.2.0
   vector_math: ^2.1.4
   arcore_flutter_plugin: ^0.1.0
+  lottie: ^3.2.0
+  tflite_flutter: ^0.11.0
 
 dev_dependencies:
   flutter_test:
@@ -63,3 +66,5 @@ flutter:
     - assets/detail/OrderInformation.json
     - assets/detail/user.json
     - assets/detail/vn_only_simplified_json_generated_data_vn_units.json
+    - assets/triangle.png
+
