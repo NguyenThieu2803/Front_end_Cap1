@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:furnitureapp/services/auth_service.dart';
 import 'package:furnitureapp/widgets/FavoriteAppBar.dart';
 import 'package:furnitureapp/widgets/FavoriteItemSamples.dart';
 
@@ -10,6 +11,16 @@ class FavoritePage extends StatefulWidget {
 }
 
 class _FavoritePageState extends State<FavoritePage> {
+  @override
+  void initState() {
+    super.initState();
+    _checkAuth();
+  }
+
+  void _checkAuth() async {
+    AuthService.checkProtectedRoute(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

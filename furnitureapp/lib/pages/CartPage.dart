@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:furnitureapp/services/auth_service.dart';
 import 'package:furnitureapp/widgets/CartAppBar.dart';
 import 'package:furnitureapp/widgets/CartItemSamples.dart';
 import 'package:furnitureapp/widgets/CartBottomNavBar.dart';
@@ -13,6 +14,22 @@ class CartPage extends StatefulWidget {
 class _CartPageState extends State<CartPage> {
   double _totalAmount = 0.0;
   Set<String> _selectedProductIds = {};
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAuth();
+    });
+  }
+
+  void _checkAuth() async {
+    bool isLogged = await AuthService.isLoggedIn();
+    if (!isLogged) {
+      Navigator.of(context).pop();
+      AuthService.showLoginDialog(context);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

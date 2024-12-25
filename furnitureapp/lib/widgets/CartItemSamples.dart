@@ -102,7 +102,7 @@ class _CartItemSamplesState extends State<CartItemSamples> {
     double finalPrice = originalPrice * (1 - discountPercentage / 100);
 
     return Container(
-      height: 110,
+      height: 120,
       margin: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
       padding: EdgeInsets.all(10),
       decoration: BoxDecoration(

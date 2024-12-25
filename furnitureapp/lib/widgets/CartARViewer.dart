@@ -17,6 +17,7 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:ar_flutter_plugin/models/ar_anchor.dart';
+import 'package:http/http.dart' as http;
 
 class CartARViewer extends StatefulWidget {
   const CartARViewer({super.key});
@@ -63,6 +64,21 @@ class _CartARViewerState extends State<CartARViewer> {
 
   // Add new variables to track placed models count
   Map<String, int> placedModelCounts = {};
+
+  // Add new variables for scaling
+  double minScale = 0.1;
+  double maxScale = 2.0;
+  bool isScaling = false;
+
+  // Add these variables for gesture handling
+  double _baseScaleFactor = 1.0;
+  bool _isScaling = false;
+  bool _hasPlacedFirstModel = false; // Add this variable
+
+  // Add new variables for model loading management
+  final int maxModelSize = 20 * 1024 * 1024; // 20MB in bytes
+  bool _isLoadingModel = false;
+  Map<String, bool> _modelLoadingStates = {};
 
   @override
   void initState() {
@@ -182,8 +198,23 @@ class _CartARViewerState extends State<CartARViewer> {
     });
   }
 
+  Future<bool> _checkModelSize(String modelUrl) async {
+    try {
+      final Uri uri = Uri.parse(modelUrl);
+      final response = await http.head(uri);
+      final contentLength = int.parse(response.headers['content-length'] ?? '0');
+      if (contentLength > maxModelSize) {
+        print('Model size: ${(contentLength / (1024 * 1024)).toStringAsFixed(2)}MB');
+      }
+      return contentLength <= maxModelSize;
+    } catch (e) {
+      print('Error checking model size: $e');
+      return true; // Allow loading if size check fails
+    }
+  }
+
   Future<void> _handlePlaneOrPointTapped(List<ARHitTestResult> hitTestResults) async {
-    if (selectedModelId == null || hitTestResults.isEmpty) return;
+    if (selectedModelId == null || hitTestResults.isEmpty || _isLoadingModel) return;
 
     final selectedItem = cart!.items!.firstWhere(
       (item) => item.product?.id == selectedModelId,
@@ -200,9 +231,42 @@ class _CartARViewerState extends State<CartARViewer> {
     final modelUrl = selectedItem.product?.model3d;
     if (modelUrl == null) return;
 
+    // Check if we've already verified this model
+    if (!_modelLoadingStates.containsKey(modelUrl)) {
+      setState(() => _isLoadingModel = true);
+      
+      try {
+        // Check model size before loading
+        final isModelSizeOk = await _checkModelSize(modelUrl);
+        if (!isModelSizeOk) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Model quá lớn, không thể tải. Vui lòng chọn model khác.')),
+          );
+          _modelLoadingStates[modelUrl] = false;
+          setState(() => _isLoadingModel = false);
+          return;
+        }
+        _modelLoadingStates[modelUrl] = true;
+      } catch (e) {
+        print('Error checking model: $e');
+        setState(() => _isLoadingModel = false);
+        return;
+      }
+    } else if (!_modelLoadingStates[modelUrl]!) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Model này không được hỗ trợ.')),
+      );
+      return;
+    }
+
     final hit = hitTestResults.first;
 
     try {
+      // Show loading indicator
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Đang tải model...')),
+      );
+
       // Create anchor first
       final anchor = ARPlaneAnchor(
         transformation: hit.worldTransform,
@@ -219,11 +283,15 @@ class _CartARViewerState extends State<CartARViewer> {
         scale: Vector3(scaleFactor, scaleFactor, scaleFactor),
         position: Vector3(
           hit.worldTransform[12],
-          hit.worldTransform[13],
-          hit.worldTransform[14],
+          hit.worldTransform[13]-0.01, // Adjusted height
+          hit.worldTransform[14], // Adjusted distance
         ),
         rotation: Vector4(1.0, 0.0, 0.0, 0.0),
       );
+
+      // Remove loading state listener
+      setState(() => _isLoadingModel = false);
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
       await arObjectManager?.addNode(node);
       setState(() {
@@ -236,12 +304,28 @@ class _CartARViewerState extends State<CartARViewer> {
         modelRotations[node.name] = 0.0; // Initialize rotation
         // Increment the placed count for this model
         placedModelCounts[selectedModelId!] = (placedModelCounts[selectedModelId!] ?? 0) + 1;
+        // Hide plane detection after first model placement
+        if (!_hasPlacedFirstModel) {
+          _hasPlacedFirstModel = true;
+          // Update AR session to hide planes
+          arSessionManager?.onInitialize(
+            showAnimatedGuide: false,
+            showFeaturePoints: false,
+            showPlanes: false,
+            customPlaneTexturePath: "",
+            showWorldOrigin: false,
+            handlePans: true,
+            handleRotation: true,
+            handleTaps: true,
+          );
+        }
       });
 
       _anchorMap[node.name] = anchor;
 
     } catch (e) {
       print('Error adding AR node: $e');
+      setState(() => _isLoadingModel = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error placing model: $e')),
       );
@@ -249,13 +333,29 @@ class _CartARViewerState extends State<CartARViewer> {
   }
 
   void _toggleLock(String nodeName) {
+    if (!modelLockStatus.containsKey(nodeName)) {
+      modelLockStatus[nodeName] = false;
+    }
+    
     setState(() {
       modelLockStatus[nodeName] = !modelLockStatus[nodeName]!;
       if (modelLockStatus[nodeName]!) {
+        // Store current position when locking
         modelLockedPositions[nodeName] = modelNodes[nodeName]!.position;
         modelRotations[nodeName] = 0.0;
       }
     });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          modelLockStatus[nodeName]! 
+            ? 'Đã khóa vị trí. Vuốt ngang để xoay mô hình.' 
+            : 'Đã mở khóa vị trí. Có thể di chuyển mô hình.',
+        ),
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
   // Remove or modify _removeNode function to disable deletion
@@ -278,10 +378,15 @@ class _CartARViewerState extends State<CartARViewer> {
             Row(
               children: [
                 IconButton(
-                  icon: Icon(modelLockStatus[selectedNode!.name]! ? Icons.lock : Icons.lock_open),
+                  icon: Icon(modelLockStatus[selectedNode!.name] ?? false 
+                    ? Icons.lock 
+                    : Icons.lock_open),
                   onPressed: () => _toggleLock(selectedNode!.name),
                 ),
-                // Remove delete button from AppBar
+                IconButton(
+                  icon: const Icon(Icons.delete),
+                  onPressed: () => _removeSelectedNode(),
+                ),
               ],
             ),
         ],
@@ -289,8 +394,42 @@ class _CartARViewerState extends State<CartARViewer> {
       body: Stack(
         children: [
           GestureDetector(
-            onPanUpdate: _handlePanUpdate,
-            onPanEnd: _handlePanEnd,
+            onScaleStart: (ScaleStartDetails details) {
+              _baseScaleFactor = scaleFactor;
+              _isScaling = details.pointerCount > 1; // Only scale with 2 fingers
+              _lastPanPosition = null;
+            },
+            onScaleUpdate: (ScaleUpdateDetails details) {
+              if (selectedNode == null) return;
+              final nodeName = selectedNode!.name;
+
+              setState(() {
+                if (details.pointerCount > 1 && details.scale != 1.0) {
+                  // Handle scaling with 2 fingers
+                  scaleFactor = (_baseScaleFactor * details.scale).clamp(minScale, maxScale);
+                  selectedNode!.scale = Vector3.all(scaleFactor);
+                } else if (modelLockStatus[nodeName] ?? false) {
+                  // Handle rotation when locked
+                  final delta = details.focalPointDelta.dx;
+                  modelRotations[nodeName] = (modelRotations[nodeName] ?? 0.0) + delta * 0.01;
+                  final rotationMatrix = Matrix4.rotationY(modelRotations[nodeName]!);
+                  selectedNode!.transform = Matrix4.identity()
+                    ..setTranslation(modelLockedPositions[nodeName] ?? Vector3.zero())
+                    ..multiply(rotationMatrix)
+                    ..scale(scaleFactor);
+                } else {
+                  // Handle movement when unlocked - Invert the delta values
+                  final delta = details.focalPointDelta;
+                  final newPosition = selectedNode!.position + 
+                      Vector3(-delta.dx * 0.003, 0, -delta.dy * 0.003); // Invert both X and Z
+                  selectedNode!.position = newPosition;
+                  modelLockedPositions[nodeName] = newPosition;
+                }
+              });
+            },
+            onScaleEnd: (ScaleEndDetails details) {
+              _isScaling = false;
+            },
             child: ARView(
               onARViewCreated: onARViewCreated,
               planeDetectionConfig: PlaneDetectionConfig.horizontalAndVertical,
@@ -433,37 +572,85 @@ class _CartARViewerState extends State<CartARViewer> {
           // for (var node in nodes)
           //   Positioned(...)
 
+          // Add controls for selected model
+          if (selectedNode != null)
+            Positioned(
+              bottom: 140,
+              left: 16,
+              right: 16,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    IconButton(
+                      icon: Icon(
+                        modelLockStatus[selectedNode!.name] ?? false 
+                          ? Icons.lock 
+                          : Icons.lock_open,
+                        color: Colors.blue,
+                      ),
+                      onPressed: () => _toggleLock(selectedNode!.name),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () => _removeSelectedNode(),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+          // Add scale indicator
+          if (selectedNode != null)
+            Positioned(
+              top: 120,
+              right: 16,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.remove),
+                      onPressed: () => _updateScale(scaleFactor - 0.1),
+                    ),
+                    Text('${(scaleFactor * 100).toInt()}%'),
+                    IconButton(
+                      icon: const Icon(Icons.add),
+                      onPressed: () => _updateScale(scaleFactor + 0.1),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+          // Add loading indicator
+          if (_isLoadingModel)
+            Container(
+              color: Colors.black.withOpacity(0.5),
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
         ],
       ),
     );
   }
 
-  void _handleScaleUpdate(ScaleUpdateDetails details) {
-    if (selectedNode == null || !isPositionLocked) return;
-
-    setState(() {
-      if (details.scale != 1.0) {
-        scaleFactor = (scaleFactor * details.scale).clamp(0.1, 2.0);
-        selectedNode!.scale = Vector3.all(scaleFactor);
-      } else {
-        double newRotationY = rotationY + details.focalPointDelta.dx * 0.01;
-        rotationY = newRotationY.clamp(minRotationY, maxRotationY);
-        
-        final rotationMatrix = Matrix4.identity()..rotateY(rotationY);
-        selectedNode!.transform = Matrix4.identity()
-          ..setTranslation(lockedPosition)
-          ..multiply(rotationMatrix)
-          ..scale(scaleFactor);
-      }
-    });
-  }
-
   void _updateScale(double value) {
+    if (selectedNode == null) return;
     setState(() {
-      scaleFactor = value;
-      if (selectedNode != null) {
-        selectedNode!.scale = Vector3.all(scaleFactor);
-      }
+      scaleFactor = value.clamp(minScale, maxScale);
+      selectedNode!.scale = Vector3.all(scaleFactor);
     });
   }
 
@@ -474,16 +661,28 @@ class _CartARViewerState extends State<CartARViewer> {
       final nodeName = selectedNode!.name;
       await arObjectManager?.removeNode(selectedNode!);
       nodes.remove(selectedNode);
+      
+      // Decrease the placed count for this model
+      if (selectedModelId != null) {
+        placedModelCounts[selectedModelId!] = (placedModelCounts[selectedModelId!] ?? 1) - 1;
+      }
 
-      // Also remove the anchor from anchor manager
+      // Remove the anchor
       final anchor = _anchorMap[nodeName];
       if (anchor != null) {
         await arAnchorManager?.removeAnchor(anchor);
         _anchorMap.remove(nodeName);
       }
 
-      selectedNode = null;
-      selectedModelId = null;
+      modelNodes.remove(selectedModelId);
+      modelLockStatus.remove(nodeName);
+      modelLockedPositions.remove(nodeName);
+      modelRotations.remove(nodeName);
+
+      setState(() {
+        selectedNode = null;
+        selectedModelId = null;
+      });
     } catch (e) {
       print('Error removing node: $e');
     }
@@ -500,7 +699,7 @@ class _CartARViewerState extends State<CartARViewer> {
     arAnchorManager = anchorManager;
 
     arSessionManager!.onInitialize(
-      showAnimatedGuide: false, // Disable default guide
+      showAnimatedGuide: false,
       showFeaturePoints: true,
       showPlanes: true,
       customPlaneTexturePath: defaultTargetPlatform == TargetPlatform.android 
@@ -514,23 +713,9 @@ class _CartARViewerState extends State<CartARViewer> {
 
     arObjectManager!.onInitialize();
 
-    // Add plane detection callback
+    // Remove duplicate callback and use only one
     arSessionManager!.onPlaneOrPointTap = (hits) {
-      setState(() {
-        if (!_planesFound) {
-          _planesFound = true;
-        }
-      });
-      _handlePlaneOrPointTapped(hits);
-    };
-
-    // Update plane detection callback
-    arSessionManager!.onPlaneOrPointTap = (hits) {
-      if (hits.isNotEmpty) {
-        setState(() {
-          _isPlaneDetected = true;
-          _showPlaceButton = true;
-        });
+      if (hits.isNotEmpty && selectedModelId != null) {
         _handlePlaneOrPointTapped(hits);
       }
     };
@@ -633,41 +818,6 @@ class _CartARViewerState extends State<CartARViewer> {
         SnackBar(content: Text('Không thể đặt nội thất: $e')),
       );
     }
-  }
-
-  void _handlePanUpdate(DragUpdateDetails details) {
-    if (selectedNode == null) return;
-
-    final nodeName = selectedNode!.name;
-    if (modelLockStatus[nodeName]!) {
-      // When locked, only allow rotation
-      setState(() {
-        modelRotations[nodeName] = modelRotations[nodeName]! + details.delta.dx * rotationSpeed;
-        final rotationMatrix = Matrix4.rotationY(modelRotations[nodeName]!);
-        selectedNode!.transform = Matrix4.identity()
-          ..setTranslation(modelLockedPositions[nodeName]!)
-          ..multiply(rotationMatrix)
-          ..scale(scaleFactor);
-      });
-    } else {
-      // When unlocked, allow position movement
-      if (_lastPanPosition == null) {
-        _lastPanPosition = details.globalPosition;
-        return;
-      }
-
-      final delta = details.globalPosition - _lastPanPosition!;
-      _lastPanPosition = details.globalPosition;
-
-      setState(() {
-        final newPosition = selectedNode!.position + Vector3(delta.dx * 0.02, 0, delta.dy * 0.02);
-        selectedNode!.position = newPosition;
-      });
-    }
-  }
-
-  void _handlePanEnd(DragEndDetails details) {
-    _lastPanPosition = null;
   }
 
   @override

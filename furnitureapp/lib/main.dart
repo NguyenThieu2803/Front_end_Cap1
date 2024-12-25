@@ -70,14 +70,12 @@ class MyApp extends StatelessWidget {
 
           // Định nghĩa các routes cho ứng dụng
           routes: {
-            "/startnow": (context) => StartNow(),
-            "/login": (context) => LoginPage(),
-            "/register": (context) => SignUp(),
-            "/home": (context) => HomePage(),
+            "/": (context) => const StartNow(), // Change initial route to "/"
+            "/home": (context) => const HomePage(),
+            "/login": (context) => const LoginPage(),
+            "/register": (context) => const SignUp(),
             "/search": (context) => SearchPage(),
             "/user": (context) => UserManagement(), // Trang khởi đầu
-            "/": (context) => HomePageAdmin(), // Trang khởi đầu
-            // "/login": (context) => LoginPage(), // Trang login
             "/main": (context) =>
                 HomeMainNavigationBar(), // Trang chính với bottom navigation
             "/product": (context) => ProductPage(
@@ -86,68 +84,9 @@ class MyApp extends StatelessWidget {
                 ), // Pass a default Product instance
             "/notifications": (context) => NotificationPage(),
           },
-          initialRoute:
-              "/startnow", // Định n+ghĩa trang bắt đầu khi ứng dụng chạy
+          initialRoute: "/", // Change to "/"
         );
       },
     );
   }
 }
-
-
-
-// final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-
-// void main() {
-//   WidgetsFlutterBinding
-//       .ensureInitialized(); // Đảm bảo tất cả plugin được khởi tạo trước khi chạy ứng dụng
-
-//   // Khởi tạo cho desktop platforms
-//   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-//     sqfliteFfiInit(); // Khởi tạo ffi cho SQLite trên các nền tảng desktop
-//     databaseFactory = databaseFactoryFfi; // Đặt databaseFactory cho FFI
-//   }
-//   Stripe.publishableKey =
-//       "pk_test_51Q4IszJ48Cc6e6PCqLUztrVyJYvPsIWd1hAOFRN842Jj7ldseweNpvw7eXXhBF26YTRZc3dvqEFAcRK8hCSFPSF400utPbzD2Q";
-//   runApp(MyApp());
-// }
-
-// class MyApp extends StatelessWidget {
-//   const MyApp({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       debugShowCheckedModeBanner: false, // Tắt banner debug
-//       theme: ThemeData(
-//         scaffoldBackgroundColor: Colors.white, // Thiết lập màu nền mặc định
-//       ),
-//       localizationsDelegates: [
-//         GlobalMaterialLocalizations.delegate,
-//         GlobalWidgetsLocalizations.delegate,
-//         GlobalCupertinoLocalizations.delegate,
-//         AppLocalizations.delegate,
-//       ],
-//       supportedLocales: [
-//         Locale('en', 'US'), // English
-//         Locale('vi', 'VN'), // Vietnamese
-//       ],
-//       navigatorKey: navigatorKey,
-
-//       // Định nghĩa các routes cho ứng dụng
-//       routes: {
-//         // "/startnow": (context) => StartNow(),
-//         "/home": (context) => HomePage(), // Trang khởi đầu
-//         "/": (context) => HomePageAdmin(), // Trang khởi đầu
-//         "/login": (context) => LoginPage(), // Trang login
-//         "/main": (context) =>
-//             HomeMainNavigationBar(), // Trang chính với bottom navigation
-//         "/product": (context) =>
-//             ProductPage(product: Product()), // Pass a default Product instance
-//         "/notifications": (context) => NotificationPage(),
-//         // "/register": (context) => SignUp()
-//       },
-//       initialRoute: "/login", // Định nghĩa trang bắt đầu khi ứng dụng chạy
-//     );
-//   }
-// }

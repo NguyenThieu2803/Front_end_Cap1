@@ -4,6 +4,7 @@ import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:furnitureapp/model/card_model.dart';
 import 'package:furnitureapp/model/address_model.dart';
 import 'package:furnitureapp/model/Cart_User_Model.dart';
+import 'package:furnitureapp/services/auth_service.dart';
 
 class CheckOutPage extends StatefulWidget {
   final Set<String> selectedProductIds;
@@ -34,13 +35,30 @@ class _CheckOutPageState extends State<CheckOutPage> {
   final double shippingFee = 30.0;
   late double subTotal;
   late double total;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAuth();
+    });
+  }
+
+  Future<void> _initializeStripeAndLoadData() async {
     Stripe.publishableKey =
         "pk_test_51Q4IszJ48Cc6e6PCngveNBvfhkg9qO12qhW65Au0spXnyY59DGhbfLf2WgpVV7Yg6bKJivrIZBYmtezg24kEh7L700mAjoAcEK";
     Stripe.instance.applySettings();
-    _loadData();
+    await _loadData();
+  }
+
+  void _checkAuth() async {
+    bool isLogged = await AuthService.isLoggedIn();
+    if (!isLogged) {
+      Navigator.of(context).pop();
+      AuthService.showLoginDialog(context);
+    } else {
+      _initializeStripeAndLoadData();
+    }
   }
 
   Future<void> _loadData() async {

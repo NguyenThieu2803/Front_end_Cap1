@@ -43,27 +43,30 @@ class _LoginPageState extends State<LoginPage> {
         _isLoading = true;
       });
 
-      bool isSuccess = await APIService.login(
-        _nameController.text,
-        _passwordController.text,
-      );
-
-      setState(() {
-        _isLoading = false;
-      });
-
-      if (isSuccess) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Login successful!')));
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
+      try {
+        bool isSuccess = await APIService.login(
+          _nameController.text,
+          _passwordController.text,
         );
-      } else {
-        // Hiển thị thông báo lỗi nếu đăng ký thất bại (do vi phạm ràng buộc server)
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text(
-                'login failed username or password not correctlty !. Please try again.')));
+
+        setState(() {
+          _isLoading = false;
+        });
+
+        if (isSuccess) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text('Login successful!')));
+          Navigator.pushReplacementNamed(context, '/home');
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Login failed. Please try again.')));
+        }
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')));
       }
     }
   }
@@ -76,6 +79,20 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       body: Stack(
         children: [
+          // Back button
+          Positioned(
+            top: 40,
+            left: 10,
+            child: IconButton(
+              icon: Icon(Icons.arrow_back, color: Color(0xFF2B2321), size: 30),
+              onPressed: () {
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  '/',
+                  (Route<dynamic> route) => false,
+                );
+              },
+            ),
+          ),
           // Background
           Container(
             decoration: const BoxDecoration(

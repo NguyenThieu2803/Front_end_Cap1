@@ -46,32 +46,56 @@ class StartNow extends StatelessWidget {
           ),
         ),
         Positioned(
-            bottom: 50,
-            left: 20,
-            right: 20,
-            child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const LoginPage()),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromRGBO(
-                      187, 187, 187, 0.75), // Đặt màu nền cho nút là màu đen
-                  padding:
-                      EdgeInsets.symmetric(vertical: 15), // Khoảng cách padding
-                  shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(20), // Bo tròn các góc của nút
-                  ),
-                ),
-                child: const Text('Start Now',
-                    style: TextStyle(
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ))))
+          bottom: 120, // Adjusted position for Start Now button
+          left: 20,
+          right: 20,
+          child: ElevatedButton(
+            onPressed: () {
+              Navigator.pushReplacementNamed(context, '/home');
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color.fromRGBO(187, 187, 187, 0.75),
+              padding: EdgeInsets.symmetric(vertical: 15),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+            child: const Text(
+              'Start Now',
+              style: TextStyle(
+                fontSize: 25,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 50,
+          left: 20,
+          right: 20,
+          child: TextButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/login');
+            },
+            style: TextButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              padding: EdgeInsets.symmetric(vertical: 15),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: BorderSide(color: Colors.white, width: 2),
+              ),
+            ),
+            child: const Text(
+              'Login',
+              style: TextStyle(
+                fontSize: 25,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
       ],
     ));
   }

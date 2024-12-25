@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:furnitureapp/model/Review.dart';
 import 'package:furnitureapp/model/product.dart';
 import 'package:furnitureapp/api/api.service.dart';
+import 'package:furnitureapp/services/auth_service.dart';
 import 'package:furnitureapp/widgets/ProductReviews.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'package:furnitureapp/widgets/ARViewerWidget.dart';
@@ -67,7 +68,12 @@ class _ProductPageState extends State<ProductPage>
     }
   }
 
-  void toggleFavorite() {
+  void toggleFavorite() async {
+    if (!await AuthService.isLoggedIn()) {
+      AuthService.showLoginDialog(context);  // Changed from requireLogin to showLoginDialog
+      return;
+    }
+
     setState(() {
       isFavorite = !isFavorite;
       if (isFavorite) {
@@ -84,6 +90,19 @@ class _ProductPageState extends State<ProductPage>
   }
 
   void _addToCart() async {
+    if (!await AuthService.isLoggedIn()) {
+      // Lưu thông tin sản phẩm hiện tại
+      AuthService.showLoginDialog(
+        context,
+        returnRoute: '/product',
+        returnData: {
+          'product': widget.product.toJson(), // Convert to JSON
+          'review': widget.review.toJson(), // Convert to JSON
+        },
+      );
+      return;
+    }
+
     final productId = widget.product.id;
     if (productId == null) {
       print("Product ID is null. Cannot add to cart.");

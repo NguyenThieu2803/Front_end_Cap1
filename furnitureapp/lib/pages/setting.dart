@@ -3,11 +3,42 @@ import 'package:furnitureapp/translate/localization.dart';
 import 'package:furnitureapp/pages/language.dart';
 import 'package:furnitureapp/pages/bank_account_card.dart';
 import 'package:furnitureapp/pages/notification_settings.dart';
+import 'package:furnitureapp/services/auth_service.dart';
 import 'account_security.dart';
 import 'address.dart';
 
 class Setting extends StatelessWidget {
   const Setting({super.key});
+
+  void _handleLogout(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirm Logout'),
+          content: Text('Are you sure you want to logout?'),
+          actions: [
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text(
+                'Logout',
+                style: TextStyle(color: Colors.red),
+              ),
+              onPressed: () async {
+                Navigator.of(context).pop(); // Đóng dialog
+                await AuthService.logout(context); // Thực hiện logout
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,14 +95,21 @@ class Setting extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () => _handleLogout(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
+                  backgroundColor: Colors.red,
                   padding: const EdgeInsets.symmetric(vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
                 child: Text(
                   l10n.logOut,
-                  style: const TextStyle(fontSize: 18, color: Colors.white),
+                  style: const TextStyle(
+                    fontSize: 18, 
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
