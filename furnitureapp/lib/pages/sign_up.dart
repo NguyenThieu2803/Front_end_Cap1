@@ -166,13 +166,13 @@ class _SignUpState extends State<SignUp> {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               const Padding(
-                padding: EdgeInsets.only(bottom: 10),
+                padding: EdgeInsets.only(bottom: 2),
                 child: Column(
                   children: [
                     Text(
                       'Create Account',
                       style: TextStyle(
-                        fontSize: 35, // Đã chỉnh kích thước phông chữ ở đây
+                        fontSize: 30, // Đã chỉnh kích thước phông chữ ở đây
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF2B2321),
                       ),
@@ -187,12 +187,12 @@ class _SignUpState extends State<SignUp> {
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    SizedBox(height: 13),
+                    SizedBox(height: 0),
                   ],
                 ),
               ),
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(15),
                 margin: const EdgeInsets.symmetric(horizontal: 0),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFFFFF).withOpacity(1),
@@ -206,7 +206,7 @@ class _SignUpState extends State<SignUp> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const SizedBox(height: 5),
+                    const SizedBox(height: 0),
                     TextField(
                       controller: _nameController,
                       decoration: InputDecoration(
@@ -220,7 +220,7 @@ class _SignUpState extends State<SignUp> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
                     TextField(
                       controller: _emailController,
                       decoration: InputDecoration(
@@ -234,25 +234,23 @@ class _SignUpState extends State<SignUp> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
                     TextField(
                       controller: _passwordController,
-                      obscureText: true,
                       decoration: InputDecoration(
                         hintText: 'Password',
                         labelStyle: const TextStyle(color: Color(0xFFBDBEBF)),
-                        fillColor: const Color(0xFFF2F2F7).withOpacity(0.9),
                         filled: true,
+                        fillColor: const Color(0xFFF2F2F7).withOpacity(0.9),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                           borderSide: BorderSide.none,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
                     TextField(
                       controller: _confirmPasswordController,
-                      obscureText: true,
                       decoration: InputDecoration(
                         hintText: 'Confirm Password',
                         labelStyle: const TextStyle(color: Color(0xFFBDBEBF)),
@@ -264,7 +262,7 @@ class _SignUpState extends State<SignUp> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
                     TextField(
                       controller: _phoneController,
                       decoration: InputDecoration(
@@ -278,7 +276,7 @@ class _SignUpState extends State<SignUp> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
                     TextField(
                       controller: _addressController,
                       decoration: InputDecoration(
@@ -292,7 +290,7 @@ class _SignUpState extends State<SignUp> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 10),
                     _isLoading
                         ? const CircularProgressIndicator()
                         : ElevatedButton(
@@ -313,7 +311,7 @@ class _SignUpState extends State<SignUp> {
                               ),
                             ),
                           ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 1),
                     TextButton(
                       onPressed: () {
                         Navigator.push(

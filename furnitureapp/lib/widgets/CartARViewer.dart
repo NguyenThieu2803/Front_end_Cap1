@@ -80,11 +80,31 @@ class _CartARViewerState extends State<CartARViewer> {
   bool _isLoadingModel = false;
   Map<String, bool> _modelLoadingStates = {};
 
+  Timer? _guideTimer; // Add this property
+
   @override
   void initState() {
     super.initState();
     _loadCartItems();
     _initializeAR(); // <-- Ensure we call it here
+    
+    // Change timer duration to 10 seconds
+    _guideTimer = Timer(const Duration(seconds: 10), () {
+      if (mounted && arSessionManager != null) {
+        arSessionManager!.onInitialize(
+          showAnimatedGuide: false, // Disable guide after 10 seconds
+          showFeaturePoints: true,
+          showPlanes: true,
+          customPlaneTexturePath: defaultTargetPlatform == TargetPlatform.android 
+              ? "assets/triangle.png"
+              : "triangle",
+          showWorldOrigin: false,
+          handlePans: true,
+          handleRotation: true,
+          handleTaps: true,
+        );
+      }
+    });
   }
 
   Future<void> _loadCartItems() async {
@@ -699,7 +719,7 @@ class _CartARViewerState extends State<CartARViewer> {
     arAnchorManager = anchorManager;
 
     arSessionManager!.onInitialize(
-      showAnimatedGuide: false,
+      showAnimatedGuide: true,
       showFeaturePoints: true,
       showPlanes: true,
       customPlaneTexturePath: defaultTargetPlatform == TargetPlatform.android 
@@ -713,8 +733,25 @@ class _CartARViewerState extends State<CartARViewer> {
 
     arObjectManager!.onInitialize();
 
-    // Remove duplicate callback and use only one
+    // Chỉ đăng ký một callback duy nhất cho plane detection và tap
     arSessionManager!.onPlaneOrPointTap = (hits) {
+      if (!_hasPlacedFirstModel && hits.isNotEmpty) {
+        // Tắt guide khi phát hiện mặt phẳng đầu tiên
+        arSessionManager!.onInitialize(
+          showAnimatedGuide: false,
+          showFeaturePoints: true,
+          showPlanes: true,
+          customPlaneTexturePath: defaultTargetPlatform == TargetPlatform.android 
+              ? "assets/triangle.png"
+              : "triangle",
+          showWorldOrigin: false,
+          handlePans: true,
+          handleRotation: true,
+          handleTaps: true,
+        );
+      }
+      
+      // Xử lý tap để đặt model
       if (hits.isNotEmpty && selectedModelId != null) {
         _handlePlaneOrPointTapped(hits);
       }
@@ -822,6 +859,7 @@ class _CartARViewerState extends State<CartARViewer> {
 
   @override
   void dispose() {
+    _guideTimer?.cancel(); // Cancel timer
     arSessionManager?.dispose();
     super.dispose();
   }

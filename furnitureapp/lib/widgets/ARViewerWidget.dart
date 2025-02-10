@@ -191,7 +191,7 @@ class _ARViewerWidgetState extends State<ARViewerWidget> {
     arAnchorManager = anchorManager;
 
     arSessionManager!.onInitialize(
-      showAnimatedGuide: false, // Disable “move iPhone to start”
+      showAnimatedGuide: true, // Disable “move iPhone to start”
       showFeaturePoints: false,
       showPlanes: true,
       customPlaneTexturePath: defaultTargetPlatform == TargetPlatform.android 

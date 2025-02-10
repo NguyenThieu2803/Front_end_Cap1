@@ -18,12 +18,12 @@ class _EvaluateState extends State<Evaluate> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(82.0),
+        preferredSize: const Size.fromHeight(58.0),
         child: AppBar(
           backgroundColor: Colors.white,
           elevation: 0,
           leading: Padding(
-            padding: const EdgeInsets.only(top: 18.0),
+            padding: const EdgeInsets.only(top: 5.0),
             child: IconButton(
               icon: const Icon(
                 Icons.arrow_back,
@@ -34,7 +34,7 @@ class _EvaluateState extends State<Evaluate> {
             ),
           ),
           title: Container(
-            margin: const EdgeInsets.only(top: 25.0),
+            margin: const EdgeInsets.only(top: 5.0),
             child: const Text(
               'Evaluate',
               style: TextStyle(
